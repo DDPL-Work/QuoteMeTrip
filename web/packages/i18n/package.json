@@ -1,0 +1,15 @@
+{
+  "name": "@troublefree/i18n",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^9.11.1",
+    "@eslint/js": "^9.11.1",
+    "globals": "^15.9.0"
+  }
+}
