@@ -1,0 +1,2 @@
+# Enforce LF line endings (matches .editorconfig and Prettier config)
+* text=auto eol=lf
