@@ -13,7 +13,7 @@ This package currently provides:
 - Structured JSON 404 and error handling
 - Placeholder middleware and integration folders for future phases
 
-No database, authentication, or business logic is implemented yet.
+No authentication or business logic is implemented yet.
 
 ## Development
 
@@ -23,13 +23,28 @@ npm run dev --workspace=@troublefree/backend
 
 Server runs on `http://localhost:5000` by default (see `.env.example`).
 
+MySQL 8 must be reachable (see `docs/database.md`). Prepare the schema
+once per environment:
+
+```bash
+npm run db:migrate --workspace=@troublefree/backend
+npm run db:seed --workspace=@troublefree/backend
+```
+
 ## Scripts
 
-| Script         | Description                       |
-| -------------- | --------------------------------- |
-| `npm run dev`  | Start with nodemon (auto-restart) |
-| `npm start`    | Start the server                  |
-| `npm run lint` | Run ESLint                        |
+| Script                    | Description                                         |
+| ------------------------- | --------------------------------------------------- |
+| `npm run dev`             | Start with nodemon (auto-restart)                   |
+| `npm start`               | Start the server                                    |
+| `npm run lint`            | Run ESLint                                          |
+| `npm test`                | Unit + integration tests (needs test DB, see below) |
+| `npm run test:unit`       | Unit tests only                                     |
+| `npm run db:migrate`      | Apply pending migrations                            |
+| `npm run db:migrate:undo` | Revert migrations (`--steps=N`)                     |
+| `npm run db:seed`         | Run seeders (idempotent)                            |
+| `npm run db:seed:undo`    | Undo seeders                                        |
+| `npm run db:test:prepare` | Migrate + seed the isolated test database           |
 
 ## Structure
 
