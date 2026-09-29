@@ -1,0 +1,52 @@
+/* Centralized Design Tokens for Traveller Portal */
+
+:root {
+  /* Brand & Surface Colors (Source of Truth from HTML Reference) */
+  --tf-portal-bg: #fffbf3;
+  --tf-portal-surface: #ffffff;
+  --tf-portal-surface-soft: #fbf9f5;
+  --tf-portal-surface-dark: #0c4e28;
+  --tf-portal-sidebar-bg: #f4eee2;
+
+  --tf-portal-green-dark: #0c4e28;
+  --tf-portal-green: #147d33;
+  --tf-portal-green-soft: #e5f2ea;
+
+  --tf-portal-orange: #fc7c00;
+  --tf-portal-orange-hover: #e37000;
+
+  --tf-portal-text: #13291c;
+  --tf-portal-text-muted: #4e5754;
+  --tf-portal-text-faint: #5b6461;
+
+  --tf-portal-border: #e2dcd1;
+  --tf-portal-border-strong: #d5cdbf;
+
+  /* Status Colors */
+  --tf-portal-ok: #245a31;
+  --tf-portal-ok-bg: #dcebdd;
+  --tf-portal-warn: #8a3517;
+  --tf-portal-warn-bg: #fbe9d9;
+  --tf-portal-amber: #6b4a12;
+  --tf-portal-amber-bg: #fff6e6;
+
+  /* Typography */
+  --tf-portal-font-heading: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  --tf-portal-font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+
+  /* Border Radii */
+  --tf-portal-radius-xs: 4px;
+  --tf-portal-radius-sm: 8px;
+  --tf-portal-radius-md: 12px;
+  --tf-portal-radius-lg: 16px;
+  --tf-portal-radius-xl: 20px;
+  --tf-portal-radius-full: 9999px;
+
+  /* Shadows */
+  --tf-portal-shadow-sm: 0 1px 3px rgba(19, 41, 28, 0.06);
+  --tf-portal-shadow-md: 0 4px 12px rgba(19, 41, 28, 0.08);
+  --tf-portal-shadow-lg: 0 10px 24px rgba(19, 41, 28, 0.12);
+
+  /* Transitions */
+  --tf-portal-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}

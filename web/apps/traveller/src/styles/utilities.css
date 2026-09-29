@@ -1,0 +1,79 @@
+/* Utility classes matching reference layout structure */
+
+.tf-portal-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.tf-portal-between {
+  justify-content: space-between;
+}
+
+.tf-portal-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tf-portal-grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tf-portal-grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tf-portal-grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tf-portal-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 36px;
+  align-items: start;
+}
+
+.tf-portal-muted {
+  color: var(--tf-portal-text-muted);
+}
+
+.tf-portal-faint {
+  color: var(--tf-portal-text-faint);
+  font-size: 13px;
+}
+
+.tf-portal-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .tf-portal-cols {
+    grid-template-columns: 1fr;
+  }
+  .tf-portal-grid4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .tf-portal-grid3,
+  .tf-portal-grid2 {
+    grid-template-columns: 1fr;
+  }
+}

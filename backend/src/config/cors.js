@@ -12,6 +12,23 @@ function getAllowedOrigins() {
     process.env.WEB_ADMIN_URL,
   ].filter(Boolean);
 
+  // In development, always allow the three standard localhost ports
+  // so that the dev server works even if the env vars are not set or
+  // the backend was started before the .env file was updated.
+  if (process.env.NODE_ENV !== 'production') {
+    const devDefaults = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+      'http://127.0.0.1:5175',
+    ];
+    for (const o of devDefaults) {
+      if (!origins.includes(o)) origins.push(o);
+    }
+  }
+
   return origins;
 }
 

@@ -1,24 +1,26 @@
 /**
- * Backend startup sequence (Phase 2):
+ * Backend startup sequence (Phase 2 & Phase 9):
  *
- *   load configuration
+ *   load & validate configuration
  *     -> initialize Sequelize + models/associations
  *     -> verify database connectivity
- *     -> start HTTP server
+ *     -> start HTTP server & Socket.IO
  *
- * If the database is unavailable, behavior depends on configuration:
- * - production (or DB_REQUIRE_ON_BOOT=true): fail fast, exit non-zero.
- * - development/test: boot degraded, report via /api/v1/health.
+ * If required production config is missing, fail fast at startup.
  */
 import 'dotenv/config';
+import http from 'node:http';
 import app from './app.js';
+import { validateEnvironment } from './config/env.js';
 import { getDatabaseConfig } from './config/database.js';
 import { getSequelize, connectDatabase, closeDatabase } from './db/sequelize.js';
 import { initModels } from './db/models/index.js';
+import { initSocketServer, closeSocketServer } from './realtime/socket.js';
 
 const PORT = process.env.PORT || 5000;
 
 async function boot() {
+  const envInfo = validateEnvironment();
   const dbConfig = getDatabaseConfig();
 
   initModels(getSequelize());
@@ -35,10 +37,11 @@ async function boot() {
     console.warn('Continuing without a database (degraded mode). See /api/v1/health.');
   }
 
-  const server = app.listen(PORT, () => {
-    console.log(
-      `troublefree-holiday-backend listening on port ${PORT} (${process.env.NODE_ENV || 'development'})`,
-    );
+  const server = http.createServer(app);
+  initSocketServer(server);
+
+  server.listen(PORT, () => {
+    console.log(`troublefree-holiday-backend listening on port ${PORT} (${envInfo.nodeEnv})`);
   });
 
   function shutdown(signal) {
@@ -51,18 +54,17 @@ async function boot() {
       }
 
       try {
+        await closeSocketServer();
         await closeDatabase();
         console.log('Database connection closed.');
       } catch (closeErr) {
         console.error('Error closing database connection:', closeErr.message);
       }
 
-      // Future phases: close socket server and job workers here.
       console.log('Server closed. Goodbye.');
       process.exit(0);
     });
 
-    // Force-exit if shutdown hangs.
     setTimeout(() => {
       console.error('Forced shutdown after timeout.');
       process.exit(1);

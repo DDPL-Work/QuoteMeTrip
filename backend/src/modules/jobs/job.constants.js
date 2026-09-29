@@ -1,0 +1,13 @@
+/**
+ * Job constants (Phase 6).
+ */
+import { JOB_STATUSES, JOB_TRANSITIONS } from '../../db/models/Job.js';
+
+export const JOB_ERROR_CODES = {
+  VALIDATION_ERROR: 'JOB_VALIDATION_ERROR',
+  NOT_FOUND: 'JOB_NOT_FOUND',
+  FORBIDDEN: 'JOB_FORBIDDEN',
+  INVALID_TRANSITION: 'JOB_INVALID_TRANSITION',
+};
+
+export { JOB_STATUSES, JOB_TRANSITIONS };

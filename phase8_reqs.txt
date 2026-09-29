@@ -1,0 +1,131 @@
+<USER_REQUEST>
+============================================================
+TROUBLEFREE HOLIDAY
+PHASE 8 — NOTIFICATIONS, WEATHER, TRAVEL GUIDE CMS & RATINGS
+============================================================
+
+CURRENT STATUS
+
+COMPLETED:
+
+Phase 1 — Foundation
+Phase 2 — Database / ORM
+Phase 3 — Authentication / Identity / RBAC
+Phase 4 — Traveller Route Planning / Travel Requests
+Phase 5 — Agency Matching / Quotations
+Phase 6 — Messaging / Contact Protection /
+          Quotation Acceptance / Jobs
+Phase 7 — Admin Operations / Agency Approval /
+          Membership / Commission / Audit Logging
+
+TRACK B COMPLETED:
+
+Traveller Public Website V1
+
+ALL CURRENT TESTS ARE GREEN.
+
+DO NOT REWRITE COMPLETED PHASES.
+
+============================================================
+PHASE OBJECTIVE
+============================================================
+
+Implement the remaining Standard-platform capabilities:
+
+1. Notification system
+2. Email notifications
+3. SMS notifications for defined critical events
+4. Firebase web push notifications
+5. Notification preferences/read state
+6. Weather integration
+7. Weather display in Traveller trip workflow
+8. Travel Guide CMS
+9. Travel Guide public API integration
+10. Region and destination management
+11. Article creation/editing/publishing
+12. Traveller post-service ratings
+13. Agency rating aggregation
+14. Public agency rating display
+15. Rating-based agency sorting
+
+Keep all implementations modular and provider-agnostic.
+
+============================================================
+IMPORTANT SCOPE BOUNDARY
+============================================================
+
+IMPLEMENT:
+
+Notifications
+Weather
+Travel Guide CMS
+Ratings
+
+DO NOT IMPLEMENT:
+
+payment gateway
+split payment
+digital contracts
+e-signature
+AI
+mobile apps
+advanced route optimization
+advanced BI
+
+These remain future Pro/Phase 9+ scope.
+
+============================================================
+1. NOTIFICATION ARCHITECTURE
+============================================================
+
+Existing notifica
+<truncated 21618 bytes>
+
+49. FINAL REPORT
+============================================================
+
+Provide:
+
+1. Files changed
+2. Migrations added
+3. Models added/modified
+4. Associations
+5. API endpoints
+6. Notification events
+7. Provider abstractions
+8. Weather implementation
+9. Travel Guide CMS
+10. Public Travel Guide integration
+11. Rating implementation
+12. Admin pages
+13. Traveller pages
+14. Agency pages
+15. Tests added
+16. Exact test counts
+17. Lint result
+18. Format result
+19. Build result
+20. Migration validation
+21. Live acceptance results
+22. Environment variables
+23. Known limitations
+24. Confirmation Phase 9+/Pro scope was NOT implemented
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-24T16:49:40+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\ashish kathait\Downloads\troublefree-holiday\backend\scripts\db-seed.js (LANGUAGE_JAVASCRIPT)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\ashish kathait\Downloads\troublefree-holiday\backend\scripts\db-seed.js (LANGUAGE_JAVASCRIPT)
+- c:\Users\ashish kathait\Downloads\troublefree-holiday\backend\src\modules\admin\agencies\agency-admin.service.js (LANGUAGE_JAVASCRIPT)
+- c:\Users\ashish kathait\Downloads\troublefree-holiday\backend\src\modules\admin\agencies\agency-admin.routes.js (LANGUAGE_JAVASCRIPT)
+- c:\Users\ashish kathait\Downloads\troublefree-holiday\backend\src\modules\admin\agencies\agency-admin.repository.js (LANGUAGE_JAVASCRIPT)
+- c:\Users\ashish kathait\Downloads\troublefree-holiday\backend\tests\integration\admin-operations.test.js (LANGUAGE_JAVASCRIPT)
+Running terminal commands:
+- npm run dev (in c:\Users\ashish kathait\Downloads\troublefree-holiday\web\apps\admin, running for 51m5s)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.6 Flash (Medium) to Gemini 3.1 Pro (Low). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

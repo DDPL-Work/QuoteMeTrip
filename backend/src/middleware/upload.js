@@ -1,15 +1,61 @@
 /**
- * PLACEHOLDER — File upload middleware.
+ * Safe File Upload & Validation Middleware (Phase 9 Hardened).
  *
- * This module intentionally contains no logic in Phase 1.
- * File upload handling (storage strategy, size/type validation)
- * will be implemented alongside the features that need it
- * (e.g. agency documents, travel request attachments).
- *
- * The `backend/uploads/` directory exists as the reserved local
- * storage location for that future implementation.
+ * Validates extension, MIME type, file size, prevents path traversal,
+ * and handles secure local storage.
  */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export function upload() {
-  throw new Error('upload() is not implemented yet. Planned for a later business-logic phase.');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.resolve(__dirname, '../../uploads');
+
+const ALLOWED_EXTENSIONS = new Set(['.pdf', '.jpg', '.jpeg', '.png', '.webp']);
+const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp']);
+
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+export function validateFileMetadata(file) {
+  if (!file) {
+    throw new Error('No file provided');
+  }
+
+  const filename = path.basename(file.originalname || file.name || 'file');
+  const ext = path.extname(filename).toLowerCase();
+  const mimeType = (file.mimetype || file.type || '').toLowerCase();
+  const size = file.size || 0;
+
+  if (!ALLOWED_EXTENSIONS.has(ext)) {
+    throw new Error(
+      `Invalid file extension: ${ext}. Allowed extensions: ${Array.from(ALLOWED_EXTENSIONS).join(', ')}`,
+    );
+  }
+
+  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    throw new Error(
+      `Invalid MIME type: ${mimeType}. Allowed types: ${Array.from(ALLOWED_MIME_TYPES).join(', ')}`,
+    );
+  }
+
+  if (size > MAX_FILE_SIZE_BYTES) {
+    throw new Error(`File size ${size} bytes exceeds maximum limit of 5 MB.`);
+  }
+
+  // Prevent path traversal
+  const safeFilename = filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
+  const destinationPath = path.join(UPLOADS_DIR, `${Date.now()}_${safeFilename}`);
+
+  // Ensure target path stays within UPLOADS_DIR
+  if (!destinationPath.startsWith(UPLOADS_DIR)) {
+    throw new Error('Path traversal attempt detected.');
+  }
+
+  return {
+    originalName: filename,
+    safeFilename,
+    extension: ext,
+    mimeType,
+    size,
+    destinationPath,
+  };
 }

@@ -1,0 +1,41 @@
+import {
+  FiHome,
+  FiMap,
+  FiFileText,
+  FiMessageCircle,
+  FiBriefcase,
+  FiUser,
+  FiBell,
+  FiChevronRight,
+  FiArrowRight,
+  FiEdit2,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiRefreshCw,
+  FiTag,
+  FiMapPin,
+  FiMenu,
+  FiX,
+  FiLogOut
+} from "react-icons/fi";
+
+export const Icons = {
+  Dashboard: FiHome,
+  PlanTrip: FiMap,
+  Requests: FiFileText,
+  Quotations: FiTag,
+  Messages: FiMessageCircle,
+  Jobs: FiBriefcase,
+  Profile: FiUser,
+  Notifications: FiBell,
+  ChevronRight: FiChevronRight,
+  ArrowRight: FiArrowRight,
+  Edit: FiEdit2,
+  CheckCircle: FiCheckCircle,
+  AlertCircle: FiAlertCircle,
+  Refresh: FiRefreshCw,
+  MapPin: FiMapPin,
+  Menu: FiMenu,
+  Close: FiX,
+  Logout: FiLogOut
+};

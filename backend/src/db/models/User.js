@@ -1,12 +1,3 @@
-/**
- * User model (Phase 2 — persistence only).
- *
- * Foundational identity record for all three application domains
- * (traveller, agency, admin). Authentication (password hashing,
- * JWT, OAuth) is NOT implemented here — this model only establishes
- * the storage representation. `passwordHash` is therefore nullable
- * until the authentication phase populates it.
- */
 import { DataTypes, Model } from 'sequelize';
 
 export const USER_ROLES = ['traveller', 'agency', 'admin'];
@@ -37,6 +28,10 @@ export class User extends Model {
         },
         passwordHash: {
           type: DataTypes.STRING(255),
+          allowNull: true,
+        },
+        lastLoginAt: {
+          type: DataTypes.DATE,
           allowNull: true,
         },
         role: {

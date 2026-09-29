@@ -8,26 +8,34 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "lint": "eslint .",
-    "test": "node --test --test-concurrency=1 tests/",
-    "test:unit": "node --test tests/unit/",
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
     "db:migrate": "node scripts/db-migrate.js",
     "db:migrate:undo": "node scripts/db-migrate-undo.js",
     "db:seed": "node scripts/db-seed.js",
     "db:seed:undo": "node scripts/db-seed-undo.js",
-    "db:test:prepare": "node scripts/db-test-prepare.js"
+    "db:test:prepare": "node scripts/db-test-prepare.js",
+    "admin:create": "node scripts/admin-create.js",
+    "auth:cleanup": "node scripts/auth-cleanup.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
+    "express-rate-limit": "^8.7.0",
     "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.11.0",
-    "sequelize": "^6.37.0"
+    "sequelize": "^6.37.0",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
     "eslint": "^9.11.1",
     "globals": "^15.9.0",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "socket.io-client": "^4.8.3"
   }
 }

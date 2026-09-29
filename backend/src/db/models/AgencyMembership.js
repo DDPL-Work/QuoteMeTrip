@@ -1,12 +1,18 @@
 /**
- * AgencyMembership model (Phase 2 — persistence only).
+ * AgencyMembership model (Phase 2 & Phase 7 extension).
  *
  * Links an agency profile to a membership plan for a time window.
- * Billing/payment workflows arrive in later phases.
+ * Phase 7 adds manual payment confirmation, agreement tracking, and expanded statuses.
  */
 import { DataTypes, Model } from 'sequelize';
 
-export const AGENCY_MEMBERSHIP_STATUSES = ['active', 'expired', 'cancelled'];
+export const AGENCY_MEMBERSHIP_STATUSES = [
+  'pending',
+  'active',
+  'expired',
+  'suspended',
+  'cancelled',
+];
 
 export class AgencyMembership extends Model {
   static initModel(sequelize) {
@@ -45,7 +51,39 @@ export class AgencyMembership extends Model {
         status: {
           type: DataTypes.ENUM(...AGENCY_MEMBERSHIP_STATUSES),
           allowNull: false,
-          defaultValue: 'active',
+          defaultValue: 'pending',
+        },
+        confirmedBy: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+          references: { model: 'users', key: 'id' },
+          onDelete: 'SET NULL',
+          onUpdate: 'CASCADE',
+        },
+        confirmedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        paymentReference: {
+          type: DataTypes.STRING(255),
+          allowNull: true,
+        },
+        notes: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
+        agreementAccepted: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+        },
+        agreementAcceptedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        agreementVersion: {
+          type: DataTypes.STRING(50),
+          allowNull: true,
         },
       },
       {

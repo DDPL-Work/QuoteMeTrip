@@ -15,6 +15,29 @@ This package currently provides:
 
 No authentication or business logic is implemented yet.
 
+## Phase 4 scope (traveller core)
+
+- Traveller profile: `GET`/`PATCH /api/v1/travellers/me`
+  (`src/modules/traveller/`, Phase 2 `traveller_profiles` table).
+- Route planning: `POST /api/v1/routes/calculate` (no persistence) +
+  `POST`/`GET`/`PATCH`/`DELETE /api/v1/routes`
+  (`src/modules/routes/`). Calculation goes through the
+  `MapProvider` abstraction (`src/integrations/maps/`, default
+  `haversine` — no credentials); recommended days live in
+  `recommended-days.service.js` (v1 formula, traveller-overridable).
+- Travel requests: `POST`/`GET`/`PATCH /api/v1/travel-requests`,
+  `POST /:id/submit`, `POST /:id/cancel`, day CRUD
+  (`src/modules/travel-requests/`). Creation is transactional
+  (`withTransaction()`); lifecycle is `draft → submitted` (cancel
+  from `draft`/`submitted`).
+- Weather boundary (`src/integrations/weather/`): graceful
+  `{ available: false }` degradation, never required for requests.
+
+Environment: `MAP_PROVIDER` (`haversine` default, no credentials),
+`MAP_OSRM_BASE_URL` (only for `osrm`), `WEATHER_API_KEY` (optional;
+empty = weather unavailable). See `.env.example` and
+`docs/travel-request-workflow.md`.
+
 ## Development
 
 ```bash
@@ -50,12 +73,12 @@ npm run db:seed --workspace=@troublefree/backend
 
 ```
 src/
-├── config/         # cors, and future non-secret config
-├── middleware/      # cross-cutting request middleware
-├── modules/         # business modules (Phase 2+)
-├── integrations/    # third-party provider adapters (maps, weather, email, sms, firebase, payments, esignature, ai)
-├── routes/           # route registration
-├── utils/            # errors, response helpers
+├── config/         # cors, auth, database (env-driven, no secrets)
+├── middleware/      # authenticate, authorize, rateLimiter, errorHandler, ...
+├── modules/         # auth (Phase 3), traveller, routes, travel-requests (Phase 4)
+├── integrations/    # maps (provider abstraction + recommended days), weather (graceful boundary), email, sms, firebase, payments, esignature, ai
+├── routes/           # versioned route registration (/api/v1)
+├── utils/            # errors (App/Auth/Validation/NotFound/Forbidden), response helpers, jwt, tokens
 ├── app.js
 └── server.js
 ```

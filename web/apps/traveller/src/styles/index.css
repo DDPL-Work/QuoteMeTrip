@@ -1,3 +1,5 @@
+@import './globals.css';
+
 :root {
   color-scheme: light;
   font-family:
@@ -14,8 +16,125 @@ body {
 .portal-shell {
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh;
   text-align: center;
+}
+
+/* Phase 3: authentication surfaces. */
+.auth-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+  background: #f4f6f8;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 8%);
+}
+
+.auth-card h1 {
+  margin: 0 0 0.25rem;
+}
+
+.auth-subtitle {
+  margin: 0 0 1.25rem;
+  color: #556;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+  text-align: left;
+}
+
+.auth-field label {
+  font-weight: 600;
+}
+
+.auth-field input {
+  padding: 0.6rem 0.7rem;
+  font-size: 1rem;
+  border: 1px solid #c6cdd4;
+  border-radius: 0.4rem;
+}
+
+.auth-password {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.auth-password input {
+  flex: 1;
+}
+
+.auth-password-toggle {
+  padding: 0 0.8rem;
+  cursor: pointer;
+}
+
+.auth-field-error {
+  margin: 0;
+  color: #b3261e;
+  font-size: 0.875rem;
+}
+
+.auth-error {
+  color: #b3261e;
+  background: #fdecea;
+  border-radius: 0.4rem;
+  padding: 0.6rem 0.8rem;
+}
+
+.auth-submit {
+  width: 100%;
+  padding: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.auth-signout {
+  width: auto;
+  padding: 0.6rem 1.4rem;
+}
+
+.auth-switch {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.auth-social {
+  margin-top: 1rem;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: #667;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid #d5dbe1;
 }

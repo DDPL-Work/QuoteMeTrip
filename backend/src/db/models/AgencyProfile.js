@@ -1,10 +1,7 @@
 /**
- * AgencyProfile model (Phase 2 — persistence only).
+ * AgencyProfile model (Phase 2 & Phase 7 extension).
  *
  * One-to-one extension of `users` for agency business/profile data.
- * Identity/authentication fields stay in `users`; only agency
- * business information lives here. Verification/approval workflows
- * arrive in later phases — `status` only stores the outcome.
  */
 import { DataTypes, Model } from 'sequelize';
 
@@ -76,6 +73,19 @@ export class AgencyProfile extends Model {
           type: DataTypes.ENUM(...AGENCY_STATUSES),
           allowNull: false,
           defaultValue: 'pending',
+        },
+        agreementAccepted: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+        },
+        agreementAcceptedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        agreementVersion: {
+          type: DataTypes.STRING(50),
+          allowNull: true,
         },
       },
       {

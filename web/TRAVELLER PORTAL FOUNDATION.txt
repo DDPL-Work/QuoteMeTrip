@@ -1,0 +1,1502 @@
+You are the Lead Frontend Architect and Senior React Engineer for the Troublefree Holiday project.
+
+Your task is to implement PHASE 1 of the Traveller Portal:
+
+"TRAVELLER PORTAL FOUNDATION, DESIGN SYSTEM, APPLICATION SHELL AND RESPONSIVE UI INFRASTRUCTURE"
+
+This phase must be implemented completely and production-ready.
+
+Do NOT start business feature implementation yet.
+Do NOT create fake APIs.
+Do NOT modify backend business logic.
+Do NOT change existing API contracts.
+Do NOT create another frontend application.
+Do NOT introduce unnecessary technologies.
+
+The goal of this phase is to create a rock-solid frontend foundation on top of which all Traveller Portal features will be implemented in later phases.
+
+============================================================
+1. PROJECT CONTEXT
+============================================================
+
+Project:
+Troublefree Holiday
+
+Architecture:
+
+Frontend:
+- React
+- Vite
+- JavaScript/JSX as currently used by the existing Traveller application
+- Existing npm-workspaces monorepo
+
+Backend:
+- Node.js
+- Express
+- MySQL 8
+- Sequelize 6
+- REST API
+- Socket.IO already implemented for messaging
+- Existing authentication/RBAC already implemented
+
+Frontend applications already exist:
+
+web/apps/traveller
+web/apps/agency
+web/apps/admin
+
+Shared packages already exist:
+
+web/packages/ui
+web/packages/api-client
+web/packages/types
+web/packages/i18n
+web/packages/config
+
+IMPORTANT:
+You MUST inspect the existing repository before modifying anything.
+
+Do not assume files are empty.
+Do not replace existing architecture blindly.
+Do not rewrite existing working functionality unnecessarily.
+
+The Traveller application's existing public website and authenticated portal must continue to work.
+
+============================================================
+2. DESIGN SOURCE OF TRUTH
+============================================================
+
+A reference HTML file has been provided:
+
+quotemetrip-traveller (4) (3).html
+
+Use this file as the PRIMARY visual/design reference for the Traveller portal.
+
+The reference establishes:
+
+- Warm off-white page background
+- White cards
+- Deep/dark green brand surfaces
+- Green secondary/accent surfaces
+- Orange primary CTA
+- Soft borders
+- Rounded cards
+- Poppins for major headings
+- DM Sans for body/interface text
+- Clean travel marketplace visual language
+- Desktop sidebar application shell
+- Responsive mobile navigation
+- Mobile bottom navigation
+- Trip/KPI cards
+- Route/stepper patterns
+- Notification badges
+- Responsive layouts
+
+Reference design tokens include:
+
+Background:
+#FFFBF3
+
+Primary dark green:
+#0C4E28
+
+Secondary green:
+#147D33
+
+Green soft:
+#E5F2EA
+
+Primary orange:
+#FC7C00
+
+Orange hover:
+#E37000
+
+Primary text:
+#13291C
+
+Muted text:
+#4E5754
+
+Soft surface:
+#FBF9F5
+
+Border:
+#E2DCD1
+
+Secondary border:
+#D5CDBF
+
+Use these values as the initial source-of-truth theme.
+
+Do not arbitrarily replace the reference palette.
+
+============================================================
+3. IMPORTANT EXISTING BRAND/DESIGN CONTEXT
+============================================================
+
+There may already be an existing Troublefree Holiday public website using a newer light-green/yellow token set.
+
+Do NOT blindly overwrite the public site's existing visual identity.
+
+Instead:
+
+- Preserve working public pages.
+- Establish the Traveller authenticated portal design system in a clean shared manner.
+- Where shared components are used by both public and authenticated areas, ensure backward compatibility.
+- Do not break the public website while implementing the Traveller portal shell.
+
+The authenticated Traveller portal should follow the uploaded HTML reference.
+
+============================================================
+4. PHASE 1 OBJECTIVE
+============================================================
+
+At the end of Phase 1, the Traveller application must have:
+
+A. Centralized design tokens
+B. Global typography
+C. Global spacing/radius/shadow system
+D. Reusable UI primitives
+E. Responsive breakpoint system
+F. Authenticated Traveller application shell
+G. Desktop header
+H. Desktop sidebar
+I. Mobile header
+J. Mobile navigation
+K. Responsive page container
+L. Breadcrumb/page-header infrastructure
+M. Loading states
+N. Skeleton states
+O. Empty states
+P. Error states
+Q. Toast/notification infrastructure
+R. Modal/dialog infrastructure
+S. Button system
+T. Form control system
+U. Status badge system
+V. Card system
+W. Tabs/segmented-control system
+X. Stepper/progress system
+Y. Avatar/user menu system
+Z. Notification badge infrastructure
+AA. Theme consistency
+AB. Accessibility foundation
+AC. Protected-route architecture compatibility
+AD. Existing routing preserved
+AE. Existing backend integration preserved
+AF. Production-ready folder/component structure
+
+There must be NO unfinished TODOs within this phase.
+
+============================================================
+5. FIRST ACTION — REPOSITORY AUDIT
+============================================================
+
+Before changing code, inspect:
+
+web/apps/traveller
+web/packages/ui
+web/packages/api-client
+web/packages/i18n
+web/packages/types
+web/packages/config
+
+Also inspect:
+
+- package.json files
+- workspace configuration
+- Vite configuration
+- existing React entry point
+- routing
+- existing authentication provider/context
+- existing layout components
+- existing theme.css
+- existing global CSS
+- existing reusable components
+- existing tests
+- existing lint/format configuration
+
+Determine:
+
+1. What already exists.
+2. What can be reused.
+3. What must be refactored.
+4. What must be newly created.
+5. What would break existing functionality.
+
+Do not duplicate an existing working component merely because a new design is required.
+
+============================================================
+6. REQUIRED TARGET STRUCTURE
+============================================================
+
+Organize the Traveller application cleanly.
+
+Recommended structure:
+
+web/apps/traveller/src/
+
+app/
+  App.jsx
+  router.jsx
+  providers/
+
+layouts/
+  PublicLayout.jsx
+  TravellerAppLayout.jsx
+
+components/
+  AppHeader.jsx
+  AppSidebar.jsx
+  MobileHeader.jsx
+  MobileBottomNav.jsx
+  UserMenu.jsx
+  NotificationButton.jsx
+  PageHeader.jsx
+  Breadcrumbs.jsx
+  ProtectedRoute.jsx
+
+components/states/
+  LoadingState.jsx
+  Skeleton.jsx
+  EmptyState.jsx
+  ErrorState.jsx
+
+components/feedback/
+  Toast.jsx
+  ToastProvider.jsx
+  Modal.jsx
+  ConfirmDialog.jsx
+
+styles/
+  globals.css
+  tokens.css
+  utilities.css
+
+features/
+  auth/
+  dashboard/
+  route-planner/
+  travel-requests/
+  quotations/
+  messaging/
+  jobs/
+  notifications/
+  profile/
+
+Do not create feature business logic yet unless it is already present.
+
+The important objective is establishing the foundation into which these features will plug.
+
+============================================================
+7. SHARED UI PACKAGE
+============================================================
+
+Use:
+
+@troublefree/ui
+
+for reusable visual primitives where appropriate.
+
+Inspect the existing package before creating new components.
+
+The shared UI package should provide or standardize:
+
+Button
+Card
+Input
+Textarea
+Select
+Badge
+StatusBadge
+Avatar
+IconButton
+Tabs
+SegmentedControl
+Modal
+Toast
+Spinner
+Skeleton
+Divider
+Dropdown
+Tooltip where already appropriate
+PageHeader
+Stepper
+ProgressBar
+EmptyState
+
+If equivalent components already exist:
+- refactor them
+- standardize them
+- preserve compatibility
+- avoid duplicate components
+
+============================================================
+8. DESIGN TOKENS
+============================================================
+
+Create centralized tokens.
+
+Example:
+
+--tf-bg: #FFFBF3;
+--tf-surface: #FFFFFF;
+--tf-surface-soft: #FBF9F5;
+
+--tf-green-dark: #0C4E28;
+--tf-green: #147D33;
+--tf-green-soft: #E5F2EA;
+
+--tf-orange: #FC7C00;
+--tf-orange-hover: #E37000;
+
+--tf-text: #13291C;
+--tf-text-muted: #4E5754;
+--tf-text-faint: #5B6461;
+
+--tf-border: #E2DCD1;
+--tf-border-strong: #D5CDBF;
+
+Also define:
+
+Typography
+Spacing
+Radius
+Shadows
+Z-index
+Breakpoints
+Focus ring
+Transition duration
+
+Do not scatter raw colors throughout components.
+
+Bad:
+
+background: #FC7C00;
+
+Good:
+
+background: var(--tf-orange);
+
+============================================================
+9. TYPOGRAPHY
+============================================================
+
+Use the reference typography hierarchy:
+
+Headings:
+Poppins
+
+Body/UI:
+DM Sans
+
+Define:
+
+font-family tokens
+font sizes
+font weights
+line heights
+letter spacing
+
+At minimum:
+
+display
+h1
+h2
+h3
+h4
+body
+body-small
+label
+caption
+eyebrow
+
+Responsive headings must scale correctly.
+
+Avoid excessive font sizes.
+
+============================================================
+10. APPLICATION SHELL
+============================================================
+
+Build the authenticated Traveller shell.
+
+Desktop:
+
+-----------------------------------------------------------
+TOP HEADER
+-----------------------------------------------------------
+
+Left:
+Troublefree Holiday brand/logo
+
+Right:
+Notification button
+Language selector
+User/avatar menu
+
+-----------------------------------------------------------
+SIDEBAR
+-----------------------------------------------------------
+
+Navigation:
+
+Dashboard
+Plan My Trip
+Travel Requests
+Quotations
+Messages
+Jobs
+Profile
+
+Additional sections may be included only if already supported by the existing application.
+
+Sidebar should support:
+
+- active state
+- hover state
+- keyboard focus
+- notification badges
+- collapsed/expanded behavior only if compatible with existing architecture
+
+The sidebar must visually follow the reference.
+
+============================================================
+11. MOBILE SHELL
+============================================================
+
+At mobile breakpoints:
+
+- desktop sidebar must disappear
+- mobile header must become visible
+- bottom navigation should be used where appropriate
+- content must remain scrollable
+- no horizontal overflow
+
+Mobile navigation should support:
+
+Dashboard
+Plan
+Requests
+Messages
+Profile
+
+Where appropriate, use notification badge counters.
+
+Ensure the design works at:
+
+360px
+390px
+412px
+768px
+
+Test all major layouts at these widths.
+
+============================================================
+12. RESPONSIVE DESIGN
+============================================================
+
+Use a mobile-first approach.
+
+Target breakpoints:
+
+Mobile:
+< 768px
+
+Tablet:
+768px–1023px
+
+Desktop:
+1024px–1279px
+
+Wide:
+1280px+
+
+The UI must gracefully adapt.
+
+Never:
+
+- overflow horizontally
+- clip buttons
+- create unreadable tables
+- allow text to overlap
+- create fixed-width desktop components on mobile
+
+Use:
+
+grid
+flex
+clamp()
+minmax()
+fluid spacing
+responsive typography
+
+where appropriate.
+
+============================================================
+13. PAGE CONTAINER
+============================================================
+
+Create a consistent authenticated page container.
+
+Example:
+
+main
+  page-container
+    page-header
+    page-content
+
+Desktop:
+large horizontal padding
+
+Tablet:
+medium padding
+
+Mobile:
+compact padding
+
+Do not hardcode individual page margins in every page.
+
+============================================================
+14. PAGE HEADER
+============================================================
+
+Create reusable PageHeader:
+
+Example:
+
+Plan your trip
+Tell us where you want to go and we'll help organize your journey.
+
+Optional:
+
+Breadcrumbs
+Back button
+Primary action
+Secondary actions
+
+Must work on mobile.
+
+============================================================
+15. BUTTON SYSTEM
+============================================================
+
+Create consistent variants:
+
+Primary
+Secondary
+Dark
+Outline
+Ghost
+Danger
+Success
+
+Sizes:
+
+Small
+Medium
+Large
+
+States:
+
+Default
+Hover
+Focus
+Active
+Disabled
+Loading
+
+Primary Traveller CTA should visually use the reference orange.
+
+Dark buttons should use the deep green.
+
+Do not introduce random button styles inside individual pages.
+
+============================================================
+16. FORM SYSTEM
+============================================================
+
+Create reusable:
+
+Input
+Select
+Textarea
+Checkbox
+Radio
+DateInput
+SearchInput
+
+Every form control must support:
+
+label
+help text
+error
+disabled
+required
+loading where relevant
+
+Use accessible labels.
+
+Focus state:
+
+visible
+keyboard accessible
+brand-consistent
+
+============================================================
+17. CARD SYSTEM
+============================================================
+
+Create a common Card primitive.
+
+Card variants:
+
+Default
+Soft
+Interactive
+Selected
+Danger
+Dark
+
+Reference style:
+
+- white surfaces
+- subtle borders
+- rounded corners
+- clean spacing
+- restrained shadow
+
+Do not overuse shadows.
+
+============================================================
+18. STATUS BADGES
+============================================================
+
+Create a reusable status system.
+
+Future backend statuses include concepts such as:
+
+draft
+submitted
+matched
+accepted
+rejected
+cancelled
+in_progress
+completed
+
+The UI must not invent backend statuses.
+
+Create a mapping layer:
+
+backend status
+→ visual variant
+→ translated label
+
+Never hardcode status color logic into individual pages.
+
+============================================================
+19. LOADING / ERROR / EMPTY STATES
+============================================================
+
+Every future API-driven screen must be able to use:
+
+LoadingState
+Skeleton
+EmptyState
+ErrorState
+
+Create these foundations now.
+
+Examples:
+
+Loading:
+skeleton cards
+
+Empty:
+icon
+title
+description
+optional CTA
+
+Error:
+title
+human-readable message
+Retry button
+
+Never display raw backend errors directly to users.
+
+============================================================
+20. TOAST SYSTEM
+============================================================
+
+Implement a centralized toast system.
+
+Support:
+
+success
+info
+warning
+error
+
+Requirements:
+
+- accessible
+- dismissible
+- auto-dismiss where appropriate
+- multiple toasts handled cleanly
+- mobile friendly
+- does not block the entire application
+
+Do not implement separate toast logic in every page.
+
+============================================================
+21. MODAL / CONFIRMATION SYSTEM
+============================================================
+
+Create reusable:
+
+Modal
+ConfirmDialog
+
+Requirements:
+
+- keyboard accessible
+- Escape handling
+- focus management
+- screen-reader appropriate labeling
+- mobile responsive
+
+This will later be used for:
+
+cancel request
+accept quotation
+logout
+delete draft
+etc.
+
+Do not implement business actions yet.
+
+============================================================
+22. USER MENU
+============================================================
+
+Create a reusable authenticated user menu.
+
+Display:
+
+traveller name
+email where permitted
+profile action
+logout
+
+Do not display sensitive information unnecessarily.
+
+Logout must connect to the existing authentication system once auth integration is wired.
+
+If logout is already implemented, preserve it.
+
+============================================================
+23. NOTIFICATION BUTTON
+============================================================
+
+Create:
+
+NotificationButton
+
+Visual:
+
+bell icon
+optional unread count badge
+
+The component should be reusable even if real notification API integration is implemented in a later phase.
+
+Do not create fake unread counts.
+
+Support:
+
+count = 0
+count > 0
+large counts
+
+Example:
+
+9+
+99+
+
+============================================================
+24. LANGUAGE SWITCHER
+============================================================
+
+The project supports:
+
+English
+Turkish
+
+Use the existing @troublefree/i18n system.
+
+Do not create a second translation mechanism.
+
+Language switcher must:
+
+- read current locale
+- update locale
+- persist according to the existing i18n architecture
+- support mobile
+- remain keyboard accessible
+
+Do not hardcode language-dependent UI text into the shell.
+
+============================================================
+25. ICONS
+============================================================
+
+Inspect the existing project and reuse the existing icon library if one exists.
+
+Do not add another icon dependency without justification.
+
+Icons must:
+
+- have consistent sizes
+- have accessible labels when interactive
+- not carry the only meaning of a control
+
+============================================================
+26. LOGO / BRAND ASSET
+============================================================
+
+Inspect the repository for the real Troublefree Holiday logo.
+
+Do not recreate or approximate the logo using text if a proper project asset already exists.
+
+Do not extract and embed the huge base64 image from the reference HTML unless no proper asset exists.
+
+Preferred:
+
+SVG
+PNG
+WebP
+
+Use an appropriate responsive logo variant if available.
+
+============================================================
+27. PUBLIC WEBSITE COMPATIBILITY
+============================================================
+
+Existing public pages must remain functional.
+
+At minimum verify:
+
+/
+ /destinations
+ /destinations/:slug
+ /travel-guide
+ /travel-guide/:slug
+ /agencies
+ /agencies/:id
+ /about
+ /contact
+ /login
+ /register
+
+Do NOT regress these pages.
+
+The existing architecture already separates:
+
+PublicLayout
+
+from:
+
+TravellerAppLayout
+
+Preserve this separation.
+
+============================================================
+28. ROUTING
+============================================================
+
+Inspect existing routing.
+
+Do not replace React Router configuration unnecessarily.
+
+Ensure the authenticated route structure remains compatible with:
+
+/plan-trip
+/travel-requests
+/messages
+/jobs
+/profile
+
+Dashboard/home route may be:
+
+/dashboard
+
+only if that matches the existing implementation.
+
+Do not invent route names that conflict with the current application.
+
+============================================================
+29. PROTECTED ROUTES
+============================================================
+
+This phase must preserve existing protected-route behavior.
+
+Unauthenticated user attempting to access authenticated pages should be redirected to:
+
+/login
+
+If redirect-query functionality already exists:
+
+/login?redirect=/plan-trip
+
+preserve it.
+
+Do not duplicate authentication logic.
+
+Use the existing AuthProvider/Auth context if present.
+
+============================================================
+30. API LAYER
+============================================================
+
+This phase is UI foundation only.
+
+Therefore:
+
+Do not invent APIs.
+
+Do not change existing endpoints.
+
+Do not change backend code.
+
+Do not hardcode localhost URLs into components.
+
+Continue using:
+
+@troublefree/api-client
+
+and the existing configuration/environment mechanism.
+
+============================================================
+31. STATE MANAGEMENT
+============================================================
+
+Do not introduce a new state-management library unless the current project already requires it.
+
+Use the project's existing approach.
+
+Global state should be limited to genuinely global concerns such as:
+
+authentication
+locale
+theme if applicable
+global UI feedback
+
+Do not put every component's local state into global state.
+
+============================================================
+32. ACCESSIBILITY
+============================================================
+
+All reusable components must support:
+
+keyboard navigation
+visible focus
+proper button semantics
+proper link semantics
+form labels
+ARIA only where necessary
+aria-current
+aria-expanded
+aria-pressed
+dialog semantics
+focus management
+
+Do not use clickable divs when a button/link should be used.
+
+============================================================
+33. PRODUCTION QUALITY
+============================================================
+
+Code must be:
+
+clean
+modular
+readable
+maintainable
+responsive
+accessible
+typed consistently with the existing project conventions
+lint-clean
+formatted
+testable
+
+Avoid:
+
+magic numbers
+duplicate CSS
+duplicate components
+dead code
+console.log debugging
+temporary hacks
+TODO placeholders
+commented-out obsolete code
+
+============================================================
+34. PERFORMANCE
+============================================================
+
+Keep the portal lightweight.
+
+Avoid:
+
+large unnecessary dependencies
+duplicate libraries
+unnecessary rerenders
+huge image assets
+unoptimized imports
+
+Use:
+
+lazy loading for route-level screens where appropriate
+memoization only where actually beneficial
+CSS rather than JS for visual effects where possible
+
+Do not over-engineer.
+
+============================================================
+35. DESIGN DETAILS
+============================================================
+
+The final UI must feel:
+
+modern
+clean
+premium
+trustworthy
+travel-oriented
+professional
+lightweight
+
+Visual characteristics:
+
+- generous whitespace
+- strong hierarchy
+- dark green brand header/sidebar
+- orange primary actions
+- warm white background
+- subtle borders
+- rounded cards
+- restrained shadows
+- high readability
+
+Avoid:
+
+neon colors
+excessive gradients
+glassmorphism everywhere
+overly rounded cartoon interfaces
+excessive animation
+heavy shadows
+crowded dashboards
+
+============================================================
+36. ANIMATION
+============================================================
+
+Use subtle animation only.
+
+Allowed:
+
+fade
+slide
+small scale on hover
+skeleton shimmer
+
+Keep transitions around:
+
+150–250ms
+
+Respect:
+
+prefers-reduced-motion
+
+============================================================
+37. ERROR BOUNDARY
+============================================================
+
+Verify whether the application already has a React Error Boundary.
+
+If not, implement a production-ready ErrorBoundary around the Traveller application.
+
+It must:
+
+- prevent complete application crash
+- display friendly fallback
+- provide reload/retry action
+- avoid exposing stack traces to users
+
+============================================================
+38. GLOBAL CSS
+============================================================
+
+Centralize:
+
+box-sizing
+body
+html
+button
+input
+textarea
+select
+anchor defaults
+focus behavior
+scrollbar where appropriate
+selection
+responsive helpers
+
+Avoid global selectors that could unexpectedly break the public website.
+
+Scope Traveller-specific styling appropriately.
+
+============================================================
+39. TESTING
+============================================================
+
+Add/update tests for Phase 1.
+
+At minimum verify:
+
+1. Application renders.
+2. Public layout remains accessible.
+3. Traveller authenticated layout renders.
+4. Sidebar navigation renders.
+5. Mobile navigation renders.
+6. Active navigation item works.
+7. User menu renders.
+8. Notification button renders.
+9. Language switcher works.
+10. Button variants render correctly.
+11. Form controls render correctly.
+12. Status badges map correctly.
+13. Loading state renders.
+14. Empty state renders.
+15. Error state renders.
+16. Modal opens/closes.
+17. Confirmation dialog works.
+18. Responsive classes/layout do not introduce overflow.
+19. Protected routes remain protected.
+20. Existing authentication tests continue passing.
+
+Do NOT remove existing tests.
+
+============================================================
+40. RESPONSIVE QA
+============================================================
+
+Explicitly verify the Traveller portal at:
+
+360x800
+390x844
+412x915
+768x1024
+1024x768
+1280x800
+1440x900
+
+Check:
+
+- no horizontal scroll
+- sidebar behavior
+- mobile bottom navigation
+- header
+- cards
+- buttons
+- forms
+- dialogs
+- typography
+- spacing
+
+============================================================
+41. VISUAL QA AGAINST REFERENCE
+============================================================
+
+Compare implementation against:
+
+quotemetrip-traveller (4) (3).html
+
+Check:
+
+- colors
+- typography
+- card radius
+- borders
+- button shape
+- navigation hierarchy
+- sidebar appearance
+- responsive behavior
+- mobile navigation
+- spacing
+- section hierarchy
+
+Do not blindly copy HTML.
+
+Convert the design into reusable React components.
+
+============================================================
+42. DO NOT IMPLEMENT IN THIS PHASE
+============================================================
+
+Do NOT implement new business functionality such as:
+
+- route calculation
+- map integration
+- travel request submission
+- quotation creation
+- quotation acceptance
+- messaging business logic
+- Socket.IO business logic
+- job status updates
+- rating submission
+- weather API
+- Travel Guide API
+- agency matching
+- payment
+- admin functionality
+
+These belong to later phases.
+
+If some of these already exist, preserve them and ensure Phase 1 does not break them.
+
+============================================================
+43. DO NOT MODIFY BACKEND
+============================================================
+
+Do not change:
+
+Express routes
+Sequelize models
+MySQL schema
+authentication logic
+RBAC logic
+JWT structure
+Socket.IO server
+backend environment variables
+
+unless absolutely required to fix a direct frontend integration regression.
+
+If such a backend change appears necessary, STOP and report the exact reason before changing it.
+
+============================================================
+44. NO FAKE DATA
+============================================================
+
+Do not invent:
+
+fake quotations
+fake notification counts
+fake traveller statistics
+fake jobs
+fake agency data
+fake API responses
+
+For visual testing, use the existing controlled mock data only where the application already has an established mock-data boundary.
+
+Do not introduce permanent fake business data.
+
+============================================================
+45. IMPLEMENTATION PROCESS
+============================================================
+
+Follow this sequence:
+
+STEP 1
+Inspect existing codebase.
+
+STEP 2
+Create a concise implementation plan based on actual existing files.
+
+STEP 3
+Identify reusable components.
+
+STEP 4
+Implement/normalize design tokens.
+
+STEP 5
+Implement reusable UI primitives.
+
+STEP 6
+Implement TravellerAppLayout.
+
+STEP 7
+Implement desktop header/sidebar.
+
+STEP 8
+Implement mobile header/bottom navigation.
+
+STEP 9
+Implement common states:
+loading
+empty
+error
+skeleton
+
+STEP 10
+Implement toast/modal/dialog infrastructure.
+
+STEP 11
+Verify routing/protected-route compatibility.
+
+STEP 12
+Add/update tests.
+
+STEP 13
+Run lint.
+
+STEP 14
+Run formatting check.
+
+STEP 15
+Run tests.
+
+STEP 16
+Run production build.
+
+STEP 17
+Perform responsive QA.
+
+STEP 18
+Perform visual comparison against reference.
+
+============================================================
+46. ACCEPTANCE CRITERIA
+============================================================
+
+Phase 1 is COMPLETE only when ALL are true:
+
+[ ] Existing repository inspected.
+[ ] Existing architecture preserved.
+[ ] Design tokens centralized.
+[ ] Typography centralized.
+[ ] Traveller shell implemented.
+[ ] Desktop header complete.
+[ ] Desktop sidebar complete.
+[ ] Mobile header complete.
+[ ] Mobile navigation complete.
+[ ] Page container complete.
+[ ] PageHeader complete.
+[ ] Breadcrumb infrastructure complete.
+[ ] Button system complete.
+[ ] Form system complete.
+[ ] Card system complete.
+[ ] Badge/status system complete.
+[ ] Tabs/segmented-control complete.
+[ ] Stepper foundation complete.
+[ ] User menu complete.
+[ ] Notification button complete.
+[ ] Toast system complete.
+[ ] Modal system complete.
+[ ] Confirm dialog complete.
+[ ] Loading state complete.
+[ ] Skeleton state complete.
+[ ] Empty state complete.
+[ ] Error state complete.
+[ ] Error boundary complete.
+[ ] i18n compatibility preserved.
+[ ] Auth compatibility preserved.
+[ ] Protected-route compatibility preserved.
+[ ] Public website not broken.
+[ ] No API contract changed.
+[ ] No backend code modified.
+[ ] No duplicate libraries unnecessarily added.
+[ ] No permanent mock business data introduced.
+[ ] No TODOs left within Phase 1 scope.
+[ ] Responsive at 360px.
+[ ] Responsive at 390px.
+[ ] Responsive at 412px.
+[ ] Responsive at 768px.
+[ ] Responsive at 1024px.
+[ ] Responsive at 1280px.
+[ ] Responsive at 1440px.
+[ ] No horizontal overflow.
+[ ] Accessibility basics implemented.
+[ ] Existing tests still pass.
+[ ] New Phase 1 tests pass.
+[ ] Lint passes.
+[ ] Format check passes.
+[ ] Production build passes.
+
+============================================================
+47. REQUIRED FINAL REPORT
+============================================================
+
+After implementation, DO NOT simply say "done".
+
+Return a structured report:
+
+1. Files created
+2. Files modified
+3. Components created
+4. Components reused
+5. Design tokens added/changed
+6. Routing changes
+7. Authentication compatibility verification
+8. Public website compatibility verification
+9. Tests added
+10. Test result
+11. Lint result
+12. Format result
+13. Build result
+14. Responsive QA result
+15. Accessibility QA result
+16. Any warnings/issues
+17. Any remaining work explicitly belonging to Phase 2
+
+For every issue, specify:
+
+- file
+- problem
+- impact
+- recommended next action
+
+Do not hide warnings.
+
+============================================================
+48. PHASE 2 HANDOFF
+============================================================
+
+At the end, clearly state:
+
+"PHASE 1 COMPLETE"
+
+Then provide the exact foundation now available for Phase 2.
+
+Phase 2 will build the Traveller authentication experience and account/profile workflow on top of this foundation.
+
+Do not implement Phase 2 during this task.
+
+============================================================
+FINAL RULE
+============================================================
+
+QUALITY OVER SPEED.
+
+Do not rush through the implementation.
+
+Inspect first.
+Reuse existing architecture.
+Preserve working code.
+Implement systematically.
+Test everything.
+Fix regressions before declaring completion.
+
+The uploaded HTML is the visual reference.
+
+The existing Troublefree Holiday backend/API architecture is the functional source of truth.
+
+The existing repository is the implementation source of truth.
+
+Do not replace one with another.
+
+Begin by auditing the repository before making any changes.
