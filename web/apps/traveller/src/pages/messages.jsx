@@ -1,9 +1,8 @@
-// Traveller conversation list (Phase 6).
-
 import { useEffect, useState } from 'react';
 import { messagingApi } from '../lib/api.js';
 import { ConversationList } from '@troublefree/ui';
 import { ConversationCard } from '../components/Phase6.jsx';
+import { MotionPage } from '../components/motion/MotionPage.jsx';
 
 export function MessagesPage() {
   const [conversations, setConversations] = useState([]);
@@ -25,18 +24,20 @@ export function MessagesPage() {
   }, []);
 
   return (
-    <main className="tf-page">
-      <h1>Messages</h1>
-      {error && <p role="alert">{error}</p>}
-      {conversations.length > 0 ? (
-        <ul className="tf-list" aria-label="Conversations">
-          {conversations.map((conversation) => (
-            <ConversationCard key={conversation.id} conversation={conversation} />
-          ))}
-        </ul>
-      ) : (
-        <ConversationList conversations={conversations} />
-      )}
-    </main>
+    <MotionPage>
+      <main className="tf-page">
+        <h1>Messages</h1>
+        {error && <p role="alert">{error}</p>}
+        {conversations.length > 0 ? (
+          <ul className="tf-list" aria-label="Conversations">
+            {conversations.map((conversation) => (
+              <ConversationCard key={conversation.id} conversation={conversation} />
+            ))}
+          </ul>
+        ) : (
+          <ConversationList conversations={conversations} />
+        )}
+      </main>
+    </MotionPage>
   );
 }

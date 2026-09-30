@@ -57,6 +57,7 @@ export function toPublicRequest(request, { profile = null } = {}) {
     guideRequired: request.guideRequired,
     driverRequired: request.driverRequired,
     packageType: request.packageType,
+    cruiseDuration: request.cruiseDuration ?? null,
     specialRequests: request.specialRequests,
     submittedAt: request.submittedAt,
     route: request.route ? toPublicRoute(request.route) : undefined,
@@ -169,6 +170,7 @@ export async function createRequest(travellerId, input, { role = null } = {}) {
         guideRequired: input.guideRequired ?? false,
         driverRequired: input.driverRequired ?? false,
         packageType: input.packageType ?? null,
+        cruiseDuration: input.cruiseDuration ?? null,
         specialRequests: input.specialRequests ?? null,
       },
       { transaction: t },
@@ -245,6 +247,7 @@ export async function patchRequest(travellerId, requestId, patch, { role = null 
       'guideRequired',
       'driverRequired',
       'packageType',
+      'cruiseDuration',
       'specialRequests',
     ]) {
       if (patch[key] !== undefined) updatable[key] = patch[key];

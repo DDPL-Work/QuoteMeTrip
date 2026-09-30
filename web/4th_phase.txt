@@ -1,0 +1,3322 @@
+============================================================
+TROUBLEFREE HOLIDAY
+PHASE 4 MASTER DEVELOPMENT PROMPT
+TRAVELLER TRAVEL REQUEST ENGINE
+ROUTE-FIRST TRIP PLANNING
+============================================================
+
+ROLE
+============================================================
+
+You are the Lead Frontend Architect, Senior React Engineer,
+UX Engineer, API Integration Engineer, Accessibility Engineer,
+and QA Engineer for the Troublefree Holiday platform.
+
+PHASE 1:
+Traveller Portal Foundation + Design System + App Shell
+
+STATUS:
+COMPLETE
+
+PHASE 2:
+Traveller Authentication + Profile
+
+STATUS:
+COMPLETE
+
+PHASE 3:
+Traveller Dashboard / Authenticated Home
+
+STATUS:
+COMPLETE
+
+PHASE 4:
+TRAVELLER TRAVEL REQUEST ENGINE
+
+NOW START THIS PHASE.
+
+============================================================
+1. PHASE 4 OBJECTIVE
+============================================================
+
+Build the complete Traveller travel-planning and travel-request engine.
+
+The workflow must be ROUTE-FIRST.
+
+The Traveller should not begin by filling a large generic form.
+
+Correct flow:
+
+Traveller
+    ↓
+Choose route
+    ↓
+Select start destination
+    ↓
+Add intermediate stops
+    ↓
+Select final destination
+    ↓
+Arrange stop order
+    ↓
+Calculate route
+    ↓
+Show distance
+    ↓
+Show estimated travel time
+    ↓
+Show recommended travel duration
+    ↓
+Save route
+    ↓
+Automatically transfer route information into request
+    ↓
+Enter travel details
+    ↓
+Configure day-by-day preferences
+    ↓
+Review complete request
+    ↓
+Create/save draft
+    ↓
+Submit request
+
+This directly follows the project's route-first travel planning
+requirement.
+
+============================================================
+2. FUNCTIONAL SOURCE OF TRUTH
+============================================================
+
+The existing backend/API is the functional source of truth.
+
+Do not invent API endpoints.
+
+Existing route API:
+
+POST   /api/v1/routes/calculate
+POST   /api/v1/routes
+GET    /api/v1/routes/:id
+PATCH  /api/v1/routes/:id
+DELETE /api/v1/routes/:id
+
+Existing Traveller travel-request API:
+
+POST   /api/v1/travel-requests
+GET    /api/v1/travel-requests
+GET    /api/v1/travel-requests/:id
+PATCH  /api/v1/travel-requests/:id
+POST   /api/v1/travel-requests/:id/submit
+POST   /api/v1/travel-requests/:id/cancel
+POST   /api/v1/travel-requests/:id/days
+PATCH  /api/v1/travel-requests/:id/days/:dayId
+DELETE /api/v1/travel-requests/:id/days/:dayId
+
+Before implementation:
+
+INSPECT THE ACTUAL BACKEND SCHEMAS,
+VALIDATORS,
+CONTROLLERS,
+SERVICES,
+SERIALIZERS,
+API CLIENT,
+AND EXISTING FRONTEND SERVICE LAYER.
+
+Do not invent payload fields.
+
+Do not invent response properties.
+
+============================================================
+3. BUSINESS REQUIREMENT
+============================================================
+
+The approved project workflow requires:
+
+1. Route selection.
+2. Automatic route calculation.
+3. Automatic distance calculation.
+4. Automatic travel-time calculation.
+5. Recommended number of days.
+6. Traveller may modify the recommended duration.
+7. Route data automatically transfers into the request form.
+8. Day-by-day planning.
+9. Hotel preference.
+10. Guide preference.
+11. Driver preference.
+12. Hotel class preference where supported.
+13. Number of travellers.
+14. Number of luggage pieces.
+15. Service scope.
+16. Special requests/notes.
+17. Save as draft.
+18. Review.
+19. Submit request.
+
+The member's profile information should be reused rather than manually
+re-entered when the backend already provides that information.
+
+============================================================
+4. PHASE 4 BOUNDARY
+============================================================
+
+IMPLEMENT:
+
+- route planning UI
+- map UI
+- stop management
+- stop ordering
+- route calculation
+- route persistence
+- route editing
+- route deletion where appropriate
+- request draft creation
+- request draft editing
+- day-by-day planning
+- request details
+- review
+- request submission
+- request cancellation where appropriate from the request UI
+- save/resume workflow
+- validation
+- loading/error/empty states
+- responsive UX
+- i18n
+- accessibility
+- real API integration
+- tests
+
+DO NOT IMPLEMENT:
+
+- agency matching UI/business logic
+- quotation comparison
+- quotation acceptance
+- messaging business workflow
+- jobs workflow
+- payments
+- ratings
+- weather
+- AI recommendations
+- Travel Guide recommendation engine
+- advanced route optimization
+- multi-stop optimization beyond the existing backend capability
+
+These belong to later phases.
+
+============================================================
+5. VISUAL SOURCE OF TRUTH
+============================================================
+
+Use:
+
+quotemetrip-traveller (4) (3).html
+
+as the primary visual reference.
+
+Maintain:
+
+Deep green:
+#0C4E28
+
+Green:
+#147D33
+
+Green soft:
+#E5F2EA
+
+Orange:
+#FC7C00
+
+Orange hover:
+#E37000
+
+Warm background:
+#FFFBF3
+
+White:
+#FFFFFF
+
+Primary text:
+#13291C
+
+Muted:
+#4E5754
+
+Borders:
+#E2DCD1
+#D5CDBF
+
+Typography:
+
+Poppins
+DM Sans
+
+The route planner should visually resemble a premium travel-planning
+application rather than a generic CRUD form.
+
+============================================================
+6. ICON RULE — MANDATORY
+============================================================
+
+UI icons:
+
+USE react-icons.
+
+Examples:
+
+location
+map
+calendar
+users
+luggage
+hotel
+guide
+driver
+edit
+delete
+add
+remove
+drag
+arrow
+check
+warning
+info
+close
+back
+next
+
+Use the existing project icon wrapper if Phase 3 established one.
+
+DO NOT use:
+
+emoji
+Unicode UI icons
+random inline icon SVGs
+
+for standard interface controls.
+
+============================================================
+7. REFERENCE SVG RULE — MANDATORY
+============================================================
+
+The supplied reference HTML contains custom SVG artwork.
+
+Where Phase 4 needs explanatory/illustrative artwork:
+
+USE the reference SVG design.
+
+Examples:
+
+- itinerary illustration
+- route illustration
+- planning illustration
+- day-by-day illustration
+
+Do not replace complete visual artwork with react-icons.
+
+Correct:
+
+UI control → react-icons
+
+Illustration → reference SVG
+
+============================================================
+8. START BY AUDITING THE REPOSITORY
+============================================================
+
+Before changing files inspect:
+
+web/apps/traveller
+web/packages/ui
+web/packages/api-client
+web/packages/types
+web/packages/i18n
+web/packages/config
+
+Specifically locate:
+
+existing PlanTripPage
+existing route planner
+existing route API
+existing travel request API
+existing route hooks
+existing request hooks
+existing request detail pages
+existing forms
+existing map components
+existing location/search components
+existing date controls
+
+Also inspect:
+
+package.json
+Vite configuration
+router
+environment configuration
+API client
+types
+tests
+
+Reuse existing code wherever possible.
+
+Do not create duplicate route/request services.
+
+============================================================
+9. IMPLEMENTATION ARCHITECTURE
+============================================================
+
+Recommended structure:
+
+features/
+  route-planner/
+    components/
+      RoutePlanner.jsx
+      StopList.jsx
+      StopItem.jsx
+      RouteMap.jsx
+      RouteSummary.jsx
+      RouteCalculationCard.jsx
+    hooks/
+      useRoutePlanner.js
+    services/
+      route-api.js
+    utils/
+      route-utils.js
+      route-validation.js
+
+  travel-requests/
+    components/
+      RequestWizard.jsx
+      TravelDetailsForm.jsx
+      DayPlanner.jsx
+      DayCard.jsx
+      RequestReview.jsx
+      RequestSummary.jsx
+    hooks/
+      useTravelRequest.js
+      useRequestDraft.js
+    services/
+      travel-request-api.js
+    utils/
+      request-validation.js
+      request-mappers.js
+
+pages/
+  PlanTripPage.jsx
+  TravelRequestPage.jsx
+  TravelRequestReviewPage.jsx
+  TravelRequestDetailPage.jsx
+
+Use actual repository conventions if different.
+
+============================================================
+10. CORE USER EXPERIENCE
+============================================================
+
+The Traveller should enter:
+
+Plan My Trip
+
+and see:
+
+------------------------------------------------------------
+STEP 1 — YOUR ROUTE
+------------------------------------------------------------
+
+Start
+Intermediate stops
+Final destination
+
+[ Calculate Route ]
+
+------------------------------------------------------------
+STEP 2 — ROUTE SUMMARY
+------------------------------------------------------------
+
+Total distance
+Estimated travel time
+Recommended days
+
+------------------------------------------------------------
+STEP 3 — TRIP DETAILS
+------------------------------------------------------------
+
+Dates
+Travellers
+Luggage
+Service scope
+Special requests
+
+------------------------------------------------------------
+STEP 4 — DAY-BY-DAY PLAN
+------------------------------------------------------------
+
+Day 1
+Day 2
+Day 3
+...
+
+------------------------------------------------------------
+STEP 5 — REVIEW
+------------------------------------------------------------
+
+Complete request
+
+[ Save draft ]
+[ Submit request ]
+------------------------------------------------------------
+
+============================================================
+11. ROUTE-FIRST RULE
+============================================================
+
+Do not show the complete request form before a valid route has been
+created/calculated unless the existing product UX explicitly supports
+an alternative route suggestion flow.
+
+Primary flow:
+
+ROUTE
+→ CALCULATE
+→ SAVE
+→ REQUEST DETAILS
+
+============================================================
+12. START DESTINATION
+============================================================
+
+Provide a destination/location input.
+
+Requirements:
+
+- accessible
+- keyboard usable
+- mobile usable
+- location icon from react-icons
+- clear selected state
+- validation
+
+Use the existing location/map provider already configured in the
+project.
+
+Do NOT add a new map/location provider without inspecting existing
+configuration first.
+
+============================================================
+13. INTERMEDIATE STOPS
+============================================================
+
+Traveller must be able to:
+
+ADD stop
+REMOVE stop
+REORDER stop
+
+Visual example:
+
+START
+Istanbul
+
+↓
+STOP 1
+Cappadocia
+
+↓
+STOP 2
+Antalya
+
+↓
+FINAL
+Izmir
+
+Provide:
+
+[ + Add stop ]
+
+Each stop should have:
+
+- destination
+- ordering position
+- remove action
+- drag/reorder capability if implemented
+- accessible controls
+
+Do not permit invalid duplicate/empty stops where backend rules reject
+them.
+
+============================================================
+14. FINAL DESTINATION
+============================================================
+
+Final destination is distinct from intermediate stops.
+
+Clearly label:
+
+START
+INTERMEDIATE STOPS
+FINAL DESTINATION
+
+Do not infer final destination merely from array order in the UI if the
+backend has explicit stop roles.
+
+Use the backend's actual route-stop model.
+
+============================================================
+15. STOP ORDERING
+============================================================
+
+Support explicit ordering.
+
+Preferred:
+
+drag and drop
+
+with keyboard-accessible alternatives.
+
+If the project already has a sortable implementation:
+reuse it.
+
+Do not install another drag-and-drop library without justification.
+
+At minimum provide:
+
+Move up
+Move down
+
+for keyboard/mobile accessibility if drag-and-drop is used.
+
+============================================================
+16. ROUTE VALIDATION
+============================================================
+
+Before calculation:
+
+[ ] start destination valid
+[ ] required destination data present
+[ ] final destination valid
+[ ] route has enough stops for backend requirements
+[ ] invalid duplicate route selections handled
+[ ] coordinates/location identifiers valid where required
+
+Do not allow:
+
+empty route submission
+invalid coordinates
+malformed destination object
+
+============================================================
+17. ROUTE CALCULATION
+============================================================
+
+Use:
+
+POST /api/v1/routes/calculate
+
+Do not calculate:
+
+distance
+duration
+recommended days
+
+locally unless the existing backend explicitly requires client-side
+calculation for a specific UI purpose.
+
+Backend is authoritative.
+
+While calculating:
+
+disable calculate button
+show loading state
+keep route visible
+
+Example:
+
+Calculating your route...
+
+Do not clear the user's selected stops during calculation.
+
+============================================================
+18. ROUTE RESULT
+============================================================
+
+After successful calculation show:
+
+Route preview
+Total distance
+Estimated travel time
+Recommended number of days
+
+Example:
+
+Route calculated
+
+Istanbul
+↓
+Cappadocia
+↓
+Antalya
+
+1,231 km
+18h 30m
+Recommended: 5 days
+
+Use actual API response values.
+
+Do not hardcode example values in production.
+
+============================================================
+19. ROUTE MAP
+============================================================
+
+Display the calculated route on a map where supported by the existing
+route response/provider.
+
+Show:
+
+start marker
+intermediate stop markers
+final marker
+route line
+
+The visual should clearly communicate route order.
+
+If backend returns route geometry:
+render it.
+
+Do not rederive geometry unnecessarily.
+
+============================================================
+20. MAP RESPONSIVENESS
+============================================================
+
+Desktop:
+
+Map can occupy a larger portion of the planner screen.
+
+Mobile:
+
+Map should remain usable without consuming the entire screen.
+
+Support:
+
+360px
+390px
+412px
+768px
+1024px
+1280px
+1440px
+
+No horizontal overflow.
+
+============================================================
+21. ROUTE SUMMARY CARD
+============================================================
+
+Create reusable:
+
+RouteSummaryCard
+
+Display:
+
+distance
+duration
+recommended days
+number of stops
+
+Only show values returned by backend.
+
+Do not fabricate data.
+
+============================================================
+22. RECOMMENDED DAYS
+============================================================
+
+The backend calculates recommended duration.
+
+The Traveller may modify the recommended duration.
+
+UI should distinguish:
+
+Recommended:
+5 days
+
+Your trip:
+7 days
+
+or equivalent.
+
+Do not overwrite the server-calculated recommendation.
+
+Store user-selected duration according to actual request schema.
+
+============================================================
+23. SAVE ROUTE
+============================================================
+
+Use:
+
+POST /api/v1/routes
+
+when the user chooses to persist the route.
+
+The payload must exactly match the backend schema.
+
+On success:
+
+- store route ID
+- preserve route details
+- advance to travel-request stage
+- avoid duplicate route creation
+
+Do not POST repeatedly on rerender.
+
+============================================================
+24. EXISTING ROUTE EDIT
+============================================================
+
+If Traveller is editing a saved route:
+
+GET /api/v1/routes/:id
+
+must hydrate the planner.
+
+PATCH /api/v1/routes/:id
+
+must persist route changes.
+
+Do not create a second route every time the user edits.
+
+============================================================
+25. ROUTE DELETE
+============================================================
+
+If the UX allows deleting a saved route:
+
+DELETE /api/v1/routes/:id
+
+Use a confirmation dialog.
+
+Do not delete automatically because of navigation.
+
+============================================================
+26. TRAVEL REQUEST DRAFT
+============================================================
+
+The request engine must support:
+
+draft creation
+draft editing
+draft resumption
+
+Use:
+
+POST /api/v1/travel-requests
+
+to create a draft.
+
+Use:
+
+PATCH /api/v1/travel-requests/:id
+
+to update the draft.
+
+Use:
+
+GET /api/v1/travel-requests/:id
+
+to resume an existing request.
+
+Do not create duplicate drafts unintentionally.
+
+============================================================
+27. ROUTE → REQUEST AUTO POPULATION
+============================================================
+
+Once route is saved:
+
+automatically populate request context with:
+
+route
+stop order
+distance
+duration
+recommended days where applicable
+destination information
+number of days where supported
+
+The Traveller should NOT manually re-enter route data.
+
+============================================================
+28. TRIP DATES
+============================================================
+
+Implement:
+
+travel start date
+travel end date
+
+using the existing backend field names/schema.
+
+Validate:
+
+start date exists when required
+end date exists when required
+end >= start
+
+Handle flexible dates only if the backend actually supports a flexible
+date representation.
+
+Do not invent a boolean field such as:
+
+datesFlexible
+
+unless it exists in the backend contract.
+
+============================================================
+29. DATE VALIDATION
+============================================================
+
+Prevent impossible selections.
+
+Examples:
+
+end before start
+invalid date
+empty date where required
+
+Provide accessible field-level error messages.
+
+Use localized date formatting.
+
+============================================================
+30. NUMBER OF TRAVELLERS
+============================================================
+
+Implement Traveller count.
+
+Use actual backend validation bounds.
+
+Do not invent limits.
+
+Support easy:
+
+increment
+decrement
+
+controls where appropriate.
+
+Buttons must use react-icons.
+
+============================================================
+31. LUGGAGE
+============================================================
+
+Implement luggage count if supported by the backend request schema.
+
+Use the actual field name and validation.
+
+Provide:
+
+increment
+decrement
+
+Do not accept negative values.
+
+============================================================
+32. SERVICE SCOPE
+============================================================
+
+The project requirement includes service scope concepts such as:
+
+hotel only
+vehicle + driver only
+full package
+
+The reference UI also presents service categories such as:
+
+Full package
+Hotel only
+Vehicle + driver
+Guide & activities
+
+IMPORTANT:
+
+Inspect the actual backend enum/schema before implementing these exact
+values.
+
+The frontend must map:
+
+UI label
+→ backend value
+
+Do not send display labels directly if backend expects enum values.
+
+Do not invent an enum value that the backend does not support.
+
+============================================================
+33. HOTEL REQUIREMENT
+============================================================
+
+Where supported:
+
+hotel required
+
+Use the actual backend field/schema.
+
+Do not create duplicate hotel-selection systems.
+
+============================================================
+34. GUIDE REQUIREMENT
+============================================================
+
+Where supported:
+
+guide required
+
+Use actual backend field/schema.
+
+Do not invent a new guide data model in the Traveller frontend.
+
+============================================================
+35. DRIVER REQUIREMENT
+============================================================
+
+Where supported:
+
+driver required
+
+Use actual backend field/schema.
+
+============================================================
+36. HOTEL CLASS
+============================================================
+
+Project requirements mention:
+
+3-star
+4-star
+5-star
+S Class
+
+Implement only if the current backend/request/day schema supports
+hotel class.
+
+If backend does not expose this in the Phase 4 contract:
+
+do not fake persistence.
+
+Report as:
+
+BACKEND CAPABILITY GAP
+
+============================================================
+37. SPECIAL REQUESTS
+============================================================
+
+Provide a notes/special-requests textarea if supported by the actual
+request schema.
+
+Use:
+
+safe text input
+character limit where backend supports/defines one
+remaining character count if useful
+
+Do not expose raw HTML.
+
+Do not allow arbitrary unsafe HTML.
+
+============================================================
+38. PROFILE AUTOFILL
+============================================================
+
+Use Phase 2 profile/authentication data.
+
+Traveller information that already exists in profile should be reused.
+
+Do not ask again for:
+
+name
+email
+phone/WhatsApp
+
+when the backend already provides them from the Traveller profile.
+
+Do not make the Traveller edit authentication identity through the
+request form.
+
+============================================================
+39. DAY-BY-DAY PLANNING
+============================================================
+
+Implement the day planner.
+
+Each day should support, where the actual backend schema allows:
+
+date
+destination
+activity
+guide
+hotel
+hotel class
+other supported day-level preferences
+
+The product requirement says that each destination/day can specify:
+
+- accommodation preference
+- hotel class
+- hotel
+- guide
+- driver
+
+Do not invent fields that are not represented by the backend.
+
+============================================================
+40. DAY CARD
+============================================================
+
+Create:
+
+DayCard
+
+Example:
+
+DAY 1
+01 Oct
+
+Istanbul
+
+Activity
+[ City tour                     ]
+
+Hotel
+[ 4 Star ]
+
+☑ Hotel
+☐ Guide
+☑ Driver
+
+[ Edit ]
+[ Remove ]
+
+Use react-icons for controls.
+
+============================================================
+41. ADD DAY
+============================================================
+
+Use:
+
+POST /api/v1/travel-requests/:id/days
+
+to add a day.
+
+Do not add a day only to local state and forget persistence.
+
+After successful API response:
+
+update local state.
+
+Avoid duplicate creation on double-click.
+
+============================================================
+42. UPDATE DAY
+============================================================
+
+Use:
+
+PATCH /api/v1/travel-requests/:id/days/:dayId
+
+for modifications.
+
+Use loading state per day.
+
+Do not freeze the entire page when editing one day.
+
+============================================================
+43. DELETE DAY
+============================================================
+
+Use:
+
+DELETE /api/v1/travel-requests/:id/days/:dayId
+
+with confirmation if appropriate.
+
+Prevent deletion if the backend/domain rules require a minimum number
+of days.
+
+Do not invent the rule; inspect backend validation.
+
+============================================================
+44. DAY ORDER / DATE ORDER
+============================================================
+
+Days must remain ordered consistently.
+
+Where dates are part of the backend structure:
+
+maintain chronological consistency.
+
+Do not allow:
+
+Day 4 before Day 2
+
+unless the backend explicitly supports arbitrary ordering.
+
+============================================================
+45. EMPTY DAY PLANNER
+============================================================
+
+If there are no day records:
+
+show:
+
+No days planned yet
+
+[ Add first day ]
+
+or the appropriate route-driven initial state.
+
+Do not create fake days.
+
+============================================================
+46. AGENCY-SUGGEST-ROUTE OPTION
+============================================================
+
+The reference/product flow mentions an option allowing the Traveller
+to let agencies suggest the route.
+
+Before implementing:
+
+inspect the actual backend request/schema.
+
+If supported:
+
+implement it as a clear optional setting.
+
+If not supported:
+
+DO NOT create fake persistence.
+
+Report:
+
+"Reference requirement exists but current backend contract does not
+expose a corresponding field."
+
+============================================================
+47. FLEXIBLE DATES OPTION
+============================================================
+
+The reference UI mentions:
+
+"My dates are flexible"
+
+Before implementing:
+
+inspect backend support.
+
+If supported:
+
+implement exactly according to backend schema.
+
+If not:
+
+do not create a non-functional checkbox.
+
+============================================================
+48. DRAFT SAVE STRATEGY
+============================================================
+
+The Traveller must be able to safely leave and continue planning.
+
+Support:
+
+manual Save Draft
+
+and, where compatible with the existing API architecture:
+
+debounced autosave
+
+IMPORTANT:
+
+Do not aggressively PATCH on every keystroke.
+
+Recommended debounce if autosave is implemented:
+
+800–1500 ms
+
+Only autosave when there are meaningful changes.
+
+Do not create duplicate draft requests.
+
+============================================================
+49. SAVE STATUS
+============================================================
+
+Show clear status:
+
+Saved
+Saving...
+Unsaved changes
+Save failed
+
+Do not use vague states.
+
+Avoid unnecessary notification spam for every autosave.
+
+============================================================
+50. RESUME DRAFT
+============================================================
+
+If Traveller opens an existing draft:
+
+GET /api/v1/travel-requests/:id
+
+must hydrate:
+
+route
+trip details
+days
+preferences
+notes
+
+according to actual API response.
+
+Do not reset previously saved data.
+
+============================================================
+51. REQUEST REVIEW
+============================================================
+
+Create a final review screen.
+
+Show:
+
+------------------------------------------------------------
+YOUR ROUTE
+------------------------------------------------------------
+
+Start
+→ Stop
+→ Stop
+→ Final
+
+------------------------------------------------------------
+TRIP DATES
+------------------------------------------------------------
+
+01 Oct 2026 – 05 Oct 2026
+
+------------------------------------------------------------
+TRAVELLERS
+------------------------------------------------------------
+
+4 travellers
+3 bags
+
+------------------------------------------------------------
+SERVICES
+------------------------------------------------------------
+
+Hotel
+Driver
+Guide
+
+------------------------------------------------------------
+DAY PLAN
+------------------------------------------------------------
+
+Day 1
+Day 2
+Day 3
+...
+
+------------------------------------------------------------
+SPECIAL REQUESTS
+------------------------------------------------------------
+
+...
+
+------------------------------------------------------------
+
+[ Save draft ]
+[ Submit request ]
+------------------------------------------------------------
+
+Use actual data only.
+
+============================================================
+52. REVIEW VALIDATION
+============================================================
+
+Before submit:
+
+validate all required backend/business fields.
+
+Do not allow submission if required data is missing.
+
+Display field/section-specific errors.
+
+Do not rely exclusively on backend error after submit when obvious
+client-side validation can prevent it.
+
+============================================================
+53. SUBMIT REQUEST
+============================================================
+
+Use:
+
+POST /api/v1/travel-requests/:id/submit
+
+only after:
+
+- draft exists
+- required information is complete
+- validation passes
+- user explicitly confirms submission
+
+Prevent duplicate submits.
+
+Button:
+
+Submit request
+
+loading:
+
+Submitting...
+
+After success:
+
+show successful submission state.
+
+Navigate to:
+
+request detail
+
+or the appropriate existing request page.
+
+Do not redirect to quotation pages because quotations belong to later
+workflow stages.
+
+============================================================
+54. SUBMISSION CONFIRMATION
+============================================================
+
+Use a clear confirmation screen:
+
+Request submitted
+
+Your travel request has been sent successfully.
+
+Request ID:
+#...
+
+Status:
+Submitted
+
+Next step:
+
+Agencies will review your request and respond through the platform.
+
+Only describe behavior supported by current system.
+
+Do not promise a response time that backend/product requirements do
+not guarantee.
+
+============================================================
+55. CANCEL REQUEST
+============================================================
+
+Where Phase 4 exposes request cancellation for eligible drafts/submitted
+requests:
+
+use:
+
+POST /api/v1/travel-requests/:id/cancel
+
+Only enable according to actual backend status rules.
+
+Do not provide cancellation for unsupported states.
+
+Use confirmation dialog.
+
+============================================================
+56. REQUEST STATUS
+============================================================
+
+Use real backend statuses.
+
+Known domain examples include:
+
+draft
+submitted
+accepted
+cancelled
+
+Do not add:
+
+processing
+waiting
+approved
+
+unless actually supported.
+
+Centralize status mapping.
+
+============================================================
+57. ERROR HANDLING
+============================================================
+
+Handle:
+
+location lookup failure
+route calculation failure
+route save failure
+route load failure
+request creation failure
+request update failure
+day creation failure
+day update failure
+day deletion failure
+request submission failure
+request cancellation failure
+network failure
+401
+403
+422/validation
+500
+
+Do not expose raw backend errors.
+
+Provide:
+
+human-readable message
+Retry
+preserve user input
+
+where possible.
+
+============================================================
+58. TOKEN / SESSION
+============================================================
+
+Use Phase 2 authentication architecture.
+
+Do not introduce a new auth system.
+
+All protected calls use:
+
+existing API client
+existing in-memory access token
+existing refresh mechanism
+
+If token expires during planning:
+
+refresh
+retry once
+continue workflow
+
+Do not lose the user's draft state because of token refresh.
+
+============================================================
+59. UNSAVED DATA PROTECTION
+============================================================
+
+Important:
+
+Route planning and day planning may contain unsaved local changes.
+
+Before leaving with unsaved changes:
+
+warn appropriately.
+
+Do not interrupt navigation if no meaningful changes exist.
+
+If autosave exists:
+
+do not ask unnecessarily when data is already saved.
+
+============================================================
+60. BACK NAVIGATION
+============================================================
+
+Wizard navigation should preserve data.
+
+Example:
+
+Review
+→ Back
+→ Day Planner
+
+must preserve all entered information.
+
+Do not recreate the entire state from zero.
+
+============================================================
+61. STEP NAVIGATION
+============================================================
+
+Create a reusable PlannerStepper.
+
+Example:
+
+1 Route
+2 Trip details
+3 Day plan
+4 Review
+
+States:
+
+completed
+current
+upcoming
+error
+
+Do not allow jumping into a step that requires missing prerequisite
+data unless the workflow explicitly supports it.
+
+============================================================
+62. URL / DEEP LINKING
+============================================================
+
+Where appropriate support:
+
+/plan-trip
+/plan-trip/route
+/plan-trip/details
+/plan-trip/days
+/plan-trip/review
+
+or the existing project's actual routing structure.
+
+Do not create conflicting routes.
+
+A refreshed page should restore the correct draft/request where
+possible.
+
+============================================================
+63. MOBILE WIZARD
+============================================================
+
+Mobile screen:
+
+top step indicator
+content
+sticky/bottom action bar where appropriate
+
+Buttons:
+
+Back
+Next
+Save
+
+must remain visible and usable.
+
+Ensure keyboard does not obscure important controls.
+
+============================================================
+64. DESKTOP WIZARD
+============================================================
+
+Desktop may use:
+
+left content / right summary
+
+or:
+
+map / form
+
+depending on the route stage.
+
+Use the reference design language.
+
+Do not create huge empty whitespace.
+
+============================================================
+65. MAP + FORM LAYOUT
+============================================================
+
+A strong desktop layout is:
+
+------------------------------------------------------------
+| Route editor             | Map                          |
+|                          |                              |
+| Start                    |                              |
+| Stop 1                   |       ROUTE MAP              |
+| Stop 2                   |                              |
+| Final                    |                              |
+|                          |                              |
+| [Calculate route]        |                              |
+------------------------------------------------------------
+
+On mobile:
+
+Map
+↓
+Route list
+↓
+Route summary
+↓
+Actions
+
+or the most usable ordering based on the reference.
+
+============================================================
+66. ROUTE VISUALIZATION
+============================================================
+
+Use actual route geometry if returned.
+
+Display:
+
+markers
+route polyline
+stop labels
+
+Use react-icons for:
+
+start
+location
+remove
+move
+
+if icon representations are needed.
+
+Do not use emojis.
+
+============================================================
+67. LOCATION SEARCH
+============================================================
+
+Inspect existing project/provider.
+
+Potential behavior:
+
+type destination
+→ suggestions
+→ select
+→ coordinates/location ID stored
+
+Do not allow freeform strings into backend if backend expects a
+structured location.
+
+Do not add Google Maps or Mapbox dependency blindly.
+
+Use the provider already established by project architecture.
+
+============================================================
+68. ROUTE CALCULATION DEBOUNCE
+============================================================
+
+Do not calculate route on every keystroke.
+
+Calculation should occur when:
+
+- user explicitly clicks Calculate Route
+OR
+- an existing, intentional debounced workflow already exists.
+
+Explicit calculation is preferred.
+
+============================================================
+69. ROUTE CHANGE INVALIDATION
+============================================================
+
+If Traveller changes:
+
+start
+stop
+final destination
+stop order
+
+the previous route calculation becomes stale.
+
+Visually indicate:
+
+Route changed
+Recalculate route
+
+Do not silently reuse stale distance/duration/geometry.
+
+============================================================
+70. REQUEST DATA INVALIDATION
+============================================================
+
+If route changes after request draft exists:
+
+determine actual backend behavior.
+
+If request requires route replacement:
+
+update using appropriate PATCH flow.
+
+Do not create an unrelated second request.
+
+============================================================
+71. API DATA MAPPING
+============================================================
+
+Create centralized mapping functions where necessary.
+
+Examples:
+
+mapRouteResponse()
+mapStopResponse()
+mapTravelRequestResponse()
+mapDayResponse()
+
+Presentation components should not know backend-specific quirks.
+
+============================================================
+72. NO CLIENT OWNERSHIP TRUST
+============================================================
+
+Do not trust:
+
+travellerId
+ownerId
+userId
+
+from client-controlled route parameters.
+
+The backend determines ownership.
+
+Frontend should send only fields required by API contract.
+
+============================================================
+73. SECURITY
+============================================================
+
+Do not expose:
+
+access token
+refresh token
+cookies
+password
+internal backend errors
+
+in:
+
+console
+UI
+URL
+analytics
+logs
+
+============================================================
+74. API REQUEST DUPLICATION
+============================================================
+
+Avoid duplicate:
+
+route calculation
+route save
+draft creation
+draft update
+day creation
+day update
+submit request
+
+Check:
+
+useEffect
+StrictMode
+onClick
+form onSubmit
+autosave
+API retries
+
+Every write operation must be idempotency-aware at the UI level where
+possible.
+
+============================================================
+75. DOUBLE-SUBMISSION PROTECTION
+============================================================
+
+All write actions:
+
+Calculate
+Save route
+Create draft
+Save draft
+Add day
+Update day
+Delete day
+Submit request
+
+must prevent accidental duplicate clicks.
+
+Use local loading state.
+
+============================================================
+76. DAY AUTOSAVE
+============================================================
+
+If autosave is implemented:
+
+Each day should save independently.
+
+Example:
+
+Day 2 Saving...
+
+Do not show:
+
+whole page Saving...
+
+when only one day is being updated.
+
+============================================================
+77. FIELD VALIDATION
+============================================================
+
+Use the existing project's validation approach.
+
+Validation must be:
+
+consistent
+accessible
+localized
+
+Do not add a second validation library without checking the existing
+stack.
+
+============================================================
+78. FORM ERROR DISPLAY
+============================================================
+
+Each validation error should appear near the relevant control.
+
+Examples:
+
+Start destination is required.
+End date must be on or after the start date.
+Number of travellers must be valid.
+
+Do not display one giant generic:
+
+"Invalid request"
+
+when field-level information is available.
+
+============================================================
+79. API ERROR DISPLAY
+============================================================
+
+Backend error response shape:
+
+{
+  "success": false,
+  "error": {
+    "code": "...",
+    "message": "..."
+  }
+}
+
+Use the existing API client normalization.
+
+Do not parse raw HTTP internals in every page.
+
+============================================================
+80. I18N
+============================================================
+
+Use:
+
+@troublefree/i18n
+
+Languages:
+
+English
+Turkish
+
+Translate all new UI strings.
+
+At minimum:
+
+route
+start destination
+intermediate stops
+final destination
+calculate
+distance
+duration
+recommended days
+trip details
+travel dates
+travellers
+luggage
+hotel
+guide
+driver
+service scope
+special requests
+day plan
+review
+save draft
+submit request
+cancel
+validation messages
+errors
+empty states
+loading states
+success messages
+
+Do not leave hardcoded English throughout JSX.
+
+============================================================
+81. STATUS TRANSLATION
+============================================================
+
+Central mapping:
+
+backend value
+→ translation key
+→ display label
+→ visual variant
+
+Never use backend enum strings directly as final UI copy.
+
+============================================================
+82. REACT ICONS
+============================================================
+
+Use react-icons throughout Phase 4.
+
+Examples:
+
+Route:
+FiMap
+FiMapPin
+FiNavigation
+
+Dates:
+FiCalendar
+
+Travellers:
+FiUsers
+
+Luggage:
+FiBriefcase
+
+Hotel:
+FiHome
+
+Guide:
+FiCompass
+
+Driver:
+FiTruck
+
+Edit:
+FiEdit2
+
+Delete:
+FiTrash2
+
+Add:
+FiPlus
+
+Remove:
+FiMinus
+
+Move:
+FiArrowUp
+FiArrowDown
+
+Back:
+FiArrowLeft
+
+Next:
+FiArrowRight
+
+Success:
+FiCheckCircle
+
+Error:
+FiAlertCircle
+
+Info:
+FiInfo
+
+Choose icons actually available in the installed react-icons version.
+
+Do not blindly assume an icon name exists.
+
+============================================================
+83. REFERENCE SVG ARTWORK
+============================================================
+
+Where appropriate reuse the reference HTML's SVG artwork:
+
+- itinerary illustration
+- route planning illustration
+- day planning illustration
+
+Convert into reusable React components.
+
+Do not use the entire reference HTML file.
+
+Do not use dangerouslySetInnerHTML for the complete HTML.
+
+Do not embed the entire 567 KB reference artifact in the application.
+
+============================================================
+84. LOADING STATES
+============================================================
+
+Implement:
+
+RouteCalculationSkeleton
+PlannerSkeleton
+RequestSkeleton
+DaySkeleton
+
+or reuse Phase 1 shared skeleton components.
+
+For calculation:
+
+show button spinner and route summary placeholder.
+
+============================================================
+85. EMPTY STATES
+============================================================
+
+Examples:
+
+No intermediate stops
+
+Add stops to build your journey.
+
+No days planned yet
+
+Add your first day.
+
+No saved draft
+
+Start planning your trip.
+
+Use reference-style illustrations where useful.
+
+============================================================
+86. ERROR STATES
+============================================================
+
+Each major stage should have an error state.
+
+Example:
+
+Could not calculate your route.
+
+[ Retry ]
+
+Do not clear current selections because calculation failed.
+
+============================================================
+87. ACCESSIBILITY
+============================================================
+
+Route planner:
+
+- semantic labels
+- accessible destination search
+- keyboard stop reordering
+- accessible remove buttons
+- map accessible fallback
+- route summary readable without map
+
+Important:
+
+Do not make the map the only way to understand the route.
+
+The textual stop list must always communicate:
+
+Start
+Stop 1
+Stop 2
+Final
+
+============================================================
+88. DRAG/DROP ACCESSIBILITY
+============================================================
+
+If drag-and-drop is implemented:
+
+provide keyboard alternative.
+
+Example:
+
+Move stop up
+Move stop down
+
+Buttons must have:
+
+aria-label
+
+Example:
+
+Move Cappadocia up
+
+============================================================
+89. MAP ACCESSIBILITY
+============================================================
+
+Map is primarily visual.
+
+Provide textual fallback:
+
+Route:
+Istanbul → Cappadocia → Antalya
+
+Distance:
+...
+
+Duration:
+...
+
+This ensures route information does not depend solely on visual map.
+
+============================================================
+90. SCREEN READER FLOW
+============================================================
+
+When route calculation completes:
+
+announce:
+
+Route calculation complete.
+
+When save succeeds:
+
+announce:
+
+Route saved.
+
+When request is submitted:
+
+announce:
+
+Travel request submitted successfully.
+
+Use accessible live regions where appropriate.
+
+============================================================
+91. RESPONSIVE QA
+============================================================
+
+Test:
+
+360x800
+390x844
+412x915
+768x1024
+1024x768
+1280x800
+1440x900
+
+Pages/stages:
+
+Plan Trip
+Route
+Trip Details
+Day Planner
+Review
+Request Detail
+
+Verify:
+
+[ ] no horizontal overflow
+[ ] map fits
+[ ] buttons fit
+[ ] stepper fits
+[ ] inputs fit
+[ ] long destination names wrap
+[ ] day cards stack
+[ ] review remains readable
+[ ] sticky actions don't cover content
+
+============================================================
+92. MOBILE ACTION BAR
+============================================================
+
+Where appropriate:
+
+fixed/sticky bottom action area
+
+with:
+
+Back
+Next
+Save
+
+Ensure:
+
+- safe viewport spacing
+- no content hidden behind action bar
+- accessible focus
+- keyboard compatibility
+
+============================================================
+93. DATE PICKER
+============================================================
+
+Use existing date-picker/input library if present.
+
+Do not add another date library unnecessarily.
+
+Must support:
+
+English
+Turkish
+
+Do not break browser fallback behavior.
+
+============================================================
+94. NUMBER INPUT
+============================================================
+
+Traveller/luggage controls should:
+
+- prevent negative values
+- handle keyboard
+- have labels
+- have accessible increment/decrement controls
+
+Do not rely solely on `type=number` spinner UI.
+
+============================================================
+95. REQUEST DETAIL INTEGRATION
+============================================================
+
+After creation/submission:
+
+Travel Request Detail page must display:
+
+route
+dates
+travellers
+luggage
+services
+days
+notes
+status
+
+Use actual request API response.
+
+Do not duplicate the request state from local wizard state after navigating
+to detail.
+
+The backend response is authoritative.
+
+============================================================
+96. DRAFT / DETAIL ROUTING
+============================================================
+
+Possible flow:
+
+/plan-trip
+   ↓
+/travel-requests/:id/edit
+   ↓
+/travel-requests/:id/review
+   ↓
+/travel-requests/:id
+
+Use the actual existing project routes if already established.
+
+Do not create conflicting URLs.
+
+============================================================
+97. REQUEST LIST INTEGRATION
+============================================================
+
+After request creation/submission:
+
+GET /api/v1/travel-requests
+
+must reflect the newly created request.
+
+Do not assume the dashboard/request list updates automatically.
+
+Invalidate/refetch the appropriate query/state.
+
+============================================================
+98. DASHBOARD INTEGRATION
+============================================================
+
+After Phase 4:
+
+Dashboard should correctly show the newly created draft/submitted
+request where its existing data flow supports it.
+
+Do not break Phase 3 dashboard functionality.
+
+If dashboard data-fetching utilities need a safe invalidation/update:
+implement only what is necessary.
+
+============================================================
+99. SAVE/RESUME EDGE CASES
+============================================================
+
+Test:
+
+1. Start route.
+2. Save route.
+3. Start request.
+4. Enter details.
+5. Leave page.
+6. Return.
+7. Resume draft.
+8. Verify all data restored.
+
+Also:
+
+route calculation failure
+browser refresh
+token refresh during editing
+network interruption during PATCH
+duplicate click
+
+============================================================
+100. STALE DATA PROTECTION
+============================================================
+
+If user edits a draft in multiple tabs:
+
+follow existing application behavior.
+
+Do not implement complicated conflict resolution unless already required.
+
+At minimum:
+
+do not silently overwrite fresh local state with older request response.
+
+============================================================
+101. NETWORK INTERRUPTION
+============================================================
+
+Simulate:
+
+route calculation interrupted
+save interrupted
+day update interrupted
+request submit interrupted
+
+Expected:
+
+- clear error
+- preserve user data
+- allow retry
+- do not duplicate write unintentionally
+
+============================================================
+102. SUBMIT FAILURE
+============================================================
+
+If submit returns failure:
+
+remain on review page.
+
+Do not clear:
+
+route
+dates
+travellers
+days
+preferences
+notes
+
+Allow:
+
+[ Retry submit ]
+
+============================================================
+103. ROUTE CALCULATION FAILURE
+============================================================
+
+If calculation fails:
+
+retain selected stops.
+
+Show:
+
+Could not calculate route.
+
+[ Retry ]
+
+Do not reset route list.
+
+============================================================
+104. LOCATION SEARCH FAILURE
+============================================================
+
+If destination provider fails:
+
+allow retry.
+
+Do not crash entire planner.
+
+If manual selection is supported by existing system:
+preserve it.
+
+Do not invent fallback location IDs.
+
+============================================================
+105. BACKEND CONTRACT VERIFICATION
+============================================================
+
+Before implementing each request:
+
+inspect backend validation.
+
+Create an internal matrix:
+
+FEATURE
+FRONTEND FIELD
+BACKEND FIELD
+BACKEND TYPE
+REQUIRED
+VALID VALUES
+
+At minimum:
+
+route start
+route stops
+route final
+route distance
+route duration
+recommended days
+travel dates
+traveller count
+luggage
+hotel
+guide
+driver
+package/service scope
+notes
+day destination
+day activity
+day guide
+day hotel
+day hotel class
+
+Do not proceed with unsupported fields.
+
+============================================================
+106. API RESPONSE VERIFICATION
+============================================================
+
+Document actual response shapes.
+
+At minimum inspect:
+
+route calculation response
+saved route response
+request creation response
+request detail response
+day creation response
+day update response
+submit response
+
+Frontend mapping must correspond exactly.
+
+============================================================
+107. NO MOCK BUSINESS LOGIC
+============================================================
+
+Do NOT use:
+
+hardcoded distance
+hardcoded duration
+hardcoded recommended days
+fake destination IDs
+fake route geometry
+fake request IDs
+fake day IDs
+fake status
+
+All production data comes from the backend.
+
+============================================================
+108. TEST DATA
+============================================================
+
+For tests:
+
+use controlled test fixtures.
+
+Do not modify production/development records unnecessarily.
+
+Do not hardcode real user credentials.
+
+============================================================
+109. TESTING — UNIT
+============================================================
+
+Add tests for:
+
+Route validation
+Stop add/remove
+Stop reorder
+Route-change invalidation
+Route response mapping
+Request response mapping
+Day response mapping
+Date validation
+Traveller count
+Luggage count
+Service scope mapping
+Status mapping
+Request review rendering
+
+============================================================
+110. TESTING — COMPONENT
+============================================================
+
+Test:
+
+1. Plan Trip renders.
+2. Route step renders.
+3. Start destination selection.
+4. Add stop.
+5. Remove stop.
+6. Reorder stop.
+7. Calculate button.
+8. Calculation loading.
+9. Calculation success.
+10. Calculation error.
+11. Route summary.
+12. Save route.
+13. Trip details form.
+14. Day planner.
+15. Add day.
+16. Edit day.
+17. Delete day.
+18. Review.
+19. Save draft.
+20. Submit request.
+21. Submit loading.
+22. Submit error.
+23. Successful submission.
+24. Unsaved changes.
+25. Responsive layout.
+26. i18n.
+27. Accessibility.
+
+============================================================
+111. TESTING — API INTEGRATION
+============================================================
+
+Verify actual endpoint integration:
+
+POST routes/calculate
+POST routes
+GET routes/:id
+PATCH routes/:id
+DELETE routes/:id
+
+POST travel-requests
+GET travel-requests/:id
+PATCH travel-requests/:id
+POST travel-requests/:id/days
+PATCH travel-requests/:id/days/:dayId
+DELETE travel-requests/:id/days/:dayId
+POST travel-requests/:id/submit
+POST travel-requests/:id/cancel
+
+Use actual API response shapes.
+
+============================================================
+112. END-TO-END TEST
+============================================================
+
+Perform the complete flow:
+
+LOGIN
+  ↓
+PLAN MY TRIP
+  ↓
+SELECT START
+  ↓
+ADD STOP
+  ↓
+SELECT FINAL
+  ↓
+REORDER
+  ↓
+CALCULATE
+  ↓
+VERIFY DISTANCE
+  ↓
+VERIFY DURATION
+  ↓
+VERIFY RECOMMENDED DAYS
+  ↓
+SAVE ROUTE
+  ↓
+TRIP DETAILS
+  ↓
+DATES
+  ↓
+TRAVELLERS
+  ↓
+LUGGAGE
+  ↓
+SERVICES
+  ↓
+DAY PLAN
+  ↓
+ADD DAY
+  ↓
+EDIT DAY
+  ↓
+REVIEW
+  ↓
+SAVE DRAFT
+  ↓
+RELOAD
+  ↓
+RESUME DRAFT
+  ↓
+SUBMIT
+  ↓
+REQUEST DETAIL
+  ↓
+REQUEST LIST
+  ↓
+DASHBOARD
+
+
+Every stage must be verified with real backend data.
+
+============================================================
+113. SECURITY TESTS
+
+Verify:
+
+[ ] no token persistence introduced
+[ ] no token logs
+[ ] no passwords
+[ ] no client-trusted traveller ownership
+[ ] no unauthorized route ID access
+[ ] no unauthorized request ID access
+[ ] protected endpoints use auth
+[ ] 401 refresh works
+[ ] 403 handled correctly
+[ ] no sensitive response logging
+
+============================================================
+114. REQUEST OWNERSHIP
+
+Frontend must assume:
+
+Traveller can edit/view only their own routes and requests.
+
+Do not attempt:
+
+GET /routes/other-user-id
+
+based on user input.
+
+Backend ownership is authoritative.
+
+============================================================
+115. PERFORMANCE
+
+Avoid:
+
+API request per keystroke
+route calculation per keystroke
+PATCH on every input character
+duplicate GETs
+duplicate POSTs
+N+1 day requests when unnecessary
+
+Use:
+
+debounced autosave if implemented
+explicit route calculation
+localized state updates
+controlled API calls
+
+============================================================
+116. AUTOSAVE PERFORMANCE
+
+If autosave:
+
+debounce
+cancel stale requests where safe
+prevent overlapping PATCHes
+show status
+handle failure
+never overwrite newer edits with older responses
+============================================================
+117. BROWSER REFRESH
+
+Test:
+
+refresh during route step
+refresh during details
+refresh during day plan
+refresh during review
+
+Expected:
+
+the saved draft state should be recoverable where backend data has
+already been persisted.
+
+Unsaved local-only changes may be lost only if that is clearly expected
+and documented.
+
+============================================================
+118. TAB CLOSE / NAVIGATION
+
+If there are unsaved changes:
+
+use the existing navigation warning architecture.
+
+Do not create custom browser prompts unnecessarily.
+
+============================================================
+119. DOCUMENTATION
+
+Update relevant documentation.
+
+Document:
+
+Phase 4 architecture
+route-first workflow
+route API integration
+request API integration
+draft lifecycle
+day planning
+autosave behavior if any
+validation
+API mapping
+UI states
+i18n
+accessibility
+known backend capability gaps
+
+Do not document unsupported features as complete.
+
+============================================================
+120. NO BACKEND CHANGES BY DEFAULT
+
+DO NOT MODIFY BACKEND.
+
+If a missing backend field or capability blocks an explicit Phase 4
+requirement:
+
+report:
+
+BACKEND CAPABILITY GAP
+
+with:
+
+FILE
+ENDPOINT
+EXPECTED
+CURRENT
+IMPACT
+
+Do not silently change backend.
+
+Only change backend after explicit architectural review.
+
+============================================================
+121. NO PHASE 5
+
+Do not implement:
+
+agency matching
+agency notifications
+quotation collection
+quotation comparison
+
+Those are later phases.
+
+After submission, the Traveller only needs a correct submitted request
+state and request detail.
+
+============================================================
+122. REACT ICON / SVG FINAL CHECK
+
+Perform a complete search for:
+
+emoji
+Unicode UI arrows
+Unicode checkmarks
+Unicode warning symbols
+inline generic icons
+
+Replace standard UI icon usage with:
+
+react-icons
+
+For large reference illustrations:
+
+use converted reference SVG components.
+
+============================================================
+123. ACCEPTANCE CRITERIA — ROUTE
+
+[ ] Start destination works.
+[ ] Intermediate stops work.
+[ ] Final destination works.
+[ ] Stop reorder works.
+[ ] Stop removal works.
+[ ] Route validation works.
+[ ] Route calculation works.
+[ ] Calculation uses real backend.
+[ ] Distance is real.
+[ ] Duration is real.
+[ ] Recommended days is real.
+[ ] Route geometry renders where supported.
+[ ] Route save works.
+[ ] Existing route edit works.
+[ ] Existing route load works.
+[ ] Route deletion works where applicable.
+[ ] Stale calculation is invalidated after route changes.
+
+============================================================
+124. ACCEPTANCE CRITERIA — REQUEST
+
+[ ] Draft creation works.
+[ ] Draft loading works.
+[ ] Draft editing works.
+[ ] Route data auto-populates request.
+[ ] Dates work.
+[ ] Traveller count works.
+[ ] Luggage works.
+[ ] Service scope works.
+[ ] Hotel preference works where supported.
+[ ] Guide preference works where supported.
+[ ] Driver preference works where supported.
+[ ] Hotel class works where backend supports it.
+[ ] Notes work where supported.
+[ ] Profile data is reused.
+[ ] Day planning works.
+[ ] Add day works.
+[ ] Edit day works.
+[ ] Delete day works.
+[ ] Review works.
+[ ] Save draft works.
+[ ] Resume draft works.
+[ ] Submit works.
+[ ] Cancel works where supported.
+[ ] Request detail reflects actual backend state.
+
+============================================================
+125. ACCEPTANCE CRITERIA — UX
+
+[ ] Clear route-first experience.
+[ ] Wizard/stepper clear.
+[ ] Back/next behavior works.
+[ ] Loading states.
+[ ] Empty states.
+[ ] Error states.
+[ ] Retry.
+[ ] Unsaved changes handled.
+[ ] Duplicate submissions prevented.
+[ ] Mobile UX polished.
+[ ] Desktop UX polished.
+
+============================================================
+126. ACCEPTANCE CRITERIA — RESPONSIVE
+
+[ ] 360px
+[ ] 390px
+[ ] 412px
+[ ] 768px
+[ ] 1024px
+[ ] 1280px
+[ ] 1440px
+
+All pass.
+
+No horizontal overflow.
+
+============================================================
+127. ACCEPTANCE CRITERIA — ACCESSIBILITY
+
+[ ] Labels.
+[ ] Keyboard navigation.
+[ ] Accessible reorder controls.
+[ ] Accessible remove controls.
+[ ] Accessible map fallback.
+[ ] Focus management.
+[ ] Screen-reader status announcements.
+[ ] Error associations.
+[ ] Icon labels.
+[ ] No information dependent solely on color.
+
+============================================================
+128. ACCEPTANCE CRITERIA — I18N
+
+[ ] English.
+[ ] Turkish.
+[ ] All Phase 4 UI strings translated.
+[ ] Validation translated where keys exist.
+[ ] Status labels translated.
+[ ] Dates formatted consistently.
+
+============================================================
+129. ACCEPTANCE CRITERIA — SECURITY
+
+[ ] Access token memory-only remains intact.
+[ ] Refresh architecture unchanged.
+[ ] No credentials logged.
+[ ] No secrets logged.
+[ ] No client-side ownership trust.
+[ ] Protected routes remain protected.
+[ ] API requests use existing auth mechanism.
+
+============================================================
+130. ACCEPTANCE CRITERIA — ICONS / ARTWORK
+
+[ ] react-icons used for UI icons.
+[ ] No emoji UI icons.
+[ ] No Unicode UI icon substitutes.
+[ ] Reference SVGs used for intended artwork.
+[ ] SVGs are responsive.
+[ ] SVGs accessible appropriately.
+[ ] No massive duplicated base64 HTML copied into components.
+
+============================================================
+131. ACCEPTANCE CRITERIA — QUALITY
+
+[ ] No unnecessary dependency.
+[ ] No duplicate API service.
+[ ] No duplicate state architecture.
+[ ] No duplicate auth logic.
+[ ] No dead code.
+[ ] No debug logs.
+[ ] No TODOs within Phase 4 scope.
+[ ] Existing Phase 1 features intact.
+[ ] Existing Phase 2 features intact.
+[ ] Existing Phase 3 dashboard intact.
+
+============================================================
+132. QUALITY GATES
+
+Run the actual repository scripts:
+
+npm run lint
+npm run format:check
+npm run test
+npm run build
+
+All must pass.
+
+Do not weaken tests.
+
+Do not delete failing tests.
+
+Do not suppress errors to obtain a green build.
+
+============================================================
+133. REGRESSION TEST
+
+Verify:
+
+LOGIN
+DASHBOARD
+PROFILE
+PUBLIC PAGES
+SIDEBAR
+MOBILE NAVIGATION
+
+still work.
+
+Dashboard:
+
+Plan My Trip
+
+must correctly enter the Phase 4 workflow.
+
+============================================================
+134. FINAL MANUAL TEST ACCOUNT
+
+Use a local development Traveller account only.
+
+Do not expose credentials in the final report.
+
+Do not commit credentials.
+
+============================================================
+135. FINAL REPORT
+
+Return:
+
+============================================================
+PHASE 4 IMPLEMENTATION REPORT
+
+A. Repository audit
+
+B. Existing components/services reused
+
+C. New files created
+
+D. Files modified
+
+E. Route-planning architecture
+
+F. Route API integration
+
+G. Travel-request architecture
+
+H. Travel-request API integration
+
+I. Day-planning architecture
+
+J. Draft/resume architecture
+
+K. Autosave implementation
+or:
+Not implemented — reason
+
+L. Actual backend schema mapping
+
+M. Backend capability gaps
+
+N. UI/UX implementation
+
+O. Reference SVG integration
+
+P. react-icons integration
+
+Q. Responsive QA
+
+R. Accessibility QA
+
+S. i18n QA
+
+T. Security audit
+
+U. Performance audit
+
+V. Unit tests
+
+W. Component tests
+
+X. API integration tests
+
+Y. End-to-end test
+
+Z. Regression test
+
+AA. Lint result
+
+AB. Format result
+
+AC. Test result
+
+AD. Build result
+
+AE. Issues/warnings
+
+AF. Deferred Phase 5 items
+
+For every issue:
+
+FILE:
+LINE/LOCATION:
+PROBLEM:
+SEVERITY:
+IMPACT:
+ACTION:
+STATUS:
+
+Do not hide warnings.
+
+============================================================
+136. FINAL SIGN-OFF
+
+Only use:
+
+PHASE 4 COMPLETE
+
+when:
+
+route workflow works with real backend
+request workflow works with real backend
+day planning works
+draft persistence works
+submit works
+real API data is used
+tests pass
+lint passes
+format passes
+build passes
+responsive QA passes
+accessibility QA passes
+security audit passes
+Phase 1/2/3 regressions are absent
+
+Otherwise:
+
+PHASE 4 NOT READY
+
+============================================================
+137. PHASE 5 HANDOFF
+
+DO NOT IMPLEMENT PHASE 5.
+
+Phase 5 will handle:
+
+AGENCY MATCHING / REQUEST DISTRIBUTION
+
+The handoff from Phase 4 must be:
+
+Traveller submits
+↓
+Travel Request = submitted
+↓
+Request detail available
+↓
+Request appears correctly in Traveller request list/dashboard
+↓
+READY FOR PHASE 5 AGENCY MATCHING
+
+============================================================
+FINAL PRINCIPLE
+
+Phase 4 is the CORE TRAVELLER BUSINESS FLOW.
+
+The result must not be:
+
+"a form that creates a request."
+
+The result must be:
+
+"A complete route-first travel planning engine."
+
+The experience must feel:
+
+visual
+guided
+smart
+clear
+fast
+responsive
+secure
+production-ready
+
+The Traveller should:
+
+choose the route
+understand the route
+see calculated distance
+see calculated duration
+see recommended duration
+configure the trip
+plan days
+review everything
+save safely
+resume safely
+submit confidently
+
+Use the existing backend as the functional authority.
+
+Use the existing Phase 1/2/3 frontend architecture.
+
+Use react-icons for interface icons.
+
+Use the supplied reference SVG artwork for illustrations.
+
+Do not invent backend fields.
+Do not invent API endpoints.
+Do not invent data.
+Do not implement Phase 5.
+
+Inspect first.
+Implement systematically.
+Test every stage.
+Fix regressions.
+Run lint.
+Run format.
+Run tests.
+Run build.
+
+Only then declare:
+
+PHASE 4 COMPLETE.
+
+
+### Phase 4 final workflow
+
+The implementation should ultimately produce this:
+
+```text
+                    TRAVELLER
+                        │
+                        ▼
+                  Plan My Trip
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ 1. ROUTE        │
+               │                 │
+               │ Start           │
+               │ Stops           │
+               │ Final           │
+               │ Reorder         │
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ 2. CALCULATE    │
+               │                 │
+               │ Distance        │
+               │ Duration        │
+               │ Recommended     │
+               │ Days            │
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ 3. DETAILS      │
+               │                 │
+               │ Dates           │
+               │ Travellers      │
+               │ Luggage         │
+               │ Services        │
+               │ Notes           │
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ 4. DAY PLAN     │
+               │                 │
+               │ Day 1           │
+               │ Day 2           │
+               │ Day 3           │
+               │ ...             │
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │ 5. REVIEW       │
+               │                 │
+               │ Complete trip   │
+               │ summary         │
+               └────────┬────────┘
+                        │
+                ┌───────┴────────┐
+                ▼                ▼
+             Save Draft        Submit
+                │                │
+                ▼                ▼
+            Resume Later    SUBMITTED
+                                 │
+                                 ▼
+                            PHASE 5
+                       Agency Matching
+
+One key point from the approved workflow is that route selection comes before the form, and the calculated route, distance, stop order and recommended duration should flow into the subsequent request rather than being re-entered manually.
+
+The API already has separate route and travel-request operations, so keeping those responsibilities distinct in the frontend will also make Phase 4 much easier to maintain: route APIs manage route state, while travel-request APIs manage the draft/request lifecycle.
+
+This phase should be treated as the largest Traveller-side foundation phase so far. Once it is signed off, Phase 5 can begin with Agency Matching against a stable, real submitted travel request.

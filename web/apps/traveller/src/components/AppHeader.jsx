@@ -11,6 +11,24 @@ export function AppHeader({ notificationCount = 0, onNotificationClick }) {
       </Link>
 
       <div className="tf-portal-header-actions">
+        <Link
+          to="/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            background: '#E5F2EA',
+            color: '#0C4E28',
+            fontSize: '13px',
+            fontWeight: '700',
+            textDecoration: 'none',
+            transition: 'background 0.2s ease',
+          }}
+        >
+          🌐 Public Portal
+        </Link>
         <NotificationButton count={notificationCount} onClick={onNotificationClick} />
         <LanguageSwitcher />
         <UserMenu />

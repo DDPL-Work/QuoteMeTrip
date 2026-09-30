@@ -161,6 +161,12 @@ export const TRANSLATIONS = {
     'status.cancelled': 'Cancelled',
     'status.in_progress': 'In Progress',
     'status.completed': 'Completed',
+
+    'trip.package.blue_cruise': 'Blue Cruise',
+    'trip.cruiseDuration.title': 'Choose your cruise duration',
+    'trip.cruiseDuration.4d_3n': '4 Days / 3 Nights',
+    'trip.cruiseDuration.6d_5n': '6 Days / 5 Nights',
+    'trip.cruiseDurationRequired': 'Please select a cruise duration.',
   },
   tr: {
     'header.home': 'Anasayfa',
@@ -314,6 +320,12 @@ export const TRANSLATIONS = {
     'status.cancelled': 'İptal Edildi',
     'status.in_progress': 'Devam Ediyor',
     'status.completed': 'Tamamlandı',
+
+    'trip.package.blue_cruise': 'Mavi Tur',
+    'trip.cruiseDuration.title': 'Mavi tur sürenizi seçin',
+    'trip.cruiseDuration.4d_3n': '4 Gün / 3 Gece',
+    'trip.cruiseDuration.6d_5n': '6 Gün / 5 Gece',
+    'trip.cruiseDurationRequired': 'Lütfen bir mavi tur süresi seçin.',
   },
 };
 
@@ -335,7 +347,7 @@ export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE }) {
       return SUPPORTED_LOCALES.includes(saved) ? saved : initialLocale;
     } catch {
       return initialLocale;
-    }
+    }    
   });
 
   const changeLocale = (nextLocale) => {

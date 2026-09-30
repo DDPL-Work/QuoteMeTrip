@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@troublefree/i18n';
 import { useAuth } from '../../features/auth/auth-context.js';
 import { PopularRoutes } from '../../components/PopularRoutes.jsx';
+import { MotionReveal } from '../../components/motion/MotionReveal.jsx';
+import { StaggerContainer } from '../../components/motion/StaggerContainer.jsx';
 import './HomePage.css';
 
 // Icon paths extracted from the reference HTML (quotemetrip-traveller (4) (3).html)
@@ -20,6 +23,7 @@ const ICON_PATHS = {
   head: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
   list: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 12h6M9 16h4',
   chat: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z',
+  ship: 'M12 2v10M8 6h8M5 12a7 7 0 0 0 14 0M12 22a2 2 0 1 0 0-4 2 2 0 0 0 0 4',
 };
 
 const ic = (name, size = 18) => {
@@ -55,6 +59,7 @@ const ROUTE_KINDS = {
 export function PublicHomePage() {
   const { t } = useI18n();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const COUNTRIES = ['Türkiye', 'Italy', 'Greece'];
   const [trip, setTrip] = useState({
@@ -64,9 +69,25 @@ export function PublicHomePage() {
     flexible: false,
     suggest: false,
   });
-  const [scope, setScope] = useState('Full package');
+  const [scope, setScope] = useState('Blue Cruise');
 
-  const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (trip.country) params.set('country', trip.country);
+    if (trip.days[0]?.date) params.set('startDate', trip.days[0].date);
+    if (trip.travellers) params.set('travellers', String(trip.travellers));
+    if (scope) params.set('scope', scope.toLowerCase().replace(/ /g, '_'));
+
+    const queryString = params.toString();
+    const targetPath = `/plan-trip${queryString ? '?' + queryString : ''}`;
+
+    if (user) {
+      navigate(targetPath);
+    } else {
+      navigate(`/login?redirect=${encodeURIComponent(targetPath)}`);
+    }
+  };
 
   return (
     <div className="g">
@@ -85,13 +106,11 @@ export function PublicHomePage() {
           <form
             className="g-search"
             aria-label="Create a travel request"
-            onSubmit={(e) => {
-              e.preventDefault();
-              window.location.href = planTripHref;
-            }}
+            onSubmit={handleSearchSubmit}
           >
             <div className="g-tabs" role="group" aria-label="What do you need?">
               {[
+                ['Blue Cruise', 'ship'],
                 ['Full package', 'bag'],
                 ['Hotel only', 'inbox'],
                 ['Vehicle + driver', 'map'],
@@ -184,32 +203,37 @@ export function PublicHomePage() {
       </section>
 
       {/* 2. TRUST SECTION */}
-      <div className="g-trust">
-        <div className="g-wrap">
-          {[
-            ['shield', 'Verified agencies', 'Documents checked by our team'],
-            ['free', 'Free request', 'No fee for travellers'],
-            ['scale', 'Compare offers', 'Price, inclusions, ratings'],
-            ['card', 'Pay the agency directly', 'On the agency’s own terms'],
-            ['head', 'Support', 'We step in if needed'],
-          ].map(([k, b, s]) => (
-            <div className="i" key={k}>
-              <span className="ic">{ic(k)}</span>
-              <p style={{ margin: 0 }}>
-                <b>{b}</b>
-                <br />
-                <span>{s}</span>
-              </p>
-            </div>
-          ))}
+      <MotionReveal>
+        <div className="g-trust">
+          <div className="g-wrap">
+            {[
+              ['shield', 'Verified agencies', 'Documents checked by our team'],
+              ['free', 'Free request', 'No fee for travellers'],
+              ['scale', 'Compare offers', 'Price, inclusions, ratings'],
+              ['card', 'Pay the agency directly', 'On the agency’s own terms'],
+              ['head', 'Support', 'We step in if needed'],
+            ].map(([k, b, s]) => (
+              <div className="i" key={k}>
+                <span className="ic">{ic(k)}</span>
+                <p style={{ margin: 0 }}>
+                  <b>{b}</b>
+                  <br />
+                  <span>{s}</span>
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </MotionReveal>
 
       {/* 3. POPULAR ROUTES */}
-      <PopularRoutes />
+      <MotionReveal>
+        <PopularRoutes />
+      </MotionReveal>
 
       {/* 4. HOW IT WORKS */}
-      <section className="g-sec" id="g-how">
+      <MotionReveal>
+        <section className="g-sec" id="g-how">
         <div className="g-wrap">
           <div className="g-hd">
             <div>
@@ -289,7 +313,7 @@ export function PublicHomePage() {
                 </p>
                 <ul className="ticks">
                   <li>Agreeing closes quoting and locks your price</li>
-                  <li>Tick “deposit paid” with the amount and reference</li>
+                  <li>Tick “deposit paid” with the amount and  reference</li>
                   <li>Contacts unlock for both sides straight away</li>
                   <li>You get a written confirmation with a Print / PDF copy</li>
                 </ul>
@@ -331,16 +355,18 @@ export function PublicHomePage() {
           </div>
         </div>
       </section>
+      </MotionReveal>
 
       {/* 5. TRAVEL GUIDE & AGENCIES */}
-      <section className="g-sec">
-        <div className="g-wrap">
-          <div className="g-hd">
-            <div>
-              <h2>With you while you plan</h2>
-              <p>Simple guides for a trouble-free trip.</p>
+      <MotionReveal>
+        <section className="g-sec">
+          <div className="g-wrap">
+            <div className="g-hd">
+              <div>
+                <h2>With you while you plan</h2>
+                <p>Simple guides for a trouble-free trip.</p>
+              </div>
             </div>
-          </div>
           <div className="g-help">
             {[
               [
@@ -353,7 +379,6 @@ export function PublicHomePage() {
                 'Comparing quotes properly',
                 'Look at what is included — hotels, vehicle, guide — not just the total price.',
               ],
-
               [
                 'card',
                 'Paying the agency safely',
@@ -397,9 +422,11 @@ export function PublicHomePage() {
           </div>
         </div>
       </section>
+      </MotionReveal>
 
       {/* 6. FAQ */}
-      <section className="g-sec" id="g-faq">
+      <MotionReveal>
+        <section className="g-sec" id="g-faq">
         <div className="g-wrap">
           <div className="g-hd">
             <div>
@@ -448,8 +475,8 @@ export function PublicHomePage() {
               </div>
             ))}
             <div className="g-sup">
-              <span
-                className="ic"
+              <span 
+                className="ic" 
                 style={{
                   width: '44px',
                   height: '44px',
@@ -474,6 +501,7 @@ export function PublicHomePage() {
           </div>
         </div>
       </section>
+      </MotionReveal>
     </div>
   );
 }

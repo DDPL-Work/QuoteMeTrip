@@ -1,8 +1,7 @@
-// Traveller job list (Phase 6).
-
 import { useEffect, useState } from 'react';
 import { jobApi } from '../lib/api.js';
 import { JobListView } from '../components/Phase6.jsx';
+import { MotionPage } from '../components/motion/MotionPage.jsx';
 
 export function JobsPage() {
   const [jobs, setJobs] = useState([]);
@@ -24,10 +23,12 @@ export function JobsPage() {
   }, []);
 
   return (
-    <main className="tf-page">
-      <h1>My trips</h1>
-      {error && <p role="alert">{error}</p>}
-      <JobListView jobs={jobs} />
-    </main>
+    <MotionPage>
+      <main className="tf-page">
+        <h1>My trips</h1>
+        {error && <p role="alert">{error}</p>}
+        <JobListView jobs={jobs} />
+      </main>
+    </MotionPage>
   );
 }

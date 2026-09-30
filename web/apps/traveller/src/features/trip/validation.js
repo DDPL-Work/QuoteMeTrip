@@ -29,6 +29,8 @@ export function validateRequestInput({
   travelEndDate,
   numberOfTravellers,
   luggageCount,
+  packageType,
+  cruiseDuration,
 }) {
   const errors = {};
   if (travelStartDate && !isValidDateOnly(travelStartDate))
@@ -58,9 +60,13 @@ export function validateRequestInput({
   ) {
     errors.luggageCount = 'Luggage must be 0–500.';
   }
+  if (packageType === 'blue_cruise' && (!cruiseDuration || !['4d_3n', '6d_5n'].includes(cruiseDuration))) {
+    errors.cruiseDuration = 'Please select a cruise duration.';
+  }
   return errors;
 }
 
 export const ACCOMMODATION_OPTIONS = ['3_star', '4_star', '5_star', 's_class'];
-export const PACKAGE_OPTIONS = ['hotel_only', 'vehicle_driver', 'full_package'];
+export const PACKAGE_OPTIONS = ['blue_cruise', 'full_package', 'hotel_only', 'vehicle_driver', 'guide_activities'];
+export const CRUISE_DURATIONS = ['4d_3n', '6d_5n'];
 export const STOP_TYPES = ['start', 'intermediate', 'final'];

@@ -20,7 +20,14 @@ export const TRAVEL_REQUEST_STATUSES = [
 ];
 
 export const ACCOMMODATION_TYPES = ['3_star', '4_star', '5_star', 's_class'];
-export const PACKAGE_TYPES = ['hotel_only', 'vehicle_driver', 'full_package'];
+export const PACKAGE_TYPES = [
+  'blue_cruise',
+  'full_package',
+  'hotel_only',
+  'vehicle_driver',
+  'guide_activities',
+];
+export const CRUISE_DURATIONS = ['4d_3n', '6d_5n'];
 
 /** Phase 4 transitions only. Later phases extend this map. */
 export const TRAVEL_REQUEST_TRANSITIONS = {
@@ -104,6 +111,10 @@ export class TravelRequest extends Model {
         },
         packageType: {
           type: DataTypes.ENUM(...PACKAGE_TYPES),
+          allowNull: true,
+        },
+        cruiseDuration: {
+          type: DataTypes.ENUM(...CRUISE_DURATIONS),
           allowNull: true,
         },
         specialRequests: {

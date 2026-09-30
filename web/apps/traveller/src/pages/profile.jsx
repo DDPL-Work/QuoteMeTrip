@@ -22,6 +22,7 @@ import { travellerApi } from '../lib/api.js';
 import { useAuth } from '../features/auth/auth-context.js';
 import { TravellerDetails } from '../components/TravellerDetails.jsx';
 import { Icons } from '../components/icons.jsx';
+import { MotionPage } from '../components/motion/MotionPage.jsx';
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Select gender' },
@@ -247,6 +248,7 @@ export function ProfilePage() {
   const accountStatus = user?.status || 'active';
 
   return (
+    <MotionPage>
     <main className="tf-portal-page" aria-label="Traveller Profile">
       <PageHeader
         title="Profile"
@@ -511,5 +513,6 @@ export function ProfilePage() {
         variant="primary"
       />
     </main>
+    </MotionPage>
   );
 }

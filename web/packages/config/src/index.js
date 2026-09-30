@@ -6,7 +6,7 @@
 // here — this package is bundled into public React apps.
 
 export const APP_PORTS = {
-  backend: 5000,
+  backend: 5001,
   traveller: 5173,
   agency: 5174,
   admin: 5175,

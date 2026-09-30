@@ -19,7 +19,13 @@ export const QUOTATION_STATUSES = [
   'rejected',
 ];
 
-export const QUOTATION_TYPES = ['hotel_only', 'vehicle_driver', 'full_package'];
+export const QUOTATION_TYPES = [
+  'blue_cruise',
+  'full_package',
+  'hotel_only',
+  'vehicle_driver',
+  'guide_activities',
+];
 
 /** Phase 5 transitions only. Later phases extend this map. */
 export const QUOTATION_TRANSITIONS = {

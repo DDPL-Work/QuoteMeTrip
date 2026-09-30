@@ -10,13 +10,10 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { AuthLayout } from '@troublefree/ui';
 import { useAuth } from './auth-context.js';
+import { AppLoadingScreen } from '../../components/loading/AppLoadingScreen.jsx';
 
 export function SessionPending() {
-  return (
-    <main className="portal-shell">
-      <p>Checking your session…</p>
-    </main>
-  );
+  return <AppLoadingScreen message="Checking your session…" delay={0} />;
 }
 
 export function RequireAuth({ children }) {

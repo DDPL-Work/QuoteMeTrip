@@ -45,12 +45,25 @@ export function AuthProvider({ role, loginPath = '/login', children }) {
     };
   }, [clearSession]);
 
-  // Session lost mid-app (refresh failed elsewhere): clear and go to
-  // THIS app's login page — never another app's URL.
+  // Session lost mid-app (refresh failed elsewhere): clear session.
+  // Redirect to login only if currently on a protected route.
   useEffect(() => {
     setUnauthorizedListener(() => {
       clearSession();
-      navigate(loginPath, { replace: true });
+      const path = window.location.pathname;
+      const isProtected =
+        path.startsWith('/app') ||
+        path.startsWith('/dashboard') ||
+        path.startsWith('/plan-trip') ||
+        path.startsWith('/profile') ||
+        path.startsWith('/travel-requests') ||
+        path.startsWith('/quotations') ||
+        path.startsWith('/messages') ||
+        path.startsWith('/jobs');
+
+      if (isProtected) {
+        navigate(loginPath, { replace: true });
+      }
     });
     return () => setUnauthorizedListener(null);
   }, [clearSession, navigate, loginPath]);

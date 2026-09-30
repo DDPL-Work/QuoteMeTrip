@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { travelRequestApi } from '../lib/api.js';
+import { MotionPage } from '../components/motion/MotionPage.jsx';
 
 export function TravelRequestsPage() {
   const [items, setItems] = useState([]);
@@ -22,22 +23,24 @@ export function TravelRequestsPage() {
   }, []);
 
   return (
-    <main>
-      <h1>Travel requests</h1>
-      {error && <p role="alert">{error}</p>}
-      {items.length === 0 ? (
-        <p>No requests yet.</p>
-      ) : (
-        <ul>
-          {items.map((r) => (
-            <li key={r.id}>
-              <Link to={`/travel-requests/${r.id}`}>
-                Request #{r.id} ({r.status})
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+    <MotionPage>
+      <main>
+        <h1>Travel requests</h1>
+        {error && <p role="alert">{error}</p>}
+        {items.length === 0 ? (
+          <p>No requests yet.</p>
+        ) : (
+          <ul>
+            {items.map((r) => (
+              <li key={r.id}>
+                <Link to={`/travel-requests/${r.id}`}>
+                  Request #{r.id} ({r.status})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+    </MotionPage>
   );
 }

@@ -30,6 +30,19 @@ import { AgencyDetailPage } from './pages/public/AgencyDetailPage.jsx';
 import { AboutPage } from './pages/public/AboutPage.jsx';
 import { ContactPage } from './pages/public/ContactPage.jsx';
 
+import { AppPreloader } from './components/loading/AppPreloader.jsx';
+import { useAuth } from './features/auth/auth-context.js';
+
+function AppBootstrapWrapper({ children }) {
+  const { isLoading } = useAuth();
+  return (
+    <>
+      <AppPreloader isLoading={isLoading} />
+      {children}
+    </>
+  );
+}
+
 function Guarded({ children }) {
   return (
     <RequireAuth>
@@ -43,7 +56,8 @@ function App() {
     <BrowserRouter>
       <I18nProvider>
         <AuthProvider role="traveller">
-          <TripProvider>
+          <AppBootstrapWrapper>
+            <TripProvider>
             <Routes>
               {/* Public Website Routes */}
               <Route element={<PublicLayout />}>
@@ -109,7 +123,8 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </TripProvider>
-        </AuthProvider>
+        </AppBootstrapWrapper>
+      </AuthProvider>
       </I18nProvider>
     </BrowserRouter>
   );

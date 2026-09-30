@@ -10,6 +10,7 @@ export function AppSidebar({ badges = {} }) {
     { label: 'Messages', to: '/messages', badge: badges.messages },
     { label: 'Jobs', to: '/jobs', badge: badges.jobs },
     { label: 'Profile', to: '/profile' },
+    { label: '🌐 Public Portal', to: '/' },
   ];
 
   return (

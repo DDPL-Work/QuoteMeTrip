@@ -2,7 +2,7 @@
  * Travel-request validation (Phase 4 — backend-authoritative).
  */
 import { ValidationError } from '../../utils/errors.js';
-import { ACCOMMODATION_TYPES, PACKAGE_TYPES } from '../../db/models/TravelRequest.js';
+import { ACCOMMODATION_TYPES, PACKAGE_TYPES, CRUISE_DURATIONS } from '../../db/models/TravelRequest.js';
 import { validateRouteStops } from '../routes/routes.validation.js';
 
 function invalid(message, details = null) {
@@ -158,6 +158,16 @@ export function validateCreateRequestInput(body = {}) {
       throw invalid(`Package type must be one of: ${PACKAGE_TYPES.join(', ')}.`);
     }
     output.packageType = pkg;
+  }
+
+  const duration = body.cruiseDuration ?? body.cruise_duration;
+  if (duration !== undefined && duration !== null && duration !== '') {
+    if (!CRUISE_DURATIONS.includes(duration)) {
+      throw invalid(`Cruise duration must be one of: ${CRUISE_DURATIONS.join(', ')}.`);
+    }
+    output.cruiseDuration = duration;
+  } else if (output.packageType === 'blue_cruise') {
+    throw invalid('Cruise duration is required for Blue Cruise requests.');
   }
 
   const special = optionalText(body.specialRequests ?? body.special_requests, {

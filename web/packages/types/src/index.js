@@ -42,12 +42,27 @@ export const ACCOMMODATION_LABELS = {
   s_class: 'S Class',
 };
 
-export const PACKAGE_TYPES = ['hotel_only', 'vehicle_driver', 'full_package'];
+export const PACKAGE_TYPES = [
+  'blue_cruise',
+  'full_package',
+  'hotel_only',
+  'vehicle_driver',
+  'guide_activities',
+];
 
 export const PACKAGE_LABELS = {
+  blue_cruise: 'Blue Cruise',
+  full_package: 'Full package',
   hotel_only: 'Hotel only',
   vehicle_driver: 'Vehicle + driver',
-  full_package: 'Full package',
+  guide_activities: 'Guide & activities',
+};
+
+export const CRUISE_DURATIONS = ['4d_3n', '6d_5n'];
+
+export const CRUISE_DURATION_LABELS = {
+  '4d_3n': '4 Days / 3 Nights',
+  '6d_5n': '6 Days / 5 Nights',
 };
 
 // --- Phase 5: agency matching & quotations -------------------------
@@ -80,12 +95,20 @@ export const QUOTATION_TRANSITIONS = {
   rejected: [],
 };
 
-export const QUOTATION_TYPES = ['hotel_only', 'vehicle_driver', 'full_package'];
+export const QUOTATION_TYPES = [
+  'blue_cruise',
+  'full_package',
+  'hotel_only',
+  'vehicle_driver',
+  'guide_activities',
+];
 
 export const QUOTATION_TYPE_LABELS = {
+  blue_cruise: 'Blue Cruise',
+  full_package: 'Full package',
   hotel_only: 'Hotel only',
   vehicle_driver: 'Vehicle + driver',
-  full_package: 'Full package',
+  guide_activities: 'Guide & activities',
 };
 
 export const QUOTATION_ITEM_TYPES = ['hotel', 'vehicle', 'driver', 'guide', 'service', 'other'];

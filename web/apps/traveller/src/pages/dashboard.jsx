@@ -21,6 +21,10 @@ import { QuotationIllustration } from '../components/illustrations/QuotationIllu
 import { PaymentIllustration } from '../components/illustrations/PaymentIllustration.jsx';
 import { RouteIllustration } from '../components/illustrations/RouteIllustration.jsx';
 
+import { MotionPage } from '../components/motion/MotionPage.jsx';
+import { MotionReveal } from '../components/motion/MotionReveal.jsx';
+import { StaggerContainer } from '../components/motion/StaggerContainer.jsx';
+
 // Simple time-of-day logic
 function getTimeOfDay(t) {
   const hour = new Date().getHours();
@@ -96,10 +100,25 @@ export function DashboardPage() {
   }
 
   return (
-    <main
-      className="tf-portal-main"
-      style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}
-    >
+    <MotionPage>
+      <main
+        className="tf-portal-main"
+        style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}
+      >
+      {/* Top Breadcrumb Navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', fontSize: '13.5px', color: '#56625B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Link to="/" style={{ color: '#147D33', fontWeight: '700', textDecoration: 'none' }}>
+            🌐 Public Portal
+          </Link>
+          <span>/</span>
+          <span style={{ fontWeight: '600', color: '#13291C' }}>Dashboard</span>
+        </div>
+        <Link to="/" style={{ color: '#0C4E28', fontWeight: '700', fontSize: '13px', background: '#E5F2EA', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none' }}>
+          Explore Portal Home →
+        </Link>
+      </div>
+
       <div style={{ position: 'relative', marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3DCC2' }}>
         <HeroIllustration style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(90deg, rgba(243,220,194,0.95) 0%, rgba(243,220,194,0.6) 50%, transparent 100%)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px' }}>
@@ -325,6 +344,7 @@ export function DashboardPage() {
         </DashboardSection>
       </div>
     </main>
+    </MotionPage>
   );
 }
 
