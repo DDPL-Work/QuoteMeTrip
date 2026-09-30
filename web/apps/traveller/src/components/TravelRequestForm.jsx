@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   FiCalendar,
   FiUsers,
@@ -9,8 +9,6 @@ import {
   FiMinus,
   FiPlus,
   FiCheckCircle,
-  FiSave,
-  FiArrowRight,
   FiFileText,
   FiCheck,
   FiAnchor,

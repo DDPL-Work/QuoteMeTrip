@@ -53,7 +53,7 @@ const EXPECTED_TABLES = [
   'ratings',
 ];
 
-const EXPECTED_MIGRATION_COUNT = 29;
+const EXPECTED_MIGRATION_COUNT = 30;
 
 let db;
 

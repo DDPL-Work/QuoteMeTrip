@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * AppPreloader — Official First-Load & Hard Refresh Preloader
@@ -20,8 +20,9 @@ export function AppPreloader({
   onComplete,
 }) {
   const isTestEnv =
-    typeof process !== 'undefined' &&
-    (process.env?.NODE_ENV === 'test' || process.env?.VITEST);
+    typeof globalThis !== 'undefined' &&
+    typeof globalThis.process !== 'undefined' &&
+    (globalThis.process.env?.NODE_ENV === 'test' || globalThis.process.env?.VITEST);
 
   const [visible, setVisible] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
