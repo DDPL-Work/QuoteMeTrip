@@ -1,0 +1,525 @@
+TROUBLEFREE HOLIDAY
+Complete Development Plan
+Technology: React.js + Node.js / Express.js + MySQL
+Development Team: 2–3 Developers
+Development Timeline: Standard Web Platform — 8 Business Weeks | Pro Platform — 12–13 Business Weeks
+SEO: Explicitly Excluded
+Prepared from the Troublefree Holiday preliminary scope dated 19 September 2026.
+1. Project Overview
+Troublefree Holiday is planned as a two-sided travel marketplace and quotation platform connecting Travellers with
+tourism Agencies. Travellers create route-based travel requests and Agencies respond with quotations. An Admin interface
+manages agency approval, memberships, requests, jobs, reporting and operational activities.
+The platform consists of three principal interfaces: Traveller, Agency and Admin. The source scope defines a route-first
+planning process in which route, distance, travel time and recommended days are calculated before the detailed request
+form is completed.
+2. Technology Stack
+Layer Technology Purpose
+Frontend React.js Traveller, Agency and Admin web
+applications
+Backend Node.js + Express.js REST APIs, authentication, business logic
+and integrations
+Database MySQL Relational application data
+Authentication JWT + secure password hashing Authentication and role-based access
+API Client Axios / Fetch Frontend API communication
+Frontend Routing React Router Application navigation and protected
+routes
+State Management React Context or Redux Toolkit Shared application state where required
+Database Access Mysql2 MySQL access, models and migrations
+Maps / Routing Third-party map/routing API Route visualization, distance and traveltime calculation
+Weather Third-party weather API Travel-date weather information
+Email Transactional email provider System notifications
+SMS SMS provider Critical event notifications
+Web Push Firebase Cloud Messaging Browser push notifications
+Mobile — Pro Flutter Traveller and Agency mobile applications
+Payment — Pro Approved payment provider Marketplace/split-payment functionality
+Contracts — Pro PDF generation + e-signature provider Digital contract workflow
+AI — Pro Approved AI/LLM API Recommendations, translation and
+quotation comparison
+Deployment Linux + Nginx + Node process manager Production deployment
+Version Control Git/GitHub/GitLab Source-code management
+3. Proposed System Architecture
+• React.js presentation layer with separate Traveller, Agency and Admin application areas.
+• Node.js/Express.js API layer providing authentication, authorization, business rules and integrations.
+• MySQL relational database with normalized entities, foreign keys, indexes and transaction support.
+• Integration layer for maps, routing, weather, email, SMS, Firebase, payment, e-signature and AI services.
+• Production deployment through Nginx reverse proxy, HTTPS, Node process management and environment-specific
+configuration.
+4. User Roles
+Role Responsibilities / Access
+Traveller Profile, route planning, travel request, quotations, messaging,
+quotation acceptance and rating
+Agency Registration, documents, membership, incoming requests,
+quotations, messaging and agency profile
+Admin Agency approvals, suspension, membership, requests/jobs,
+reporting, content and operational management
+Multiple internal Agency sub-users are not part of Version 1 in the supplied scope. fileciteturn0file0L331-L333
+5. Traveller Web Application
+• Registration and login.
+• Social login where configured.
+• Traveller profile management.
+• Map-first travel planning.
+• Start point, intermediate destinations and final destination selection.
+• Ordering of route stops.
+• Automatic route drawing.
+• Distance and estimated travel-time calculation.
+• Recommended travel-day calculation with traveller override.
+• Automatic transfer of route information into the travel request.
+• Day-by-day travel details.
+• Accommodation preference: 3/4/5-star or S Class.
+• Hotel, guide and driver requirements.
+• Number of travellers and luggage.
+• Service scope selection.
+• Special requests and notes.
+• Travel request submission.
+• Quotation listing and quotation details.
+• Traveller–Agency messaging.
+• Quotation acceptance.
+• Post-service rating.
+The route-first planning sequence and day-by-day request requirements follow the supplied scope.
+6. Agency Web Application
+• Agency registration using corporate/agency email.
+• Agency login and profile.
+• Membership agreement acceptance.
+• Document upload.
+• Admin approval workflow.
+• Agency active/suspended status.
+• Incoming travel-request dashboard.
+• Travel-request details.
+• Quotation creation.
+• Hotel-only quotation.
+• Vehicle/driver-only quotation.
+• Full-package quotation.
+• Quotation pricing and service details.
+• Traveller–Agency messaging.
+• Contact-information filtering before quotation acceptance.
+• Quotation status and accepted-job tracking.
+The source scope requires corporate/agency email registration and defines quotation options covering hotel,
+vehicle/driver and full package services.
+7. Admin Web Application
+• Admin authentication.
+• Dashboard.
+• Agency listing and search.
+• Agency approval/rejection.
+• Agency document verification.
+• Agency suspension/reactivation.
+• Membership agreement records.
+• Subscription tracking.
+• Commission tracking.
+• Manual payment confirmation.
+• Travel-request/job records.
+• Quotation and acceptance records.
+• Active/suspended agency reports.
+• Revenue/commission summary.
+• Travel Guide management.
+• Rating overview.
+• Administrative audit records.
+8. Route & Map Module
+• Location search and selection.
+• Start, intermediate and final destinations.
+• Drag/order route stops.
+• Route visualization.
+• Distance calculation.
+• Estimated travel-time calculation.
+• Recommended number of travel days.
+• Route data persistence in MySQL.
+• API error/fallback handling.
+The source specifically defines route selection as the first stage and requires route, distance, stop sequence and
+recommended days to flow into the request form.
+9. Travel Request Module
+Data Group Fields / Functionality
+Traveller Name, profile-derived contact information
+Trip Travel dates, route, destinations, number of days
+Travellers Number of travellers
+Luggage Number of pieces
+Accommodation 3/4/5-star or S Class preference
+Services Hotel, guide, driver
+Package Hotel only / vehicle + driver / full package
+Details Special requests, notes and day-by-day requirements
+The source states that personal information is retrieved from the traveller profile rather than repeatedly entered for each
+request. fileciteturn0file0L41-L42
+10. Quotation & Messaging Module
+• Identify eligible active agencies for the relevant region.
+• Notify agencies of new requests.
+• Agency request inbox.
+• Quotation creation and editing.
+• Structured quotation services.
+• Quotation amount and details.
+• Traveller quotation listing.
+• Quotation comparison view.
+• Traveller–Agency conversation.
+• Message history.
+• Contact-information filtering before acceptance.
+• Contact-information reveal after acceptance according to the defined workflow.
+• Accepted quotation becomes the service/job record.
+The source requires communication through the platform before acceptance and mutual contact-information reveal after
+acceptance.
+11. Membership & Subscription Management
+• Monthly subscription.
+• 3-month subscription.
+• 6-month subscription.
+• Annual subscription.
+• Membership active/suspended status.
+• Manual payment processing by Admin for the base workflow.
+• Commission tracking.
+• Suspension when required payment is not completed.
+• Reactivation after payment confirmation.
+• No new request notifications for suspended agencies.
+• Membership and commission reporting.
+The supplied scope defines these subscription periods and suspended-agency behavior.
+12. Notification System
+Notification Type Events
+Email New request, new quotation, acceptance/approval and
+membership events
+SMS Critical events such as quotation acceptance and membership
+suspension warnings
+Web Push Firebase-based browser notifications
+Mobile Push — Pro Firebase Cloud Messaging for Traveller and Agency mobile apps
+13. Weather Integration
+• Destination/date-based weather request.
+• Weather API integration.
+• Weather display within the travel planning/request experience.
+• Loading, error and fallback handling.
+• Optional response caching to reduce repeated API calls.
+14. Travel Guide Content Module
+• Region management.
+• Destination management.
+• Article creation/editing.
+• Article publishing/unpublishing.
+• Destination-related recommendations.
+• Manual content management by authorized Admin/Agency users.
+The source calls this content module 'Travel Guide' and states that recommendation content is manually entered rather
+than automatically generated in the base platform. fileciteturn0file0L134-L146
+15. Rating Module
+• Post-service rating invitation.
+• 1–5 star rating.
+• No written reviews.
+• Average agency rating.
+• Total rating count.
+• Rating display alongside agency information.
+• Rating-based agency sorting.
+These rating requirements are defined in the supplied scope.
+16. Multilingual Implementation
+• Base web platform: Turkish and English.
+• Centralized translation keys.
+• Language selector.
+• Localized navigation, forms, validation and system messages.
+• Language-aware content structure.
+• Pro: extended support for 3+ languages.
+17. Pro — Mobile Applications
+The Pro scope adds two native mobile applications implemented with React Native:
+Application Core Functions
+Traveller Mobile Login, profile, travel plan creation, travel requests, quotation
+tracking, messaging and notifications
+Agency Mobile Login, profile, request management, request details, quotation
+submission, messaging and notifications
+The supplied Pro scope specifies separate Traveller and Agency iOS/Android applications and web/mobile push
+synchronization.
+18. Pro — Advanced Route Optimization
+• Accept multiple route stops.
+• Evaluate possible stop sequences.
+• Calculate route distance/time for candidate sequences.
+• Suggest an optimized order.
+• Allow Traveller to accept or modify the suggested order.
+19. Pro — Payment Integration
+• Payment-provider integration.
+• Agency/sub-merchant onboarding support.
+• Customer card-payment flow.
+• Payment status handling.
+• Commission calculation.
+• Marketplace/split-payment handling.
+• Payment callback/webhook handling.
+• Transaction record and reconciliation status.
+The supplied scope describes a sub-merchant/split-payment model such as iyzico Marketplace or PayTR and notes that
+provider-side KYC/approval is handled by the payment provider.
+20. Pro — Digital Contract & E-Signature
+• Trigger contract generation after quotation acceptance.
+• Populate predefined contract template.
+• Include Traveller, Agency, trip and quotation information.
+• Generate PDF.
+• Send document for e-signature.
+• Track signature status.
+• Deliver signed copies to relevant parties.
+The source Pro scope includes template-based contract generation, PDF generation, e-signature and digital delivery.
+fileciteturn0file0L233-L238
+21. Pro — BI Dashboard
+• Travel-request volume.
+• Quotation volume.
+• Quotation acceptance/conversion metrics.
+• Agency performance.
+• Regional demand analysis.
+• Revenue/commission analysis.
+• Date-range filtering.
+22. Pro — AI Automation
+AI Feature Implementation
+Route-Based Recommendations Use selected route and approved Travel Guide content to compile
+relevant attractions and food/beverage recommendations.
+Automatic Translation Translate Travel Guide/travel-plan content into supported
+languages and send output to Admin for approval.
+Quotation Comparison Generate a concise comparison of price and service-scope
+differences across quotations.
+The supplied scope states that AI processes existing Travel Guide content and route data and does not replace
+Agency/Admin content decisions.
+23. MySQL Database Architecture
+Entity Purpose
+users Authentication and common identity
+traveller_profiles Traveller-specific data
+agency_profiles Agency data and status
+agency_documents Agency verification files
+membership_plans Subscription plan definitions
+agency_memberships Membership lifecycle
+travel_requests Traveller requests
+travel_request_days Day-by-day requirements
+routes Calculated route information
+route_stops Ordered route points
+quotations Agency quotations
+quotation_items Structured quotation services
+conversations Traveller-agency conversations
+messages Individual messages
+notifications Notification records
+ratings Post-service ratings
+travel_guide_regions Travel Guide regions
+travel_guide_articles Travel Guide content
+weather_cache Optional cached weather responses
+jobs Accepted quotation/service records
+audit_logs Administrative activity tracking
+payments — Pro Payment transactions
+contracts — Pro Digital contract records
+ai_logs — Pro AI processing/audit records
+The final schema should be normalized, indexed for common filters and protected by foreign-key relationships and
+transactional operations.
+24. REST API Structure
+API Area Example Endpoints
+Authentication /api/auth/register, /login, /refresh, /logout, /profile
+Traveller /api/travellers/profile, /travel-requests, /travel-requests/:id
+Routes /api/routes, /api/routes/calculate, /api/routes/:id/stops
+Agencies /api/agencies, /api/agencies/:id, /api/agencies/documents
+Quotations /api/quotations, /api/quotations/:id, /api/quotations/:id/accept
+Messaging /api/conversations, /api/messages
+Membership /api/memberships, /api/subscriptions, /api/commissions
+Notifications /api/notifications, /api/push
+Weather /api/weather
+Travel Guide /api/regions, /api/articles
+Ratings /api/ratings
+Admin /api/admin/agencies, /api/admin/jobs, /api/admin/reports
+Pro /api/payments, /api/contracts, /api/ai, mobile API consumers
+25. Core End-to-End Workflow
+1. Traveller logs in.
+2. Traveller selects route on the map.
+3. System calculates route, distance, estimated travel time and recommended days.
+4. Traveller completes the detailed travel request.
+5. System identifies relevant active agencies.
+6. Agencies receive request notifications.
+7. Agency reviews request and prepares quotation.
+8. Traveller receives and reviews quotation.
+9. Traveller and Agency communicate through the platform.
+10. Contact information remains filtered before quotation acceptance.
+11. Traveller accepts quotation.
+12. System creates/updates the accepted job record and reveals contact information according to the defined workflow.
+13. Admin can monitor the request/job and membership/commission status.
+14. After service completion, Traveller receives a rating request.
+26. Development Timeline — Standard Web Platform
+Planned duration: approximately 8 weeks with 2–3 developers working in parallel.
+Week Development Scope Expected Output
+Week 1
+Architecture, React/Express/MySQL setup,
+repositories, environments, database
+foundation, authentication foundation
+Technical foundation
+Week 2
+Traveller/Agency/Admin authentication,
+profiles, agency registration, documents,
+approval and role permissions
+Authentication + agency onboarding
+Week 3
+Map integration, location search, route
+stops, ordering, distance/time calculation
+and recommended days
+Working route planner
+Week 4
+Travel request, travel dates, day-by-day
+details, accommodation/services,
+traveller/luggage and submission
+Complete request workflow
+Week 5
+Agency request inbox, quotation creation,
+quotation details, messaging and contact
+filtering
+Quotation + communication workflow
+Week 6
+Membership/subscription tracking,
+commission records,
+suspension/reactivation, admin job records
+and notifications
+Operational administration
+Week 7
+Weather, Travel Guide, ratings, reporting,
+Turkish/English localization and
+responsive refinement
+Functional completion
+Week 8
+Full QA, security checks, regression testing,
+staging/UAT fixes, production deployment
+and smoke testing
+Production web release
+27. Development Timeline — Pro Platform
+Planned duration: approximately 12–13 weeks, with 3 developers preferred for parallel web, backend and mobile work.
+Week Development Scope Expected Output
+Weeks 1–8 Complete Standard web platform Production-ready web baseline
+Week 9
+React Native foundations, shared
+API/authentication, Traveller and Agency
+mobile application foundations
+Mobile foundation
+Week 10
+Mobile travel requests, quotations,
+messaging, notification flows and Firebase
+push
+Mobile functional workflows
+Week 11
+Payment-provider integration, payment
+callbacks/status, commission logic,
+contract/PDF/e-signature workflow
+Payment + contract modules
+Week 12
+Advanced route optimization, BI dashboard
+and AI
+recommendation/translation/quotationcomparison modules
+Advanced feature completion
+Week 13
+Web/mobile/integration QA, performance
+and security checks, UAT, release builds
+and production launch
+Final Pro release
+The source proposal gives the Pro package an estimated 10–12 weeks and notes that mobile store approval and paymentprovider integration are included in that estimate. The 12–13 week execution plan here explicitly reserves time for QA/UAT
+and recognizes that external provider and store approval timing is not fully controlled by the development team.
+28. Team Structure
+Developer Primary Responsibilities
+Developer 1 — Backend Node.js, Express.js, MySQL, API architecture, authentication,
+business logic, integrations, payment/AI services
+Developer 2 — Frontend React.js Traveller, Agency and Admin interfaces, responsive UI,
+map integration and API integration
+Developer 3 — Mobile / QA React Native applications, Firebase, mobile integration, testing,
+regression and release support
+For the Standard option, Developer 3 can be shared/part-time where appropriate. For the Pro option, three developers
+should be allocated for parallel delivery.
+29. Security & Backend Standards
+• JWT-based authentication with secure token handling.
+• Password hashing using a current secure hashing algorithm.
+• Role-based authorization enforced at API level.
+• Request validation and sanitization.
+• Parameterized SQL/ORM protections.
+• Rate limiting on sensitive endpoints.
+• Secure file-upload validation.
+• HTTPS in production.
+• Environment variables/secrets for credentials.
+• Audit logging for sensitive Admin actions.
+• Database transactions for critical state changes.
+• Payment webhook signature/verification where supported.
+• Contact-information filtering enforced server-side.
+30. Testing & Quality Assurance
+Testing Type Scope
+Unit Testing Core backend services, validations and business rules
+API Testing Authentication, CRUD, authorization and critical workflows
+Integration Testing Maps, weather, email, SMS, Firebase and Pro integrations
+UI Testing Traveller, Agency and Admin workflows
+Responsive Testing Desktop, tablet and mobile-browser layouts
+Role Testing Traveller, Agency and Admin access boundaries
+Security Testing Authentication, authorization, input validation, uploads and contact
+filtering
+Regression Testing Existing features after new module releases
+UAT Client testing on staging before production
+31. Deployment & DevOps Plan
+15. Provision Linux production environment.
+16. Install/configure Node.js and MySQL.
+17. Configure Nginx reverse proxy.
+18. Configure HTTPS/SSL.
+19. Configure production environment variables and secrets.
+20. Run database migrations.
+21. Build React production applications.
+22. Deploy Express.js API.
+23. Configure Traveller, Agency and Admin domains/subdomains as finalized.
+24. Configure third-party API credentials.
+25. Configure database backups.
+26. Configure application/process monitoring and logs.
+27. Perform production smoke testing.
+32. SEO Exclusion
+SEO work is completely excluded from this development plan. No SEO strategy, keyword research, on-page SEO, technical
+SEO campaign, backlink building, ranking campaign, SEO reporting or SEO consultancy is included.
+The Travel Guide CMS remains part of the product because it is a functional content-management module. SEO-related
+items appearing in the original scope are intentionally excluded from this revised development plan.
+33. Third-Party Dependencies
+• Map/routing provider and usage limits.
+• Weather API and usage limits.
+• Email delivery provider.
+• SMS provider and message charges.
+• Firebase services.
+• Payment provider and provider-side KYC/sub-merchant approval.
+• E-signature provider.
+• AI/LLM API usage.
+• Mobile application store accounts and review process.
+The source proposal states that server/hosting, domain, SSL and third-party API usage fees are separate operational
+expenses. The payment-provider sub-merchant approval process is handled directly by the provider.
+34. Scope Boundaries
+• No multiple internal Agency sub-accounts in Version 1.
+• No full hotel inventory/booking engine.
+• No flight booking engine.
+• No vehicle dispatch/inventory system.
+• No ERP/accounting platform.
+• No custom GIS engine.
+• No custom-trained AI model.
+• No unlimited third-party API or AI usage.
+• No SEO services.
+35. Client Inputs Required for Development
+• Final brand assets and logo.
+• Final Traveller/Agency/Admin domain or subdomain structure.
+• Approved business rules and quotation fields.
+• Map/routing provider credentials.
+• Weather API credentials.
+• Email provider credentials.
+• SMS provider credentials.
+• Firebase project credentials.
+• Payment provider credentials for Pro.
+• E-signature provider credentials for Pro.
+• AI provider credentials for Pro.
+• Final Turkish/English content and legal documents.
+• Legal approval of Terms, Membership Agreement, Privacy Policy and platform liability language.
+The source notes that the final domain structure will be determined at project commencement and that legal agreements
+should be prepared or approved by qualified counsel.
+36. Definition of Completion
+• All agreed modules are implemented according to the selected package.
+• Traveller, Agency and Admin critical workflows operate end-to-end.
+• Role-based access is enforced at API level.
+• Critical API and UI test cases pass.
+• Responsive browser testing is completed.
+• Third-party integrations pass agreed test scenarios.
+• No known blocker or critical defect remains at production release.
+• Production environment is deployed and smoke-tested.
+• Client UAT scenarios are completed for the agreed scope.
+37. Final Development Scope Summary
+Area Standard Web Pro
+Traveller Web Included Included
+Agency Web Included Included
+Admin Web Included Included
+Route-first planning Included Included
+Travel requests Included Included
+Quotation + messaging Included Included
+Membership/admin operations Included Included
+Email/SMS/Web Push Included Included
+Weather Included Included
+Travel Guide Included Included
+Ratings Included Included
+Turkish + English Included Included
+Traveller mobile — Included
+Agency mobile — Included
+Advanced route optimization — Included
+3+ language support — Included
+Marketplace/split payment — Included
+Digital contract/e-signature — Included
+Advanced BI — Included
+AI recommendations — Included
+AI translation — Included
+AI quotation comparison — Included
+SEO Excluded Excluded
+38. Source Basis
+Primary source: Troublefree Holiday preliminary scope/proposal dated 19 September 2026. The source identifies itself as a
+preliminary scope/proposal and not a final contract. 

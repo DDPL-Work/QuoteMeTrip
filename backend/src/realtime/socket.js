@@ -59,6 +59,16 @@ export function roomForConversation(conversationId) {
   return `conversation:${Number(conversationId)}`;
 }
 
+const userPresenceMap = new Map();
+
+export function getUserPresence(userId) {
+  const data = userPresenceMap.get(Number(userId));
+  if (!data) {
+    return { isOnline: false, lastSeen: null };
+  }
+  return { isOnline: data.isOnline, lastSeen: data.lastSeen };
+}
+
 export function initSocketServer(httpServer) {
   if (io) {
     return io;
@@ -87,6 +97,39 @@ export function initSocketServer(httpServer) {
 
   io.on('connection', (socket) => {
     const user = socket.data.user;
+    const uid = Number(user.id);
+
+    let presence = userPresenceMap.get(uid);
+    if (!presence) {
+      presence = { isOnline: true, lastSeen: null, socketIds: new Set() };
+      userPresenceMap.set(uid, presence);
+    }
+    presence.socketIds.add(socket.id);
+    const wasOffline = !presence.isOnline;
+    presence.isOnline = true;
+
+    if (wasOffline) {
+      io.emit('presence:update', { userId: uid, isOnline: true });
+    }
+
+    socket.on('presence:get', (payload, acknowledge) => {
+      const targetId = Number(payload?.userId);
+      if (targetId) {
+        acknowledge?.({ ok: true, presence: getUserPresence(targetId) });
+      }
+    });
+
+    socket.on('disconnect', () => {
+      const current = userPresenceMap.get(uid);
+      if (current) {
+        current.socketIds.delete(socket.id);
+        if (current.socketIds.size === 0) {
+          current.isOnline = false;
+          current.lastSeen = new Date();
+          io.emit('presence:update', { userId: uid, isOnline: false, lastSeen: current.lastSeen });
+        }
+      }
+    });
 
     socket.on('conversation:join', async (payload, acknowledge) => {
       const conversationId = Number(payload?.conversationId);

@@ -7,8 +7,28 @@
  */
 
 import { MOCK_DESTINATIONS, MOCK_GUIDES, MOCK_AGENCIES } from '../data/public-data.js';
+import { travelGuideApi } from '../lib/api.js';
 
 export async function getDestinations({ search = '', region = '' } = {}) {
+  try {
+    const liveData = await travelGuideApi.getDestinations({ region });
+    if (Array.isArray(liveData) && liveData.length > 0) {
+      let results = liveData;
+      const query = search.toLowerCase().trim();
+      if (query) {
+        results = results.filter(
+          (d) =>
+            d.name?.toLowerCase().includes(query) ||
+            d.region?.toLowerCase().includes(query) ||
+            d.description?.toLowerCase().includes(query),
+        );
+      }
+      return results;
+    }
+  } catch (err) {
+    // Graceful fallback to static repository
+  }
+
   const query = search.toLowerCase().trim();
   const reg = region.toLowerCase().trim();
 
@@ -28,6 +48,19 @@ export async function getDestinations({ search = '', region = '' } = {}) {
 }
 
 export async function getDestinationBySlug(slug) {
+  try {
+    const liveItem = await travelGuideApi.getDestinationBySlug(slug);
+    if (liveItem) {
+      const articles = await travelGuideApi.getArticles().catch(() => []);
+      const related = Array.isArray(articles)
+        ? articles.filter((a) => a.destinationId === liveItem.id)
+        : [];
+      return { destination: liveItem, relatedGuides: related };
+    }
+  } catch (err) {
+    // Fallback to static
+  }
+
   const item = MOCK_DESTINATIONS.find((d) => d.slug === slug);
   if (!item) {
     const error = new Error(`Destination '${slug}' not found.`);
@@ -39,6 +72,25 @@ export async function getDestinationBySlug(slug) {
 }
 
 export async function getTravelGuides({ search = '', category = '' } = {}) {
+  try {
+    const liveArticles = await travelGuideApi.getArticles();
+    if (Array.isArray(liveArticles) && liveArticles.length > 0) {
+      let results = liveArticles;
+      const query = search.toLowerCase().trim();
+      if (query) {
+        results = results.filter(
+          (g) =>
+            g.title?.toLowerCase().includes(query) ||
+            g.summary?.toLowerCase().includes(query) ||
+            g.category?.toLowerCase().includes(query),
+        );
+      }
+      return results;
+    }
+  } catch (err) {
+    // Graceful fallback
+  }
+
   const query = search.toLowerCase().trim();
   const cat = category.toLowerCase().trim();
 
@@ -58,6 +110,19 @@ export async function getTravelGuides({ search = '', category = '' } = {}) {
 }
 
 export async function getTravelGuideBySlug(slug) {
+  try {
+    const liveArticle = await travelGuideApi.getArticleBySlug(slug);
+    if (liveArticle) {
+      const articles = await travelGuideApi.getArticles().catch(() => []);
+      const related = Array.isArray(articles)
+        ? articles.filter((a) => a.slug !== slug).slice(0, 2)
+        : [];
+      return { guide: liveArticle, relatedGuides: related };
+    }
+  } catch (err) {
+    // Fallback
+  }
+
   const item = MOCK_GUIDES.find((g) => g.slug === slug);
   if (!item) {
     const error = new Error(`Travel guide '${slug}' not found.`);

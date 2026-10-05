@@ -40,16 +40,14 @@ vi.mock('../../../lib/api.js', () => ({
   },
   authApi: {
     refresh: vi.fn().mockResolvedValue({ accessToken: 'mock-token' }),
-    me: vi
-      .fn()
-      .mockResolvedValue({
-        user: {
-          id: 1,
-          email: 'test@example.com',
-          role: 'traveller',
-          firstName: 'Ashish',
-        },
-      }),
+    me: vi.fn().mockResolvedValue({
+      user: {
+        id: 1,
+        email: 'test@example.com',
+        role: 'traveller',
+        firstName: 'Ashish',
+      },
+    }),
   },
   setUnauthorizedListener: vi.fn(),
 }));

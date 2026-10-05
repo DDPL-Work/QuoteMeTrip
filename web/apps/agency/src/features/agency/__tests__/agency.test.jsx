@@ -15,6 +15,7 @@ import { QuotationForm } from '../../../components/QuotationForm.jsx';
 import { QuotationTotals } from '../../../components/QuotationTotals.jsx';
 
 vi.mock('../../../lib/api.js', () => ({
+  resolveMediaUrl: (url) => url,
   apiClient: {
     setAccessToken: vi.fn(),
     clearAccessToken: vi.fn(),
@@ -115,7 +116,7 @@ describe('agency inbox', () => {
     renderGuarded('/requests');
     await waitFor(() => expect(screen.getByText(/Request #11/)).toBeInTheDocument());
     expect(agencyRequestApi.list).toHaveBeenCalledWith(
-      expect.objectContaining({ matchStatus: 'matched,viewed,quoted' }),
+      expect.objectContaining({ matchStatus: undefined }),
     );
   });
 

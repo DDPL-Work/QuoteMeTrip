@@ -1,42 +1,40 @@
-import { useEffect, useState } from 'react';
-import { messagingApi } from '../lib/api.js';
-import { ConversationList } from '@troublefree/ui';
-import { ConversationCard } from '../components/Phase6.jsx';
+import { PageHeader } from '@troublefree/ui';
+import { useAuth } from '../features/auth/auth-context.js';
+import { ChatWorkspace } from '../components/ChatWorkspace.jsx';
 import { MotionPage } from '../components/motion/MotionPage.jsx';
 
 export function MessagesPage() {
-  const [conversations, setConversations] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await messagingApi.listConversations({ page: 1, pageSize: 20 });
-        if (!cancelled) setConversations(data.conversations ?? []);
-      } catch (e) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load messages.');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { user } = useAuth();
 
   return (
-    <MotionPage>
-      <main className="tf-page">
-        <h1>Messages</h1>
-        {error && <p role="alert">{error}</p>}
-        {conversations.length > 0 ? (
-          <ul className="tf-list" aria-label="Conversations">
-            {conversations.map((conversation) => (
-              <ConversationCard key={conversation.id} conversation={conversation} />
-            ))}
-          </ul>
-        ) : (
-          <ConversationList conversations={conversations} />
-        )}
+    <MotionPage style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100%', minHeight: 0 }}>
+      <main
+        className="tf-portal-page"
+        aria-label="Messages"
+        style={{ paddingBottom: 0, display: 'flex', flexDirection: 'column', flex: 1, height: '100%', minHeight: 0 }}
+      >
+        <PageHeader
+          title="Messages"
+          subtitle="Real-time messaging with licensed travel agencies regarding your trip quotations."
+        />
+
+        {/* Retain standard h1 for testing and SEO accessibility */}
+        <h1
+          style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            border: 0,
+          }}
+        >
+          Messages
+        </h1>
+
+        <ChatWorkspace currentUserId={user?.id} currentUserRole="traveller" />
       </main>
     </MotionPage>
   );

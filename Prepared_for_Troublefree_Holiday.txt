@@ -1,0 +1,318 @@
+Prepared for: Troublefree Holiday
+Date: September 19, 2026
+This document is a preliminary scope and proposal draŌ prepared based on the discussions held. It is
+not a final contract.
+1. Project Overview
+The plaƞorm will create a matching and quotaƟon environment between customers (Travellers) who
+wish to plan a trip and tourism agencies (Agencies) that provide quotaƟons for those travel plans.
+The process begins with the submission of a travel request, conƟnues with the collecƟon of agency
+quotaƟons, and is completed when a quotaƟon is accepted. The complete workflow is described in
+detail in SecƟon 3.
+The plaƞorm itself will not be a party to the travel service. The service fee will be paid directly
+between the customer and the agency, outside the plaƞorm.
+The plaƞorm's revenue will consist of a fixed membership fee or commission paid by agencies.
+2. Plaƞorm Structure and User Roles
+2.1 Three Separate Interfaces
+The plaƞorm will consist of three separate interfaces:
+ Traveller — Public visitor/customer interface. Users can register using Google/social media
+accounts.
+ Agency — Agency interface. RegistraƟon is available only through a corporate/agency email
+address. Social media login is not available. Each account is limited to a single user; rolebased sub-users are not included in Version 1.
+ Admin — Ticket Line administraƟon panel. Membership approvals, subscripƟon/commission
+tracking, job approval records, and dispute/arbitraƟon processes will be managed from this
+panel.
+Note: As an example for the domain structure, the main website (Traveller), an agency subdomain
+(Agency), and a separate Admin panel were discussed. The English naming convenƟon (Traveller /
+Agency / Admin) is preferred. The final domain structure will be determined at the beginning of the
+project.
+2.2 AuthenƟcaƟon Rules
+ Customer: May log in using a Google/social media account. SMS OTP verificaƟon will not be
+used.
+ Agency: RegistraƟon is available only with a corporate/agency email address. The agency is
+responsible for its account.
+ Agency membership: Cannot be completed without accepƟng the membership agreement.
+3. Core Workflow
+3.1 CreaƟng a Travel Plan
+The process starts with the map and the form comes aŌerward. This sequence is intenƟonal: the
+route is determined first because criƟcal informaƟon such as distance, number of days, and stop
+order is derived from the route and can then be used to automaƟcally populate the form.
+The member's personal informaƟon, such as name, surname, email address, and WhatsApp number,
+is automaƟcally retrieved from their profile and does not need to be entered again for every request.
+1. Route SelecƟon
+The member selects the starƟng point, any intermediate stops, and the final desƟnaƟon on the map
+and arranges them in the desired order.
+2. AutomaƟc CalculaƟon
+The system draws the route between these points and calculates the total distance (km) and
+esƟmated travel Ɵme.
+Based on the distance, the system provides a recommended number of travel days as an iniƟal value.
+The member can modify this value if desired.
+3. AutomaƟc Form PopulaƟon
+The route generated from the map, stop sequence, total distance, and recommended number of days
+are automaƟcally transferred to the form.
+The member does not need to enter this informaƟon manually.
+4. Day-by-Day Details
+For each desƟnaƟon/day, the member can select accommodaƟon preferences (3/4/5-star or S Class)
+and the required services (hotel / guide / driver).
+The member may also leave this secƟon blank and allow the agency to handle the planning
+completely.
+5. Request Details and Submission
+The member enters:
+ Number of travellers
+ Number of pieces of luggage
+ Required service scope (hotel only / vehicle + driver only / full package)
+ Any special requests or notes
+The completed request is then submiƩed to the relevant agencies.
+3.2 QuotaƟon Process
+ The request is sent as a noƟficaƟon to member agencies operaƟng in the relevant region
+(email; push/SMS in advanced packages).
+ The agency may provide a single package quotaƟon covering vehicle + driver, a guide where
+required, and hotel reservaƟons if requested.
+ UnƟl a quotaƟon is accepted, the customer and agency communicate only through the
+plaƞorm, with contact informaƟon such as phone number, email address, and website
+hidden.
+ Once a quotaƟon is accepted, contact informaƟon is mutually revealed. InformaƟon
+regarding which services are included is recorded in the Admin system as structured data,
+rather than as message content.
+3.3 Payment — Off-Plaƞorm Model
+The travel service fee will be paid enƟrely outside the plaƞorm.
+The customer pays the service fee directly to the agency through methods such as:
+ Bank transfer
+ The agency's own payment link
+ Cash
+ Other payment methods offered by the agency
+The plaƞorm does not parƟcipate in, view, or store these payments.
+Whether the agency requests a deposit + balance payment or full payment is enƟrely at the agency's
+discreƟon.
+Note: A professional payment infrastructure through which credit-card payments are transferred
+directly to the agency is offered as a separate module in the Pro package — see SecƟon 5.
+3.4 Agency–Plaƞorm Fees
+This secƟon concerns the membership fees paid by agencies to the plaƞorm and should not be
+confused with the service fees paid by customers to agencies.
+Fixed-Fee OpƟon
+Monthly subscripƟon.
+Possible subscripƟon periods may include:
+ Monthly
+ 3 months
+ 6 months
+ Annual
+If payment is not made, the agency membership is suspended. The membership becomes acƟve
+again on the day payment is received.
+Commission OpƟon
+Payment must be made within 7 days of job confirmaƟon.
+If payment is not made, the agency membership is suspended.
+Payment is processed manually by the Admin, and the membership remains acƟve for one month
+from the date the payment is processed.
+Suspended Agencies
+No new request noƟficaƟons will be sent to suspended agencies.
+Note: This workflow requires a dedicated Admin/operaƟons person to conƟnuously monitor the
+system for payment checks and manual approvals. This is an operaƟonal requirement rather than a
+technical requirement.
+3.5 ArbitraƟon and Responsibility
+The plaƞorm will not be responsible for the travel service itself, such as vehicle breakdowns, missing
+services, or similar service-related issues. Such responsibility belongs to the service provider agency.
+If a dispute occurs between the parƟes, the plaƞorm may act as an intermediary/arbitrator and will
+have the authority to remove an agency from the plaƞorm in cases of rule violaƟons.
+IMPORTANT LEGAL NOTICE
+In Türkiye, consumer arbitraƟon commiƩees and electronic-commerce/intermediary service provider
+regulaƟons may impose specific responsibiliƟes on two-sided marketplace plaƞorms of this type.
+The statement that "the plaƞorm is not responsible" alone does not provide sufficient legal
+protecƟon.
+The membership agreement, Terms of Use, and the plaƞorm's final liability limitaƟons should be
+prepared and/or approved by a qualified lawyer.
+This document does not consƟtute legal advice.
+3.6 Post-Service RaƟng
+AŌer the trip is completed, the customer will receive an invitaƟon to rate the agency.
+RaƟngs will be collected only on a 1–5 star basis. WriƩen reviews will not be available.
+ The agency profile will display the average raƟng and total number of raƟngs.
+ The average raƟng will be displayed next to the agency name on the quotaƟon screen.
+ The "Our Agencies" page will be sorted by raƟng by default.
+4. Content Management and SEO
+Ticket Line aims to generate organic search traffic through content without relying on paid
+adverƟsing.
+The plaƞorm will include a content/blog module called "Travel Guide", where arƟcles can be added
+for each tourist desƟnaƟon and grouped by region.
+Main NavigaƟon
+ Programs
+ Vehicles
+ Sitemap
+ Contact
+ Travel Guide
+AccommodaƟon and aƩracƟon recommendaƟons will not be generated automaƟcally. They will be
+manually entered as recommendaƟon content by agencies or the Admin.
+SEO and Content Features
+ Page-level meta Ɵtle and meta descripƟon management
+ sitemap.xml
+ HTML sitemap
+ Google Search Console setup
+ Google AnalyƟcs setup
+ Google Business Profile setup
+ Google Workspace setup
+ MulƟlingual support, with at least Turkish and English
+5. Package OpƟons
+The project is offered at two different scope and budget levels.
+The Pro Package includes the enƟre Standard Package and adds advanced professional modules,
+including AI-powered automaƟon.
+STANDARD PACKAGE
+50,000 TL
+All essenƟal infrastructure, planning assistance features, and content/SEO layers required for the
+plaƞorm to operate professionally and completely.
+Scope
+ Traveller and Agency web interfaces, responsive and mobile-browser compaƟble
+ Map-based travel planning form
+ Route-first planning workflow
+ AutomaƟc route, distance, and recommended-day calculaƟon
+ AutomaƟc transfer of route data into the form
+ Day-by-day travel details
+ Personal informaƟon automaƟcally retrieved from the member profile
+ ParƟal quotaƟon opƟons (hotel only / vehicle only / package)
+ QuotaƟon and messaging system
+ Contact-informaƟon filtering
+ Agency registraƟon using corporate email
+ Document upload
+ Admin approval interface
+ Membership agreement acceptance workflow
+ SubscripƟon/commission tracking, processed manually through the Admin panel
+ Email noƟficaƟons for new requests, new quotaƟons, and acceptance/approval
+ Admin panel for approvals, suspension, and job records
+ Turkish/English mulƟlingual support
+ Weather integraƟon based on travel dates
+ Travel Guide content module
+ Region-based arƟcle/blog management
+ SEO: page-level metadata management
+ sitemap.xml and HTML sitemap
+ Google Search Console / AnalyƟcs / Business Profile / Workspace setup
+ SMS noƟficaƟons for criƟcal events such as quotaƟon acceptance and membership
+suspension warnings
+ Web push noƟficaƟon infrastructure using Firebase
+ SubscripƟon-cycle automaƟon
+ Monthly / 3-month / 6-month / annual subscripƟon opƟons
+ AutomaƟc reminder emails
+ Admin reporƟng
+ AcƟve/suspended agency reports
+ Revenue/commission summary dashboard
+ Post-service star raƟng without wriƩen reviews
+ Average agency raƟng
+ RaƟng-based agency sorƟng
+Payment Model
+Payments are completely outside the plaƞorm — see SecƟon 3.3.
+EsƟmated Development Time
+4 weeks (1 month)
+PRO PACKAGE
+70,000 TL
+Everything included in the Standard Package, plus naƟve mobile applicaƟons, AI-powered
+automaƟon, professional payment infrastructure, and an automated digital contract system,
+transforming Ticket Line into a fully equipped digital travel plaƞorm.
+AddiƟonal Features
+ Traveller mobile applicaƟon — iOS + Android
+o Travel plan creaƟon
+o QuotaƟon tracking
+o NoƟficaƟons
+ Agency mobile applicaƟon — iOS + Android
+o Request management
+o QuotaƟon submission
+o Messaging
+ Full push noƟficaƟon system
+o Firebase Cloud Messaging
+o Web + mobile synchronizaƟon
+ Advanced route opƟmizaƟon
+o Suggested ordering of mulƟple stops
+ Extended mulƟlingual support
+o 3+ languages
+ Professional payment infrastructure
+o Credit-card payment directly to the agency
+o Marketplace / split-payment model
+o AutomaƟc and transparent plaƞorm commission deducƟon
+ Automated digital contract system
+o Contract generaƟon from a predefined template upon quotaƟon acceptance
+o PDF generaƟon
+o E-signature integraƟon
+o Digital delivery of signed copies to both parƟes
+ Advanced BI dashboard
+o Performance analysis
+o Conversion rates
+o Region-based demand analysis
+ Corporate idenƟty
+o Custom theme
+o Brand colors
+o Logo integraƟon
+ 6 months of free priority technical support
+AI AutomaƟon
+Manual content control will remain in place.
+AI will not replace the agency/Admin in making content decisions. Instead, it will process exisƟng
+Travel Guide content and route data to save Ɵme.
+Route-Based Personalized RecommendaƟons
+Based on the route selected by the customer on the map, relevant aƩracƟons and food & beverage
+recommendaƟons will be automaƟcally compiled from approved Travel Guide content.
+AutomaƟc MulƟlingual TranslaƟon
+Travel Guide and travel-plan content created by agencies/Admin will be automaƟcally translated into
+other supported languages before publicaƟon and submiƩed to the Admin for approval.
+QuotaƟon Comparison Summary
+When a customer receives mulƟple quotaƟons, the system will automaƟcally generate a short
+comparison summary highlighƟng differences in price and service scope.
+Payment Infrastructure
+AutomaƟcally transferring a credit-card payment directly to the agency's account is technically
+possible through a payment provider's sub-merchant / split-payment model, such as iyzico
+Marketplace or PayTR.
+Under this model, the plaƞorm commission is automaƟcally deducted and the remaining amount is
+transferred to the agency.
+Each agency must be approved as a sub-merchant by the relevant payment provider through its
+KYC/documentaƟon process.
+This approval process is handled directly by the payment provider. The payment integraƟon itself is
+included in the Pro Package.
+EsƟmated Development Time
+10–12 weeks (approximately 2.5 months)
+This includes mobile applicaƟon store approval processes and payment-provider integraƟon.
+6. Comparison Table
+Feature / Module Standard Pro
+Traveller web interface ✓ ✓
+Agency web interface ✓ ✓
+Admin panel ✓ ✓
+Map-first route planning and automaƟcally populated form ✓ ✓
+ParƟal quotaƟon (hotel / vehicle / package) ✓ ✓
+QuotaƟon & messaging + contact filtering ✓ ✓
+Membership agreement + document approval ✓ ✓
+SubscripƟon/commission tracking (manual) ✓ ✓
+Email noƟficaƟons ✓ ✓
+Responsive design (mobile browser) ✓ ✓
+Turkish/English mulƟlingual support ✓ ✓
+Map & route visualizaƟon ✓ ✓
+Feature / Module Standard Pro
+Weather integraƟon ✓ ✓
+Travel Guide content/blog module ✓ ✓
+SEO + Google tools setup ✓ ✓
+SMS noƟficaƟons ✓ ✓
+Web push noƟficaƟons (Firebase) ✓ ✓
+Admin reporƟng ✓ ✓
+Post-service star raƟng + sorƟng ✓ ✓
+NaƟve Traveller mobile applicaƟon — ✓
+NaƟve Agency mobile applicaƟon — ✓
+Full mobile push noƟficaƟons (web + mobile synchronizaƟon) — ✓
+Advanced route opƟmizaƟon — ✓
+3+ language support — ✓
+Professional payment infrastructure (credit card → agency) — ✓
+Automated digital contract + e-signature — ✓
+Advanced BI dashboard — ✓
+Corporate idenƟty / custom theme — ✓
+6 months of free priority support — ✓
+AI route-based aƩracƟon / food recommendaƟons — ✓
+AI automaƟc mulƟlingual translaƟon — ✓
+AI quotaƟon comparison summary — ✓
+    y / g g
+30% Upon final delivery and launch
+. Out-of-Scope Items and MaƩers Requiring ClarificaƟon
+ Server/hosƟng, domain name, SSL cerƟficate, and third-party API usage fees (maps, weather,
+SMS, email delivery) are not included in the prices. These should be planned separately as
+monthly operaƟng expenses.
+ The professional payment infrastructure included in the Pro Package covers integraƟon with a
+payment provider such as iyzico or PayTR and the technical implementaƟon of the submerchant/split-payment model. The sub-merchant agreement and approval process are
+handled directly with the payment provider.
+ The membership agreement, Terms of Use, and the plaƞorm's liability limitaƟons under
+consumer arbitraƟon commiƩee and electronic-commerce/intermediary service provider
+regulaƟons should be prepared and/or approved by a lawyer. This document does not
+consƟtute legal advice.
+ Role-based mulƟple agency users (internal office sub-accounts) are not included in Version 1
+and may be considered as a separate future development.
+ Prices may be revised aŌer the final project scope has been clarified.
+End of Document
+AI quotaƟon comparison summary — ✓
+7. Proposed Payment Schedule 

@@ -1,7 +1,7 @@
-// Agency job detail (Phase 6).
-
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { FiArrowLeft, FiAlertCircle } from 'react-icons/fi';
+import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { jobApi } from '../lib/api.js';
 import { JobDetailView } from '../components/Phase6.jsx';
 
@@ -35,10 +35,44 @@ export function JobDetailPage() {
   }
 
   return (
-    <main className="tf-page">
-      <h1>Job #{id}</h1>
-      {error && <p role="alert">{error}</p>}
+    <AgencyAppLayout activeItem="jobs">
+      <Link
+        to="/jobs"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          color: 'var(--agency-secondary)',
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          marginBottom: '1rem',
+          textDecoration: 'none',
+        }}
+      >
+        <FiArrowLeft /> Back to Jobs
+      </Link>
+
+      <div className="agency-page-header" style={{ marginBottom: '1.25rem' }}>
+        <div>
+          <h1 className="agency-page-title" style={{ fontSize: '1.65rem' }}>
+            Job #{id}
+          </h1>
+          <p className="agency-page-subtitle">
+            Operational trip execution and confirmed booking details.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="agency-error-state" role="alert" style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <FiAlertCircle style={{ fontSize: '1.4rem' }} />
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
       <JobDetailView job={job} onStatusChange={handleStatusChange} />
-    </main>
+    </AgencyAppLayout>
   );
 }

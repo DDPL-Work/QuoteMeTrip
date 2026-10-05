@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 
 /**
  * AppPreloader — Official First-Load & Hard Refresh Preloader
- * 
+ *
  * Renders the approved Code_Generated_Image.gif asset directly in a responsive,
  * fullscreen background container matching exact reference color #F5FAF7 (RGB: 245, 250, 247).
- * 
+ *
  * Requirements:
  * - Viewport & canvas background: #F5FAF7 exactly.
  * - Edges blend seamlessly into container.

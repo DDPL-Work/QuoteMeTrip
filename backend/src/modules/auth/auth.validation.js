@@ -73,7 +73,12 @@ export function validateTravellerRegistration(body = {}) {
     name: validateName(body.name),
     firstName: body.firstName !== undefined ? String(body.firstName).trim().slice(0, 80) : null,
     lastName: body.lastName !== undefined ? String(body.lastName).trim().slice(0, 80) : null,
-    phone: body.phone !== undefined ? String(body.phone).trim().slice(0, 30) : null,
+    phone:
+      body.phone !== undefined
+        ? String(body.phone).trim().slice(0, 30)
+        : body.contactNumber !== undefined
+          ? String(body.contactNumber).trim().slice(0, 30)
+          : null,
   };
 }
 

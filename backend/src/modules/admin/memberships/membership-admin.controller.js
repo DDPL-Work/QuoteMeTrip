@@ -29,6 +29,15 @@ export async function updateMembershipPlan(req, res, next) {
   }
 }
 
+export async function deleteMembershipPlan(req, res, next) {
+  try {
+    await service.deleteMembershipPlan(req.params.id, req.user.id, { ip: req.ip });
+    res.json({ success: true, message: 'Membership plan deleted successfully.' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getMemberships(req, res, next) {
   try {
     const result = await service.listMemberships(req.query);

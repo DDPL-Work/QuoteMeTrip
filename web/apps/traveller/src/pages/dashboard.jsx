@@ -69,7 +69,8 @@ export function DashboardPage() {
   }
 
   const welcomeTime = getTimeOfDay(t);
-  const firstName = user?.firstName || user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Traveller';
+  const firstName =
+    user?.firstName || user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Traveller';
   const welcomeText = t('dashboard.welcome', { timeOfDay: welcomeTime, name: firstName })
     .replace('{timeOfDay}', welcomeTime)
     .replace('{name}', firstName);
@@ -105,245 +106,321 @@ export function DashboardPage() {
         className="tf-portal-main"
         style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}
       >
-      {/* Top Breadcrumb Navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', fontSize: '13.5px', color: '#56625B' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link to="/" style={{ color: '#147D33', fontWeight: '700', textDecoration: 'none' }}>
-            🌐 Public Portal
-          </Link>
-          <span>/</span>
-          <span style={{ fontWeight: '600', color: '#13291C' }}>Dashboard</span>
-        </div>
-        <Link to="/" style={{ color: '#0C4E28', fontWeight: '700', fontSize: '13px', background: '#E5F2EA', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none' }}>
-          Explore Portal Home →
-        </Link>
-      </div>
-
-      <div style={{ position: 'relative', marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3DCC2' }}>
-        <HeroIllustration style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(90deg, rgba(243,220,194,0.95) 0%, rgba(243,220,194,0.6) 50%, transparent 100%)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px' }}>
-          <div>
-            <h1 className="tf-portal-page-title" style={{ color: '#13291C', margin: 0, fontSize: '2rem' }}>{welcomeText}</h1>
-            <p className="tf-portal-page-subtitle" style={{ color: '#13291C', margin: '8px 0 0', opacity: 0.8 }}>{t('dashboard.planNextTrip')}</p>
+        {/* Top Breadcrumb Navigation */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px',
+            fontSize: '13.5px',
+            color: '#56625B',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link to="/" style={{ color: '#147D33', fontWeight: '700', textDecoration: 'none' }}>
+              🌐 Public Portal
+            </Link>
+            <span>/</span>
+            <span style={{ fontWeight: '600', color: '#13291C' }}>Dashboard</span>
           </div>
-          <div>
-            <Button variant="line" onClick={actions.refreshAll} aria-label={t('dashboard.refresh')} style={{ backgroundColor: 'rgba(255,255,255,0.8)', border: 'none' }}>
-              <Icons.Refresh aria-hidden="true" style={{ marginRight: '8px' }} />
-              {t('dashboard.refresh')}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Action Card */}
-      <section
-        className="tf-card tf-card-default"
-        style={{
-          margin: '24px 0',
-          borderLeft: '4px solid var(--tf-portal-orange)',
-          background: 'var(--tf-portal-surface-soft)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div>
-          <h2>{actionTitle}</h2>
-          <p style={{ color: 'var(--tf-portal-text-muted)', marginBottom: '16px' }}>{actionDesc}</p>
-          <Link to={actionLink} className="tf-btn tf-btn-primary tf-btn-md">
-            {actionBtn}
+          <Link
+            to="/"
+            style={{
+              color: '#0C4E28',
+              fontWeight: '700',
+              fontSize: '13px',
+              background: '#E5F2EA',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+            }}
+          >
+            Explore Portal Home →
           </Link>
         </div>
-        <div style={{ width: '200px', flexShrink: 0, display: 'flex', justifyContent: 'flex-end', opacity: 0.9 }}>
-          <RouteIllustration kind="balloons" style={{ width: '150px' }} />
+
+        <div
+          style={{
+            position: 'relative',
+            marginBottom: '24px',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            backgroundColor: '#F3DCC2',
+          }}
+        >
+          <HeroIllustration style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                'linear-gradient(90deg, rgba(243,220,194,0.95) 0%, rgba(243,220,194,0.6) 50%, transparent 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px',
+            }}
+          >
+            <div>
+              <h1
+                className="tf-portal-page-title"
+                style={{ color: '#13291C', margin: 0, fontSize: '2rem' }}
+              >
+                {welcomeText}
+              </h1>
+              <p
+                className="tf-portal-page-subtitle"
+                style={{ color: '#13291C', margin: '8px 0 0', opacity: 0.8 }}
+              >
+                {t('dashboard.planNextTrip')}
+              </p>
+            </div>
+            <div>
+              <Button
+                variant="line"
+                onClick={actions.refreshAll}
+                aria-label={t('dashboard.refresh')}
+                style={{ backgroundColor: 'rgba(255,255,255,0.8)', border: 'none' }}
+              >
+                <Icons.Refresh aria-hidden="true" style={{ marginRight: '8px' }} />
+                {t('dashboard.refresh')}
+              </Button>
+            </div>
+          </div>
         </div>
-      </section>
 
-      {/* Summary Metrics */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '16px',
-          marginBottom: '32px',
-        }}
-      >
-        <SummaryCard
-          count={requests.length}
-          label={t('dashboard.summary.requests')}
-          loading={loading.requests}
-          link="/travel-requests"
-        />
-        <SummaryCard
-          count={quotations.length}
-          label={t('dashboard.summary.quotations')}
-          loading={loading.requests}
-          link="/travel-requests"
-        />
-        <SummaryCard
-          count={jobs.length}
-          label={t('dashboard.summary.jobs')}
-          loading={loading.jobs}
-          link="/jobs"
-        />
-        <SummaryCard
-          count={conversations.length}
-          label={t('dashboard.summary.messages')}
-          loading={loading.conversations}
-          link="/messages"
-        />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '24px',
-        }}
-      >
-        {/* Recent Requests */}
-        <DashboardSection
-          title={t('dashboard.section.requests')}
-          link="/travel-requests"
-          linkText={t('dashboard.viewAll')}
-          loading={loading.requests}
-          error={error.requests}
-          onRetry={actions.fetchRequests}
+        {/* Primary Action Card */}
+        <section
+          className="tf-card tf-card-default"
+          style={{
+            margin: '24px 0',
+            borderLeft: '4px solid var(--tf-portal-orange)',
+            background: 'var(--tf-portal-surface-soft)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
-          {requests.length === 0 ? (
-            <EmptyState title={t('dashboard.empty.requests')} icon={<ItineraryIllustration style={{ width: '150px' }} />} />
-          ) : (
-            <ul className="tf-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {requests.slice(0, 3).map((req) => (
-                <li
-                  key={req.id}
-                  className="tf-card"
-                  style={{ marginBottom: '12px', padding: '16px' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <strong>Route: {req.route?.title || 'Custom Trip'}</strong>
-                    <StatusBadge status={req.status} label={t(`status.${req.status}`)} />
-                  </div>
-                  <p
-                    style={{
-                      margin: '8px 0',
-                      color: 'var(--tf-portal-text-muted)',
-                      fontSize: '0.9em',
-                    }}
-                  >
-                    Request #{req.id} • {req.Quotations?.length || 0} quotations
-                  </p>
-                  <Link
-                    to={`/travel-requests/${req.id}`}
-                    className="tf-btn tf-btn-line tf-btn-sm"
-                    style={{ marginTop: '8px' }}
-                  >
-                    View Request
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DashboardSection>
+          <div>
+            <h2>{actionTitle}</h2>
+            <p style={{ color: 'var(--tf-portal-text-muted)', marginBottom: '16px' }}>
+              {actionDesc}
+            </p>
+            <Link to={actionLink} className="tf-btn tf-btn-primary tf-btn-md">
+              {actionBtn}
+            </Link>
+          </div>
+          <div
+            style={{
+              width: '200px',
+              flexShrink: 0,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              opacity: 0.9,
+            }}
+          >
+            <RouteIllustration kind="balloons" style={{ width: '150px' }} />
+          </div>
+        </section>
 
-        {/* Active Jobs */}
-        <DashboardSection
-          title={t('dashboard.section.jobs')}
-          link="/jobs"
-          linkText={t('dashboard.viewAll')}
-          loading={loading.jobs}
-          error={error.jobs}
-          onRetry={actions.fetchJobs}
+        {/* Summary Metrics */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '16px',
+            marginBottom: '32px',
+          }}
         >
-          {jobs.length === 0 ? (
-            <EmptyState title={t('dashboard.empty.jobs')} icon={<PaymentIllustration style={{ width: '150px' }} />} />
-          ) : (
-            <ul className="tf-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {jobs.slice(0, 3).map((job) => (
-                <li
-                  key={job.id}
-                  className="tf-card"
-                  style={{ marginBottom: '12px', padding: '16px' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <strong>Trip #{job.id}</strong>
-                    <StatusBadge status={job.status} label={t(`status.${job.status}`)} />
-                  </div>
-                  <p
-                    style={{
-                      margin: '8px 0',
-                      color: 'var(--tf-portal-text-muted)',
-                      fontSize: '0.9em',
-                    }}
-                  >
-                    Agency: {job.agency?.agencyName || 'Verified Agency'}
-                  </p>
-                  <Link
-                    to={`/jobs/${job.id}`}
-                    className="tf-btn tf-btn-line tf-btn-sm"
-                    style={{ marginTop: '8px' }}
-                  >
-                    View Trip
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DashboardSection>
+          <SummaryCard
+            count={requests.length}
+            label={t('dashboard.summary.requests')}
+            loading={loading.requests}
+            link="/travel-requests"
+          />
+          <SummaryCard
+            count={quotations.length}
+            label={t('dashboard.summary.quotations')}
+            loading={loading.requests}
+            link="/travel-requests"
+          />
+          <SummaryCard
+            count={jobs.length}
+            label={t('dashboard.summary.jobs')}
+            loading={loading.jobs}
+            link="/jobs"
+          />
+          <SummaryCard
+            count={conversations.length}
+            label={t('dashboard.summary.messages')}
+            loading={loading.conversations}
+            link="/messages"
+          />
+        </div>
 
-        {/* Recent Messages */}
-        <DashboardSection
-          title={t('dashboard.section.messages')}
-          link="/messages"
-          linkText={t('dashboard.viewAll')}
-          loading={loading.conversations}
-          error={error.conversations}
-          onRetry={actions.fetchConversations}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+            gap: '24px',
+          }}
         >
-          {conversations.length === 0 ? (
-            <EmptyState title={t('dashboard.empty.messages')} icon={<QuotationIllustration style={{ width: '150px' }} />} />
-          ) : (
-            <ul className="tf-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {conversations.slice(0, 3).map((conv) => (
-                <li
-                  key={conv.id}
-                  className="tf-card"
-                  style={{
-                    marginBottom: '12px',
-                    padding: '12px 16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <h4 style={{ margin: '0 0 4px' }}>
-                      {conv.agency?.agencyName || `Conversation #${conv.id}`}
-                    </h4>
+          {/* Recent Requests */}
+          <DashboardSection
+            title={t('dashboard.section.requests')}
+            link="/travel-requests"
+            linkText={t('dashboard.viewAll')}
+            loading={loading.requests}
+            error={error.requests}
+            onRetry={actions.fetchRequests}
+          >
+            {requests.length === 0 ? (
+              <EmptyState
+                title={t('dashboard.empty.requests')}
+                icon={<ItineraryIllustration style={{ width: '150px' }} />}
+              />
+            ) : (
+              <ul className="tf-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {requests.slice(0, 3).map((req) => (
+                  <li
+                    key={req.id}
+                    className="tf-card"
+                    style={{ marginBottom: '12px', padding: '16px' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <strong>Route: {req.route?.title || 'Custom Trip'}</strong>
+                      <StatusBadge status={req.status} label={t(`status.${req.status}`)} />
+                    </div>
                     <p
                       style={{
-                        margin: 0,
-                        fontSize: '0.85em',
+                        margin: '8px 0',
                         color: 'var(--tf-portal-text-muted)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '200px',
+                        fontSize: '0.9em',
                       }}
                     >
-                      {conv.lastMessage?.body || 'No messages yet'}
+                      Request #{req.id} • {req.Quotations?.length || 0} quotations
                     </p>
-                  </div>
-                  <Link to={`/messages/${conv.id}`} className="tf-btn tf-btn-line tf-btn-sm">
-                    Open
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DashboardSection>
-      </div>
-    </main>
+                    <Link
+                      to={`/travel-requests/${req.id}`}
+                      className="tf-btn tf-btn-line tf-btn-sm"
+                      style={{ marginTop: '8px' }}
+                    >
+                      View Request
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </DashboardSection>
+
+          {/* Active Jobs */}
+          <DashboardSection
+            title={t('dashboard.section.jobs')}
+            link="/jobs"
+            linkText={t('dashboard.viewAll')}
+            loading={loading.jobs}
+            error={error.jobs}
+            onRetry={actions.fetchJobs}
+          >
+            {jobs.length === 0 ? (
+              <EmptyState
+                title={t('dashboard.empty.jobs')}
+                icon={<PaymentIllustration style={{ width: '150px' }} />}
+              />
+            ) : (
+              <ul className="tf-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {jobs.slice(0, 3).map((job) => (
+                  <li
+                    key={job.id}
+                    className="tf-card"
+                    style={{ marginBottom: '12px', padding: '16px' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <strong>Trip #{job.id}</strong>
+                      <StatusBadge status={job.status} label={t(`status.${job.status}`)} />
+                    </div>
+                    <p
+                      style={{
+                        margin: '8px 0',
+                        color: 'var(--tf-portal-text-muted)',
+                        fontSize: '0.9em',
+                      }}
+                    >
+                      Agency: {job.agency?.agencyName || 'Verified Agency'}
+                    </p>
+                    <Link
+                      to={`/jobs/${job.id}`}
+                      className="tf-btn tf-btn-line tf-btn-sm"
+                      style={{ marginTop: '8px' }}
+                    >
+                      View Trip
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </DashboardSection>
+
+          {/* Recent Messages */}
+          <DashboardSection
+            title={t('dashboard.section.messages')}
+            link="/messages"
+            linkText={t('dashboard.viewAll')}
+            loading={loading.conversations}
+            error={error.conversations}
+            onRetry={actions.fetchConversations}
+          >
+            {conversations.length === 0 ? (
+              <EmptyState
+                title={t('dashboard.empty.messages')}
+                icon={<QuotationIllustration style={{ width: '150px' }} />}
+              />
+            ) : (
+              <ul className="tf-list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {conversations.slice(0, 3).map((conv) => (
+                  <li
+                    key={conv.id}
+                    className="tf-card"
+                    style={{
+                      marginBottom: '12px',
+                      padding: '12px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div>
+                      <h4 style={{ margin: '0 0 4px' }}>
+                        {conv.agency?.agencyName || `Conversation #${conv.id}`}
+                      </h4>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '0.85em',
+                          color: 'var(--tf-portal-text-muted)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: '200px',
+                        }}
+                      >
+                        {conv.lastMessage?.body || 'No messages yet'}
+                      </p>
+                    </div>
+                    <Link to={`/messages/${conv.id}`} className="tf-btn tf-btn-line tf-btn-sm">
+                      Open
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </DashboardSection>
+        </div>
+      </main>
     </MotionPage>
   );
 }

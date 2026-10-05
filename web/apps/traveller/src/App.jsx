@@ -15,6 +15,8 @@ import { PlanTripPage } from './pages/plan-trip.jsx';
 import { TravelRequestsPage } from './pages/travel-requests.jsx';
 import { TravelRequestDetailPage } from './pages/travel-request-detail.jsx';
 import { QuotationDetailPage } from './pages/quotation-detail.jsx';
+import { QuotationComparisonPage } from './pages/quotation-comparison.jsx';
+
 import { MessagesPage } from './pages/messages.jsx';
 import { ConversationDetailPage } from './pages/conversation-detail.jsx';
 import { JobsPage } from './pages/jobs.jsx';
@@ -58,73 +60,82 @@ function App() {
         <AuthProvider role="traveller">
           <AppBootstrapWrapper>
             <TripProvider>
-            <Routes>
-              {/* Public Website Routes */}
-              <Route element={<PublicLayout />}>
-                <Route path="/" element={<PublicHomePage />} />
-                <Route path="/destinations" element={<DestinationsPage />} />
-                <Route path="/destinations/:slug" element={<DestinationDetailPage />} />
-                <Route path="/travel-guide" element={<TravelGuidePage />} />
-                <Route path="/travel-guide/:slug" element={<TravelGuideDetailPage />} />
-                <Route path="/agencies" element={<AgenciesPage />} />
-                <Route path="/agencies/:id" element={<AgencyDetailPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-              </Route>
+              <Routes>
+                {/* Public Website Routes */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<PublicHomePage />} />
+                  <Route path="/destinations" element={<DestinationsPage />} />
+                  <Route path="/destinations/:slug" element={<DestinationDetailPage />} />
+                  <Route path="/travel-guide" element={<TravelGuidePage />} />
+                  <Route path="/travel-guide/:slug" element={<TravelGuideDetailPage />} />
+                  <Route path="/agencies" element={<AgenciesPage />} />
+                  <Route path="/agencies/:id" element={<AgencyDetailPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                </Route>
 
-              {/* Public Auth Entry */}
-              <Route
-                path="/login"
-                element={
-                  <PublicOnly>
-                    <LoginPage />
-                  </PublicOnly>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <PublicOnly>
-                    <RegisterPage />
-                  </PublicOnly>
-                }
-              />
+                {/* Public Auth Entry */}
+                <Route
+                  path="/login"
+                  element={
+                    <PublicOnly>
+                      <LoginPage />
+                    </PublicOnly>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <PublicOnly>
+                      <RegisterPage />
+                    </PublicOnly>
+                  }
+                />
 
-              {/* Authenticated Portal Routes */}
-              <Route
-                element={
-                  <Guarded>
-                    <TravellerAppLayout />
-                  </Guarded>
-                }
-              >
-                <Route path="/app" element={<DashboardPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/app/profile" element={<ProfilePage />} />
-                <Route path="/plan-trip" element={<PlanTripPage />} />
-                <Route path="/app/plan-trip" element={<PlanTripPage />} />
-                <Route path="/travel-requests" element={<TravelRequestsPage />} />
-                <Route path="/app/travel-requests" element={<TravelRequestsPage />} />
-                <Route path="/travel-requests/:id" element={<TravelRequestDetailPage />} />
-                <Route path="/app/travel-requests/:id" element={<TravelRequestDetailPage />} />
-                <Route path="/quotations/:id" element={<QuotationDetailPage />} />
-                <Route path="/app/quotations/:id" element={<QuotationDetailPage />} />
-                <Route path="/messages" element={<MessagesPage />} />
-                <Route path="/app/messages" element={<MessagesPage />} />
-                <Route path="/messages/:id" element={<ConversationDetailPage />} />
-                <Route path="/app/messages/:id" element={<ConversationDetailPage />} />
-                <Route path="/jobs" element={<JobsPage />} />
-                <Route path="/app/jobs" element={<JobsPage />} />
-                <Route path="/jobs/:id" element={<JobDetailPage />} />
-                <Route path="/app/jobs/:id" element={<JobDetailPage />} />
-              </Route>
+                {/* Authenticated Portal Routes */}
+                <Route
+                  element={
+                    <Guarded>
+                      <TravellerAppLayout />
+                    </Guarded>
+                  }
+                >
+                  <Route path="/app" element={<DashboardPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/app/profile" element={<ProfilePage />} />
+                  <Route path="/plan-trip" element={<PlanTripPage />} />
+                  <Route path="/app/plan-trip" element={<PlanTripPage />} />
+                  <Route path="/travel-requests" element={<TravelRequestsPage />} />
+                  <Route path="/app/travel-requests" element={<TravelRequestsPage />} />
+                  <Route path="/travel-requests/:id" element={<TravelRequestDetailPage />} />
+                  <Route path="/app/travel-requests/:id" element={<TravelRequestDetailPage />} />
+                  <Route
+                    path="/travel-requests/:requestId/compare"
+                    element={<QuotationComparisonPage />}
+                  />
+                  <Route
+                    path="/app/travel-requests/:requestId/compare"
+                    element={<QuotationComparisonPage />}
+                  />
+                  <Route path="/quotations/:id" element={<QuotationDetailPage />} />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </TripProvider>
-        </AppBootstrapWrapper>
-      </AuthProvider>
+                  <Route path="/app/quotations/:id" element={<QuotationDetailPage />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/app/messages" element={<MessagesPage />} />
+                  <Route path="/messages/:id" element={<ConversationDetailPage />} />
+                  <Route path="/app/messages/:id" element={<ConversationDetailPage />} />
+                  <Route path="/jobs" element={<JobsPage />} />
+                  <Route path="/app/jobs" element={<JobsPage />} />
+                  <Route path="/jobs/:id" element={<JobDetailPage />} />
+                  <Route path="/app/jobs/:id" element={<JobDetailPage />} />
+                </Route>
+
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </TripProvider>
+          </AppBootstrapWrapper>
+        </AuthProvider>
       </I18nProvider>
     </BrowserRouter>
   );

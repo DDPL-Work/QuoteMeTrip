@@ -54,6 +54,28 @@ export class Message extends Model {
           type: DataTypes.DATE,
           allowNull: true,
         },
+        deletedForEveryoneAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          field: 'deleted_for_everyone_at',
+        },
+        deletedByUserId: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+          field: 'deleted_by_user_id',
+          references: { model: 'users', key: 'id' },
+        },
+        deletedForUsers: {
+          type: DataTypes.JSON,
+          allowNull: true,
+          defaultValue: [],
+          field: 'deleted_for_users',
+        },
+        expiresAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          field: 'expires_at',
+        },
       },
       {
         sequelize,

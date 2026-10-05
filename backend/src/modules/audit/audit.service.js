@@ -67,7 +67,13 @@ export async function listAuditLogs(query = {}) {
   });
 
   return {
-    items: rows,
+    items: rows.map((r) => {
+      const data = r.toJSON ? r.toJSON() : r;
+      return {
+        ...data,
+        createdAt: data.createdAt || data.created_at,
+      };
+    }),
     pagination: {
       page,
       pageSize,

@@ -6,8 +6,12 @@ import { UserMenu } from './UserMenu.jsx';
 export function MobileHeader({ notificationCount = 0, onNotificationClick }) {
   return (
     <header className="tf-portal-mobile-header">
-      <Link to="/app" className="tf-portal-logo">
-        Troublefree <span>Holiday</span>
+      <Link to="/app" className="tf-portal-logo" aria-label="QuoteMeTrip Home">
+        <img
+          src="/images/tfh_logo.png"
+          alt="QuoteMeTrip Troublefree Holiday"
+          style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
+        />
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <NotificationButton count={notificationCount} onClick={onNotificationClick} />

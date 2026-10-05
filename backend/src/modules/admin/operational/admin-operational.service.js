@@ -94,10 +94,17 @@ export async function listAdminTravelRequests(query = {}) {
       {
         model: models.Quotation,
         as: 'quotations',
-        attributes: ['id', 'agencyId', 'status', 'priceTotal', 'currency', 'createdAt'],
+        attributes: [
+          'id',
+          'agencyId',
+          'status',
+          'totalAmount',
+          ['total_amount', 'priceTotal'],
+          'currency',
+        ],
       },
     ],
-    order: [['createdAt', 'DESC']],
+    order: [[models.sequelize.col('TravelRequest.created_at'), 'DESC']],
     limit: pageSize,
     offset,
     distinct: true,
@@ -197,14 +204,19 @@ export async function listAdminJobs(query = {}) {
       {
         model: models.Quotation,
         as: 'quotation',
-        attributes: ['id', 'priceTotal', 'currency'],
+        attributes: [
+          'id',
+          'totalAmount',
+          ['total_amount', 'priceTotal'],
+          'currency',
+        ],
       },
       {
         model: models.Commission,
         as: 'commission',
       },
     ],
-    order: [['createdAt', 'DESC']],
+    order: [[models.sequelize.col('Job.created_at'), 'DESC']],
     limit: pageSize,
     offset,
   });

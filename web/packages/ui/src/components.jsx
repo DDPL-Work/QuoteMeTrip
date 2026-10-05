@@ -55,7 +55,11 @@ export function Button({
   return (
     <button type={type} disabled={disabled || loading} className={fullClassName} {...props}>
       {loading ? (
-        <span className="tf-btn-spinner" aria-hidden="true" style={{ marginRight: '6px', display: 'inline-flex', alignItems: 'center' }}>
+        <span
+          className="tf-btn-spinner"
+          aria-hidden="true"
+          style={{ marginRight: '6px', display: 'inline-flex', alignItems: 'center' }}
+        >
           <FiLoader className="tf-spin" />
         </span>
       ) : null}
@@ -369,7 +373,12 @@ export function ProgressBar({ progress = 0 }) {
   );
 }
 
-export function EmptyState({ title = 'No data available', description, action, icon = <FiFolder aria-hidden="true" /> }) {
+export function EmptyState({
+  title = 'No data available',
+  description,
+  action,
+  icon = <FiFolder aria-hidden="true" />,
+}) {
   return (
     <div className="tf-portal-state-container">
       <div className="tf-portal-state-icon">{icon}</div>

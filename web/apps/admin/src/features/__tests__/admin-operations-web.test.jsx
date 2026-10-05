@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { AuthProvider } from '../auth/AuthContext.jsx';
+import { AdminLayout } from '../../layouts/AdminLayout.jsx';
 import { DashboardPage } from '../../pages/DashboardPage.jsx';
 import { AgenciesPage } from '../../pages/AgenciesPage.jsx';
 import { MembershipsPage } from '../../pages/MembershipsPage.jsx';
@@ -64,6 +65,17 @@ beforeEach(() => {
 });
 
 describe('Phase 7 Admin Operations UI Components', () => {
+  test('AdminLayout renders QuoteMeTrip branding and ADMIN badge', async () => {
+    renderWithAuth(<AdminLayout />);
+    await waitFor(() => {
+      expect(screen.getByText('Quote')).toBeInTheDocument();
+      expect(screen.getByText('MyTrip')).toBeInTheDocument();
+      expect(screen.getAllByText('ADMIN')[0]).toBeInTheDocument();
+      expect(screen.queryByText('Troublefree Holiday ADMIN')).not.toBeInTheDocument();
+      expect(screen.queryByText('QuoteMeTrip')).not.toBeInTheDocument();
+    });
+  });
+
   test('DashboardPage renders metrics data', async () => {
     adminApi.getDashboardMetrics.mockResolvedValue({
       agencies: { pending: 2, approved: 10, suspended: 1, total: 13 },
@@ -74,8 +86,18 @@ describe('Phase 7 Admin Operations UI Components', () => {
 
     renderWithAuth(<DashboardPage />);
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Good afternoon, Admin')).toBeInTheDocument();
       expect(screen.getByText('$1250')).toBeInTheDocument();
+    });
+  });
+
+  test('DashboardPage renders clean error state on API failure', async () => {
+    adminApi.getDashboardMetrics.mockRejectedValue(new Error('Network Error'));
+
+    renderWithAuth(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Unable to load dashboard metrics.')).toBeInTheDocument();
+      expect(screen.getByText('Retry Connection')).toBeInTheDocument();
     });
   });
 

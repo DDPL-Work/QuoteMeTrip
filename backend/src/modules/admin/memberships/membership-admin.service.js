@@ -42,7 +42,16 @@ export async function updateMembershipPlan(id, data, actorUserId, context = {}) 
       });
     }
     const beforeState = plan.toJSON();
-    await plan.update(data, { transaction: t });
+
+    const allowed = ['name', 'slug', 'description', 'price', 'currency', 'durationDays', 'status'];
+    const updateData = {};
+    for (const key of allowed) {
+      if (data[key] !== undefined) {
+        updateData[key] = data[key];
+      }
+    }
+
+    await plan.update(updateData, { transaction: t });
     updated = plan;
 
     await logAudit(
@@ -59,6 +68,48 @@ export async function updateMembershipPlan(id, data, actorUserId, context = {}) 
     );
   });
   return updated;
+}
+
+export async function deleteMembershipPlan(id, actorUserId, context = {}) {
+  const models = initModels();
+  await withTransaction(async (t) => {
+    const plan = await repository.findMembershipPlanById(id, { transaction: t });
+    if (!plan) {
+      throw new NotFoundError('Membership plan not found.', {
+        code: MEMBERSHIP_ADMIN_ERROR_CODES.PLAN_NOT_FOUND,
+      });
+    }
+
+    const assignedCount = await models.AgencyMembership.count({
+      where: { planId: id },
+      transaction: t,
+    });
+    if (assignedCount > 0) {
+      const error = new Error(
+        'Cannot delete membership plan because agencies are currently assigned to it. Deactivate the plan instead.',
+      );
+      error.status = 409;
+      error.code = 'PLAN_IN_USE';
+      throw error;
+    }
+
+    const beforeState = plan.toJSON();
+    await repository.deleteMembershipPlan(id, { transaction: t });
+
+    await logAudit(
+      {
+        actorUserId,
+        action: 'membership_plan.deleted',
+        entityType: 'membership_plan',
+        entityId: id,
+        beforeState,
+        afterState: null,
+        ipAddress: context.ip,
+      },
+      { transaction: t },
+    );
+  });
+  return { success: true };
 }
 
 export async function listMemberships(query) {

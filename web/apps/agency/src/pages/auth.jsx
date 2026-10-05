@@ -1,13 +1,29 @@
-// Agency auth pages (Phase 3).
-
 import { AuthLayout } from '@troublefree/ui';
 import { LoginForm } from '../features/auth/LoginForm.jsx';
 import { RegisterForm } from '../features/auth/RegisterForm.jsx';
 import { useAuth } from '../features/auth/auth-context.js';
 
+function AgencyBrandHeader() {
+  return (
+    <div className="auth-brand-header">
+      <img
+        src="/images/tfh_logo.png"
+        alt="QuoteMeTrip"
+        className="auth-brand-logo"
+        onError={(e) => {
+          e.target.style.display = 'none';
+        }}
+      />
+      <span className="auth-brand-name">QuoteMeTrip</span>
+      <span className="auth-brand-badge">AGENCY PORTAL</span>
+    </div>
+  );
+}
+
 export function LoginPage() {
   return (
-    <AuthLayout title="Agency sign in" subtitle="Manage your travel business.">
+    <AuthLayout title="Agency sign in" subtitle="Manage your travel business and client requests.">
+      <AgencyBrandHeader />
       <LoginForm />
     </AuthLayout>
   );
@@ -15,13 +31,16 @@ export function LoginPage() {
 
 export function RegisterPage() {
   return (
-    <AuthLayout title="Register your agency" subtitle="Join the Troublefree Holiday network.">
+    <AuthLayout
+      title="Register your agency"
+      subtitle="Join the QuoteMeTrip verified agency partner network."
+    >
+      <AgencyBrandHeader />
       <RegisterForm />
     </AuthLayout>
   );
 }
 
-// Minimal authenticated landing — agency dashboards arrive later.
 export function HomePage() {
   const { user, logout } = useAuth();
   return (

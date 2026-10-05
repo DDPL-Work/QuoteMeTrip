@@ -16,7 +16,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-import { isAgencyEligibleForRequest } from '../../src/modules/agency-matching/matching.service.js';
+import {
+  isAgencyEligibleForRequest,
+  explainAgencyEligibility,
+} from '../../src/modules/agency-matching/matching.service.js';
 import {
   MATCH_ELIGIBLE_AGENCY_STATUSES,
   INBOX_VISIBLE_MATCH_STATUSES,
@@ -57,17 +60,128 @@ const validItems = () => [
   { title: 'Airport transfer', itemType: 'vehicle', quantity: 1, unitPrice: 49.99 },
 ];
 
-describe('matching eligibility', () => {
-  test('isAgencyEligibleForRequest defaults to true (extension point)', () => {
-    assert.strictEqual(isAgencyEligibleForRequest({}, {}), true);
-    assert.strictEqual(isAgencyEligibleForRequest(null, null), true);
-    assert.strictEqual(
-      isAgencyEligibleForRequest({ id: 1, status: 'suspended' }, { id: 9 }),
-      true,
-      'Phase 5 matches every DB-eligible agency; DB filters enforce status',
-    );
+describe('matching eligibility engine (Phase 5.3)', () => {
+  const mockApprovedAgency = () => ({
+    id: 1,
+    status: 'approved',
+    user: { id: 10, status: 'active', role: 'agency' },
+    memberships: [{ id: 1, status: 'active', startsAt: '2020-01-01', endsAt: null }],
+    coverages: [
+      { id: 1, locationName: 'Istanbul' },
+      { id: 2, locationName: 'Cappadocia' },
+    ],
+    capabilities: [
+      { id: 1, serviceType: 'hotel', isEnabled: true },
+      { id: 2, serviceType: 'full_package', isEnabled: true },
+    ],
   });
 
+  const mockRequest = () => ({
+    id: 100,
+    packageType: 'full_package',
+    hotelRequired: true,
+    route: {
+      startLocation: 'Istanbul',
+      finalDestination: 'Cappadocia',
+      stops: [],
+    },
+    days: [],
+  });
+
+  test('fully compliant agency is ELIGIBLE', () => {
+    const agency = mockApprovedAgency();
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), true);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, true);
+    assert.deepStrictEqual(explanation.reasons, []);
+  });
+
+  test('suspended agency is EXCLUDED (AGENCY_SUSPENDED)', () => {
+    const agency = mockApprovedAgency();
+    agency.status = 'suspended';
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('AGENCY_SUSPENDED'));
+  });
+
+  test('pending agency is EXCLUDED (AGENCY_PENDING)', () => {
+    const agency = mockApprovedAgency();
+    agency.status = 'pending';
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('AGENCY_PENDING'));
+  });
+
+  test('inactive user account is EXCLUDED (USER_INACTIVE)', () => {
+    const agency = mockApprovedAgency();
+    agency.user.status = 'inactive';
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('USER_INACTIVE'));
+  });
+
+  test('inactive/expired membership is EXCLUDED (MEMBERSHIP_INACTIVE)', () => {
+    const agency = mockApprovedAgency();
+    agency.memberships = [
+      { id: 1, status: 'expired', startsAt: '2020-01-01', endsAt: '2021-01-01' },
+    ];
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('MEMBERSHIP_INACTIVE'));
+  });
+
+  test('empty coverage is EXCLUDED (EMPTY_COVERAGE)', () => {
+    const agency = mockApprovedAgency();
+    agency.coverages = [];
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('EMPTY_COVERAGE'));
+  });
+
+  test('coverage mismatch is EXCLUDED (COVERAGE_MISMATCH)', () => {
+    const agency = mockApprovedAgency();
+    agency.coverages = [{ id: 1, locationName: 'Bodrum' }];
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('COVERAGE_MISMATCH'));
+  });
+
+  test('empty capabilities is EXCLUDED (EMPTY_SERVICES)', () => {
+    const agency = mockApprovedAgency();
+    agency.capabilities = [{ id: 1, serviceType: 'hotel', isEnabled: false }];
+    const request = mockRequest();
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('EMPTY_SERVICES'));
+  });
+
+  test('capability mismatch is EXCLUDED (SERVICE_MISMATCH)', () => {
+    const agency = mockApprovedAgency();
+    agency.capabilities = [{ id: 1, serviceType: 'hotel', isEnabled: true }];
+    const request = mockRequest();
+    request.packageType = 'blue_cruise';
+    assert.strictEqual(isAgencyEligibleForRequest(agency, request), false);
+    const explanation = explainAgencyEligibility(agency, request);
+    assert.strictEqual(explanation.eligible, false);
+    assert.ok(explanation.reasons.includes('SERVICE_MISMATCH'));
+  });
+});
+
+describe('DB eligibility rules', () => {
   test('DB eligibility constants: approved profile, active user/membership implied', () => {
     assert.deepStrictEqual(MATCH_ELIGIBLE_AGENCY_STATUSES, ['approved']);
     assert.ok(INBOX_VISIBLE_MATCH_STATUSES.includes('matched'));

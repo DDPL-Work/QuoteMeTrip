@@ -16,12 +16,7 @@ import {
  * Individual day card for Day-by-Day trip planning.
  * Supports editing activities, accommodation notes, guide/driver preferences per day.
  */
-export function DayCard({
-  day = {},
-  index = 0,
-  onUpdateDay = () => {},
-  onDeleteDay = () => {},
-}) {
+export function DayCard({ day = {}, index = 0, onUpdateDay = () => {}, onDeleteDay = () => {} }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState({ ...day });
 
@@ -65,7 +60,15 @@ export function DayCard({
             DAY {day.dayNumber || index + 1}
           </span>
           {day.date && (
-            <span style={{ fontSize: '13px', color: '#4E5754', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                color: '#4E5754',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
               <FiCalendar size={13} /> {day.date}
             </span>
           )}
@@ -154,9 +157,20 @@ export function DayCard({
       {!isEditing ? (
         /* Read Mode */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontSize: '15px', fontWeight: '700', color: '#13291C', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div
+            style={{
+              fontSize: '15px',
+              fontWeight: '700',
+              color: '#13291C',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
             <FiMapPin style={{ color: '#147D33' }} /> {day.location || 'Destination not set'}
-            {day.title && <span style={{ fontWeight: '400', color: '#4E5754' }}>— {day.title}</span>}
+            {day.title && (
+              <span style={{ fontWeight: '400', color: '#4E5754' }}>— {day.title}</span>
+            )}
           </div>
 
           {day.description && (
@@ -225,18 +239,40 @@ export function DayCard({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '4px' }}>
+              <label
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  color: '#4E5754',
+                  display: 'block',
+                  marginBottom: '4px',
+                }}
+              >
                 Location
               </label>
               <input
                 type="text"
                 value={draft.location || ''}
                 onChange={(e) => setDraft({ ...draft, location: e.target.value })}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #D5CDBF', fontSize: '14px' }}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: '1px solid #D5CDBF',
+                  fontSize: '14px',
+                }}
               />
             </div>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '4px' }}>
+              <label
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  color: '#4E5754',
+                  display: 'block',
+                  marginBottom: '4px',
+                }}
+              >
                 Day Title / Focus
               </label>
               <input
@@ -244,13 +280,27 @@ export function DayCard({
                 value={draft.title || ''}
                 onChange={(e) => setDraft({ ...draft, title: e.target.value })}
                 placeholder="e.g. City Tour & Bazaar"
-                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #D5CDBF', fontSize: '14px' }}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: '1px solid #D5CDBF',
+                  fontSize: '14px',
+                }}
               />
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '4px' }}>
+            <label
+              style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                color: '#4E5754',
+                display: 'block',
+                marginBottom: '4px',
+              }}
+            >
               Activities & Notes
             </label>
             <textarea
@@ -258,13 +308,34 @@ export function DayCard({
               onChange={(e) => setDraft({ ...draft, description: e.target.value })}
               rows={2}
               placeholder="What would you like to do on this day?"
-              style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #D5CDBF', fontSize: '14px', fontFamily: 'inherit' }}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '8px',
+                border: '1px solid #D5CDBF',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+              }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: '10px',
+            }}
+          >
             <div>
-              <label style={{ fontSize: '11px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '2px' }}>
+              <label
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#4E5754',
+                  display: 'block',
+                  marginBottom: '2px',
+                }}
+              >
                 Hotel Preference
               </label>
               <input
@@ -272,11 +343,25 @@ export function DayCard({
                 value={draft.hotelNotes || ''}
                 onChange={(e) => setDraft({ ...draft, hotelNotes: e.target.value })}
                 placeholder="e.g. 4 Star Cave Hotel"
-                style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #D5CDBF', fontSize: '13px' }}
+                style={{
+                  width: '100%',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #D5CDBF',
+                  fontSize: '13px',
+                }}
               />
             </div>
             <div>
-              <label style={{ fontSize: '11px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '2px' }}>
+              <label
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#4E5754',
+                  display: 'block',
+                  marginBottom: '2px',
+                }}
+              >
                 Guide Preference
               </label>
               <input
@@ -284,11 +369,25 @@ export function DayCard({
                 value={draft.guideNotes || ''}
                 onChange={(e) => setDraft({ ...draft, guideNotes: e.target.value })}
                 placeholder="e.g. English speaking guide"
-                style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #D5CDBF', fontSize: '13px' }}
+                style={{
+                  width: '100%',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #D5CDBF',
+                  fontSize: '13px',
+                }}
               />
             </div>
             <div>
-              <label style={{ fontSize: '11px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '2px' }}>
+              <label
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#4E5754',
+                  display: 'block',
+                  marginBottom: '2px',
+                }}
+              >
                 Driver Preference
               </label>
               <input
@@ -296,7 +395,13 @@ export function DayCard({
                 value={draft.driverNotes || ''}
                 onChange={(e) => setDraft({ ...draft, driverNotes: e.target.value })}
                 placeholder="e.g. Private Mercedes Sprinter"
-                style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #D5CDBF', fontSize: '13px' }}
+                style={{
+                  width: '100%',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #D5CDBF',
+                  fontSize: '13px',
+                }}
               />
             </div>
           </div>

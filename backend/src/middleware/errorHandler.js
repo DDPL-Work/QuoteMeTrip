@@ -40,6 +40,6 @@ export function errorHandler(err, req, res, next) {
   return errorResponse(res, {
     statusCode: 500,
     code: 'INTERNAL_ERROR',
-    message: 'An unexpected error occurred. Please try again later.',
+    message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred. Please try again later.' : (err.message || 'Internal server error'),
   });
 }

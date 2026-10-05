@@ -17,6 +17,11 @@ export async function createMembershipPlan(data, { transaction = null } = {}) {
   return models.MembershipPlan.create(data, { transaction });
 }
 
+export async function deleteMembershipPlan(id, { transaction = null } = {}) {
+  const models = initModels();
+  return models.MembershipPlan.destroy({ where: { id }, transaction });
+}
+
 export async function findMemberships(query = {}) {
   const models = initModels();
   const page = Math.max(1, parseInt(query.page || '1', 10));

@@ -292,6 +292,61 @@ export function AgencyDetailPage() {
                 <span style={{ color: '#E53E3E' }}>Not Accepted</span>
               )}
             </span>
+
+            <span style={{ color: '#718096' }}>Coverage Areas:</span>
+            <div>
+              {!agency.coverages || agency.coverages.length === 0 ? (
+                <span style={{ color: '#E53E3E', fontStyle: 'italic' }}>
+                  No operating areas configured
+                </span>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {agency.coverages.map((c) => (
+                    <span
+                      key={c.id || c.locationName}
+                      style={{
+                        padding: '0.2rem 0.55rem',
+                        background: '#EDF2F7',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        color: '#2B6CB0',
+                      }}
+                    >
+                      📍 {c.locationName}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <span style={{ color: '#718096' }}>Services Offered:</span>
+            <div>
+              {!agency.capabilities || agency.capabilities.length === 0 ? (
+                <span style={{ color: '#E53E3E', fontStyle: 'italic' }}>
+                  No services configured
+                </span>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {agency.capabilities.map((cap) => (
+                    <span
+                      key={cap.id || cap.serviceType}
+                      style={{
+                        padding: '0.2rem 0.55rem',
+                        background: '#EBF8FF',
+                        border: '1px solid #BEE3F8',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        color: '#2B6CB0',
+                      }}
+                    >
+                      ✓ {cap.serviceType.replace('_', ' ')}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

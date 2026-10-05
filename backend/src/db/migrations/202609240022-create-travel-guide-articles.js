@@ -75,10 +75,10 @@ export async function up(queryInterface, Sequelize) {
     },
   });
 
-  await queryInterface.addIndex('travel_guide_articles', ['region_id']);
-  await queryInterface.addIndex('travel_guide_articles', ['destination_id']);
-  await queryInterface.addIndex('travel_guide_articles', ['status']);
-  await queryInterface.addIndex('travel_guide_articles', ['author_id']);
+  try { await queryInterface.addIndex('travel_guide_articles', ['region_id']); } catch { /* index exists */ }
+  try { await queryInterface.addIndex('travel_guide_articles', ['destination_id']); } catch { /* index exists */ }
+  try { await queryInterface.addIndex('travel_guide_articles', ['status']); } catch { /* index exists */ }
+  try { await queryInterface.addIndex('travel_guide_articles', ['author_id']); } catch { /* index exists */ }
 }
 
 export async function down(queryInterface, Sequelize) {

@@ -5,6 +5,7 @@ import travellerRoutes from '../modules/traveller/traveller.routes.js';
 import routeRoutes from '../modules/routes/routes.routes.js';
 import travelRequestRoutes from '../modules/travel-requests/travel-requests.routes.js';
 import matchingRoutes from '../modules/agency-matching/matching.routes.js';
+import agencyProfileRoutes from '../modules/agency-profile/agency-profile.routes.js';
 import {
   agencyQuotationRouter,
   travellerQuotationRouter,
@@ -48,9 +49,11 @@ router.use('/travellers', travellerRoutes);
 router.use('/routes', routeRoutes);
 router.use('/travel-requests', travelRequestRoutes);
 router.use('/agency/travel-requests', matchingRoutes);
+router.use('/agency', agencyProfileRoutes);
 router.use('/agency', agencyQuotationRouter);
 router.use('/', travellerQuotationRouter);
 router.use('/conversations', messageRoutes);
+router.use('/messages', messageRoutes);
 router.use('/jobs', jobRoutes);
 router.use('/', acceptanceRoutes);
 router.use('/notifications', notificationRoutes);

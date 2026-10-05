@@ -64,7 +64,10 @@ export function TravelRequestForm({
   const handleTravellerChange = (delta) => {
     setForm((prev) => ({
       ...prev,
-      numberOfTravellers: Math.max(1, Math.min(100, (Number(prev.numberOfTravellers) || 1) + delta)),
+      numberOfTravellers: Math.max(
+        1,
+        Math.min(100, (Number(prev.numberOfTravellers) || 1) + delta),
+      ),
     }));
   };
 
@@ -119,7 +122,6 @@ export function TravelRequestForm({
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      
       {/* 1. Dates & Travellers Card */}
       <div
         style={{
@@ -146,10 +148,24 @@ export function TravelRequestForm({
           <FiCalendar style={{ color: '#147D33' }} /> Dates & Group Size
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '20px',
+          }}
+        >
           {/* Start Date */}
           <div>
-            <label style={{ fontSize: '13px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '6px' }}>
+            <label
+              style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#4E5754',
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
               Travel Start Date
             </label>
             <input
@@ -170,7 +186,10 @@ export function TravelRequestForm({
               }}
             />
             {errors.travelStartDate && (
-              <span role="alert" style={{ color: '#D93025', fontSize: '12.5px', marginTop: '4px', display: 'block' }}>
+              <span
+                role="alert"
+                style={{ color: '#D93025', fontSize: '12.5px', marginTop: '4px', display: 'block' }}
+              >
                 {errors.travelStartDate}
               </span>
             )}
@@ -178,7 +197,15 @@ export function TravelRequestForm({
 
           {/* End Date */}
           <div>
-            <label style={{ fontSize: '13px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '6px' }}>
+            <label
+              style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#4E5754',
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
               Travel End Date
             </label>
             <input
@@ -199,7 +226,10 @@ export function TravelRequestForm({
               }}
             />
             {errors.travelEndDate && (
-              <span role="alert" style={{ color: '#D93025', fontSize: '12.5px', marginTop: '4px', display: 'block' }}>
+              <span
+                role="alert"
+                style={{ color: '#D93025', fontSize: '12.5px', marginTop: '4px', display: 'block' }}
+              >
                 {errors.travelEndDate}
               </span>
             )}
@@ -207,13 +237,32 @@ export function TravelRequestForm({
         </div>
 
         {/* Stepper Controls: Travellers & Luggage */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginTop: '4px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '20px',
+            marginTop: '4px',
+          }}
+        >
           {/* Travellers Stepper */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFBF3', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2DCD1' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#FFFBF3',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: '1px solid #E2DCD1',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FiUsers style={{ color: '#147D33' }} size={20} />
               <div>
-                <strong style={{ fontSize: '14px', color: '#13291C', display: 'block' }}>Travellers</strong>
+                <strong style={{ fontSize: '14px', color: '#13291C', display: 'block' }}>
+                  Travellers
+                </strong>
                 <span style={{ fontSize: '12px', color: '#66716B' }}>Adults & Children</span>
               </div>
             </div>
@@ -237,7 +286,9 @@ export function TravelRequestForm({
               >
                 <FiMinus size={14} />
               </button>
-              <span style={{ fontSize: '16px', fontWeight: '800', width: '24px', textAlign: 'center' }}>
+              <span
+                style={{ fontSize: '16px', fontWeight: '800', width: '24px', textAlign: 'center' }}
+              >
                 {form.numberOfTravellers}
               </span>
               <button
@@ -262,11 +313,23 @@ export function TravelRequestForm({
           </div>
 
           {/* Luggage Stepper */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFBF3', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2DCD1' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#FFFBF3',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: '1px solid #E2DCD1',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FiBriefcase style={{ color: '#147D33' }} size={20} />
               <div>
-                <strong style={{ fontSize: '14px', color: '#13291C', display: 'block' }}>Luggage</strong>
+                <strong style={{ fontSize: '14px', color: '#13291C', display: 'block' }}>
+                  Luggage
+                </strong>
                 <span style={{ fontSize: '12px', color: '#66716B' }}>Bags & Suitcases</span>
               </div>
             </div>
@@ -290,7 +353,9 @@ export function TravelRequestForm({
               >
                 <FiMinus size={14} />
               </button>
-              <span style={{ fontSize: '16px', fontWeight: '800', width: '24px', textAlign: 'center' }}>
+              <span
+                style={{ fontSize: '16px', fontWeight: '800', width: '24px', textAlign: 'center' }}
+              >
                 {form.luggageCount}
               </span>
               <button
@@ -332,7 +397,13 @@ export function TravelRequestForm({
           Services Needed
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '14px',
+          }}
+        >
           {/* Hotel Requirement */}
           <div
             onClick={() => setField('hotelRequired', !form.hotelRequired)}
@@ -351,7 +422,9 @@ export function TravelRequestForm({
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <FiHome size={22} style={{ color: form.hotelRequired ? '#0C4E28' : '#66716B' }} />
               <div>
-                <strong style={{ fontSize: '15px', color: '#13291C', display: 'block' }}>Hotel Booking</strong>
+                <strong style={{ fontSize: '15px', color: '#13291C', display: 'block' }}>
+                  Hotel Booking
+                </strong>
                 <span style={{ fontSize: '12px', color: '#56625B' }}>Accommodations</span>
               </div>
             </div>
@@ -374,9 +447,14 @@ export function TravelRequestForm({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <FiUserCheck size={22} style={{ color: form.guideRequired ? '#0C4E28' : '#66716B' }} />
+              <FiUserCheck
+                size={22}
+                style={{ color: form.guideRequired ? '#0C4E28' : '#66716B' }}
+              />
               <div>
-                <strong style={{ fontSize: '15px', color: '#13291C', display: 'block' }}>Tour Guide</strong>
+                <strong style={{ fontSize: '15px', color: '#13291C', display: 'block' }}>
+                  Tour Guide
+                </strong>
                 <span style={{ fontSize: '12px', color: '#56625B' }}>Licensed Guide</span>
               </div>
             </div>
@@ -401,7 +479,9 @@ export function TravelRequestForm({
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <FiTruck size={22} style={{ color: form.driverRequired ? '#0C4E28' : '#66716B' }} />
               <div>
-                <strong style={{ fontSize: '15px', color: '#13291C', display: 'block' }}>Vehicle + Driver</strong>
+                <strong style={{ fontSize: '15px', color: '#13291C', display: 'block' }}>
+                  Vehicle + Driver
+                </strong>
                 <span style={{ fontSize: '12px', color: '#56625B' }}>Transfers & Drivers</span>
               </div>
             </div>
@@ -427,7 +507,13 @@ export function TravelRequestForm({
         </h3>
 
         {/* Package Scope Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '12px',
+          }}
+        >
           {packageOptions.map((pkg) => {
             const isSelected = form.packageType === pkg.id;
             const IconComp = pkg.icon || FiCheck;
@@ -465,7 +551,9 @@ export function TravelRequestForm({
                   boxShadow: isSelected ? '0 4px 12px rgba(12, 78, 40, 0.08)' : 'none',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <IconComp size={18} style={{ color: isSelected ? '#0C4E28' : '#147D33' }} />
                     <strong style={{ fontSize: '15px', color: '#13291C' }}>{pkg.title}</strong>
@@ -552,7 +640,16 @@ export function TravelRequestForm({
               })}
             </div>
             {errors.cruiseDuration && (
-              <span role="alert" style={{ color: '#D93025', fontSize: '13px', marginTop: '8px', display: 'block', fontWeight: '600' }}>
+              <span
+                role="alert"
+                style={{
+                  color: '#D93025',
+                  fontSize: '13px',
+                  marginTop: '8px',
+                  display: 'block',
+                  fontWeight: '600',
+                }}
+              >
                 {errors.cruiseDuration}
               </span>
             )}
@@ -561,10 +658,24 @@ export function TravelRequestForm({
 
         {/* Accommodation Star Class Options */}
         <div style={{ marginTop: '8px' }}>
-          <label style={{ fontSize: '13px', fontWeight: '700', color: '#4E5754', display: 'block', marginBottom: '8px' }}>
+          <label
+            style={{
+              fontSize: '13px',
+              fontWeight: '700',
+              color: '#4E5754',
+              display: 'block',
+              marginBottom: '8px',
+            }}
+          >
             Preferred Hotel Class
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: '10px',
+            }}
+          >
             {accommodationOptions.map((acc) => {
               const isSelected = form.accommodationType === acc.id;
               return (

@@ -58,3 +58,35 @@ export function validatePagination(query = {}) {
   }
   return { page, pageSize };
 }
+
+export function validateMessagePagination(query = {}) {
+  const limit =
+    query.limit === undefined
+      ? query.pageSize === undefined
+        ? 30
+        : Number(query.pageSize)
+      : Number(query.limit);
+  const before =
+    query.before !== undefined && query.before !== null && query.before !== ''
+      ? Number(query.before)
+      : null;
+  const page = query.page === undefined ? 1 : Number(query.page);
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw invalid('limit must be an integer between 1 and 100.');
+  }
+  if (before !== null && (!Number.isInteger(before) || before < 1)) {
+    throw invalid('before must be a positive integer message ID.');
+  }
+  return { limit, before, page };
+}
+
+export function validateDeleteMessageInput(body = {}, query = {}) {
+  const mode = String(body?.mode || query?.mode || 'me')
+    .toLowerCase()
+    .trim();
+  if (!['me', 'everyone'].includes(mode)) {
+    throw invalid('Deletion mode must be either "me" or "everyone".');
+  }
+  return { mode };
+}

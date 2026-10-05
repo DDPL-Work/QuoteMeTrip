@@ -72,7 +72,15 @@ export function RouteSummaryCard({
       </div>
 
       {/* Origin & Final */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', fontWeight: '700' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '16px',
+          fontWeight: '700',
+        }}
+      >
         <FiMapPin style={{ color: '#FC7C00', flexShrink: 0 }} size={20} />
         <span>{route.startLocation}</span>
         <span style={{ opacity: 0.6 }}>→</span>
@@ -97,7 +105,15 @@ export function RouteSummaryCard({
             gap: '4px',
           }}
         >
-          <span style={{ fontSize: '12px', color: '#CFE0D5', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#CFE0D5',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
             <FiMapPin size={13} /> Distance
           </span>
           <b style={{ fontSize: '20px', fontFamily: 'var(--serif, serif)' }}>{distanceKm} km</b>
@@ -113,7 +129,15 @@ export function RouteSummaryCard({
             gap: '4px',
           }}
         >
-          <span style={{ fontSize: '12px', color: '#CFE0D5', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#CFE0D5',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
             <FiClock size={13} /> Travel Time
           </span>
           <b style={{ fontSize: '20px', fontFamily: 'var(--serif, serif)' }}>
@@ -132,7 +156,15 @@ export function RouteSummaryCard({
             gap: '4px',
           }}
         >
-          <span style={{ fontSize: '12px', color: '#CFE0D5', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#CFE0D5',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
             <FiCalendar size={13} /> Recommended
           </span>
           <b style={{ fontSize: '20px', fontFamily: 'var(--serif, serif)' }}>{recommended} Days</b>
@@ -179,7 +211,15 @@ export function RouteSummaryCard({
           />
           <span style={{ fontSize: '14.5px', fontWeight: '600' }}>Days</span>
           {overriddenDays && overriddenDays !== recommended && (
-            <span style={{ fontSize: '12px', color: '#FCD34D', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#FCD34D',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
               <FiCheckCircle /> Custom duration applied
             </span>
           )}

@@ -81,7 +81,7 @@ describe('session recovery', () => {
     authApi.refresh.mockRejectedValue(new Error('Refresh token has expired.'));
 
     renderWithAuth(<HomePage />);
-    await waitFor(() => expect(screen.getByText('Admin sign in')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Admin Operations Sign In/i)).toBeInTheDocument());
   });
 });
 
@@ -92,11 +92,11 @@ describe('login', () => {
     authApi.login.mockResolvedValue({ user: adminUser, accessToken: 'abc' });
 
     renderWithAuth(<HomePage />, { route: '/login' });
-    await waitFor(() => expect(screen.getByText('Admin sign in')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Admin Operations Sign In/i)).toBeInTheDocument());
 
     await user.type(screen.getByLabelText('Admin email'), 'ops@example.com');
     await user.type(screen.getByLabelText('Password'), 'password-123');
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() =>
       expect(screen.getByText(/Signed in as ops@example.com/)).toBeInTheDocument(),
@@ -109,11 +109,11 @@ describe('login', () => {
     authApi.login.mockRejectedValue(new Error('Invalid email or password.'));
 
     renderWithAuth(<HomePage />, { route: '/login' });
-    await waitFor(() => expect(screen.getByText('Admin sign in')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Admin Operations Sign In/i)).toBeInTheDocument());
 
     await user.type(screen.getByLabelText('Admin email'), 'ops@example.com');
     await user.type(screen.getByLabelText('Password'), 'wrong-password');
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => expect(screen.getByText('Invalid email or password.')).toBeInTheDocument());
   });
@@ -124,7 +124,7 @@ describe('no public registration', () => {
     authApi.refresh.mockRejectedValue(new Error('no session'));
     renderWithAuth(<HomePage />, { route: '/register' });
 
-    await waitFor(() => expect(screen.getByText('Admin sign in')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Admin Operations Sign In/i)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'Create account' })).not.toBeInTheDocument();
   });
 
@@ -132,7 +132,7 @@ describe('no public registration', () => {
     authApi.refresh.mockRejectedValue(new Error('no session'));
     renderWithAuth(<HomePage />, { route: '/login' });
 
-    await waitFor(() => expect(screen.getByText('Admin sign in')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Admin Operations Sign In/i)).toBeInTheDocument());
     expect(screen.queryByText(/create.*account/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/register/i)).not.toBeInTheDocument();
   });
@@ -160,7 +160,7 @@ describe('role protection', () => {
     await waitFor(() => expect(screen.getByText(/Signed in as/)).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Sign out' }));
-    await waitFor(() => expect(screen.getByText('Admin sign in')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Admin Operations Sign In/i)).toBeInTheDocument());
     expect(authApi.logout).toHaveBeenCalledOnce();
   });
 });

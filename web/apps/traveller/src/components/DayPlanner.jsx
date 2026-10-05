@@ -59,11 +59,19 @@ export function DayPlanner({
         >
           <FiSun size={18} /> Step 3: Day-by-Day Itinerary Plan
         </div>
-        <h2 style={{ fontFamily: 'var(--serif, serif)', fontSize: '26px', color: '#13291C', margin: '8px 0 4px' }}>
+        <h2
+          style={{
+            fontFamily: 'var(--serif, serif)',
+            fontSize: '26px',
+            color: '#13291C',
+            margin: '8px 0 4px',
+          }}
+        >
           Customize Each Day of Your Holiday
         </h2>
         <p style={{ color: '#4E5754', margin: 0, fontSize: '15px' }}>
-          Define what you want to experience on each day, or specify hotel and guide preferences for local agencies to quote.
+          Define what you want to experience on each day, or specify hotel and guide preferences for
+          local agencies to quote.
         </p>
       </div>
 

@@ -2,7 +2,11 @@
  * Travel-request validation (Phase 4 — backend-authoritative).
  */
 import { ValidationError } from '../../utils/errors.js';
-import { ACCOMMODATION_TYPES, PACKAGE_TYPES, CRUISE_DURATIONS } from '../../db/models/TravelRequest.js';
+import {
+  ACCOMMODATION_TYPES,
+  PACKAGE_TYPES,
+  CRUISE_DURATIONS,
+} from '../../db/models/TravelRequest.js';
 import { validateRouteStops } from '../routes/routes.validation.js';
 
 function invalid(message, details = null) {

@@ -8,8 +8,12 @@ if (typeof window !== 'undefined' && !window.IntersectionObserver) {
     observe() {}
     unobserve() {}
     disconnect() {}
-    takeRecords() { return []; }
+    takeRecords() {
+      return [];
+    }
   }
   window.IntersectionObserver = IntersectionObserver;
-  global.IntersectionObserver = IntersectionObserver;
+  if (typeof globalThis !== 'undefined') {
+    globalThis.IntersectionObserver = IntersectionObserver;
+  }
 }

@@ -65,6 +65,8 @@ import { WeatherCache } from './WeatherCache.js';
 import { TravelGuideRegion } from './TravelGuideRegion.js';
 import { TravelGuideDestination } from './TravelGuideDestination.js';
 import { TravelGuideArticle } from './TravelGuideArticle.js';
+import { AgencyCoverage } from './AgencyCoverage.js';
+import { AgencyCapability } from './AgencyCapability.js';
 import { Rating } from './Rating.js';
 
 let registry = null;
@@ -101,6 +103,8 @@ export function initModels(sequelize = getSequelize()) {
   TravelGuideDestination.initModel(sequelize);
   TravelGuideArticle.initModel(sequelize);
   Rating.initModel(sequelize);
+  AgencyCoverage.initModel(sequelize);
+  AgencyCapability.initModel(sequelize);
 
   // User 1:1 TravellerProfile
   User.hasOne(TravellerProfile, {
@@ -128,6 +132,29 @@ export function initModels(sequelize = getSequelize()) {
     onUpdate: 'CASCADE',
   });
   AgencyDocument.belongsTo(AgencyProfile, { foreignKey: 'agencyId', as: 'agency' });
+
+  // AgencyProfile 1:N AgencyCoverage
+  AgencyProfile.hasMany(AgencyCoverage, {
+    foreignKey: 'agencyId',
+    as: 'coverages',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  });
+  AgencyCoverage.belongsTo(AgencyProfile, { foreignKey: 'agencyId', as: 'agency' });
+  AgencyCoverage.belongsTo(TravelGuideDestination, {
+    foreignKey: 'destinationId',
+    as: 'destination',
+  });
+  AgencyCoverage.belongsTo(TravelGuideRegion, { foreignKey: 'regionId', as: 'region' });
+
+  // AgencyProfile 1:N AgencyCapability
+  AgencyProfile.hasMany(AgencyCapability, {
+    foreignKey: 'agencyId',
+    as: 'capabilities',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  });
+  AgencyCapability.belongsTo(AgencyProfile, { foreignKey: 'agencyId', as: 'agency' });
 
   // AgencyDocument N:1 User (verifier, nullable audit reference)
   User.hasMany(AgencyDocument, { foreignKey: 'verifiedBy', as: 'verifiedDocuments' });
@@ -526,6 +553,8 @@ export function initModels(sequelize = getSequelize()) {
     TravelGuideDestination,
     TravelGuideArticle,
     Rating,
+    AgencyCoverage,
+    AgencyCapability,
   };
 
   return registry;
@@ -559,4 +588,6 @@ export {
   TravelGuideDestination,
   TravelGuideArticle,
   Rating,
+  AgencyCoverage,
+  AgencyCapability,
 };

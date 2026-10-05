@@ -168,3 +168,35 @@ export const AUDIT_ACTIONS = [
   'payment.confirmed',
   'commission.updated',
 ];
+
+// --- Phase 5.3: onboarding, coverage & eligibility -------------
+
+export const AGENCY_SERVICE_TYPES = [
+  'hotel',
+  'guide',
+  'vehicle',
+  'driver',
+  'full_package',
+  'blue_cruise',
+];
+
+export const AGENCY_SERVICE_LABELS = {
+  hotel: 'Hotel accommodation',
+  guide: 'Licensed tour guide',
+  vehicle: 'Transport vehicle',
+  driver: 'Private driver',
+  full_package: 'Full package tours',
+  blue_cruise: 'Blue Cruise gulet tours',
+};
+
+export const ELIGIBILITY_REASONS = [
+  'USER_INACTIVE',
+  'AGENCY_PENDING',
+  'AGENCY_SUSPENDED',
+  'AGENCY_REJECTED',
+  'MEMBERSHIP_INACTIVE',
+  'EMPTY_COVERAGE',
+  'COVERAGE_MISMATCH',
+  'EMPTY_SERVICES',
+  'SERVICE_MISMATCH',
+];

@@ -22,6 +22,12 @@ router.post('/', controller.create);
 router.get('/:id', controller.getById);
 router.get('/:id/messages', controller.listMessages);
 router.post('/:id/messages', controller.send);
+router.delete('/:id/messages/:messageId', controller.deleteMessage);
+router.post('/:id/messages/:messageId/delete', controller.deleteMessage);
+router.delete('/:id', controller.deleteMessage);
+router.post('/:id/delete', controller.deleteMessage);
 router.patch('/:id/read', controller.markRead);
+router.patch('/:id/ttl', controller.updateTtl);
+router.post('/:id/ttl', controller.updateTtl);
 
 export default router;

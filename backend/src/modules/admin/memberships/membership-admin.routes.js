@@ -8,6 +8,7 @@ planRouter.use(authenticate, authorize('admin'));
 planRouter.get('/', controller.getMembershipPlans);
 planRouter.post('/', controller.createMembershipPlan);
 planRouter.patch('/:id', controller.updateMembershipPlan);
+planRouter.delete('/:id', controller.deleteMembershipPlan);
 
 export const membershipRouter = Router();
 membershipRouter.use(authenticate, authorize('admin'));

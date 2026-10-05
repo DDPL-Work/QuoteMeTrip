@@ -48,7 +48,8 @@ export function RouteMap({ stops = [], geometry = null, isStale = false, onRecal
 
   // Initialize and update Leaflet Map
   useEffect(() => {
-    if (!leafletLoaded || !window.L || !mapContainerRef.current || !stops || stops.length === 0) return;
+    if (!leafletLoaded || !window.L || !mapContainerRef.current || !stops || stops.length === 0)
+      return;
 
     const L = window.L;
 
@@ -79,7 +80,8 @@ export function RouteMap({ stops = [], geometry = null, isStale = false, onRecal
       // Add real OpenStreetMap tiles
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
       // Draw route polyline
@@ -164,7 +166,9 @@ export function RouteMap({ stops = [], geometry = null, isStale = false, onRecal
       if (leafletMapRef.current) {
         try {
           leafletMapRef.current.remove();
-        } catch {}
+        } catch {
+          // ignore cleanup error
+        }
         leafletMapRef.current = null;
       }
     };
@@ -174,21 +178,41 @@ export function RouteMap({ stops = [], geometry = null, isStale = false, onRecal
     return (
       <div
         style={{
-          background: '#FFFBF3',
+          background: 'linear-gradient(135deg, #FBF9F5 0%, #F5F1E8 100%)',
           border: '1px dashed #D5CDBF',
-          borderRadius: '12px',
-          height: '320px',
+          borderRadius: '14px',
+          minHeight: '520px',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           color: '#56625B',
-          gap: '8px',
+          gap: '12px',
+          padding: '32px',
+          textAlign: 'center',
         }}
       >
-        <FiNavigation size={32} style={{ color: '#147D33', opacity: 0.6 }} />
-        <span style={{ fontSize: '14px', fontWeight: '600' }}>No route points selected</span>
-        <span style={{ fontSize: '12px', color: '#66716B' }}>Add at least 2 destinations to generate your map preview</span>
+        <div
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: '#E5F2EA',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '4px',
+          }}
+        >
+          <FiNavigation size={32} style={{ color: '#147D33' }} />
+        </div>
+        <span style={{ fontSize: '18px', fontWeight: '700', color: '#13291C' }}>
+          Interactive Route Map
+        </span>
+        <span style={{ fontSize: '14px', color: '#56625B', maxWidth: '360px', lineHeight: 1.5 }}>
+          Add your starting location and destinations on the left. We will generate your interactive route with distance, travel time, and stop-by-stop preview.
+        </span>
       </div>
     );
   }
@@ -248,7 +272,7 @@ export function RouteMap({ stops = [], geometry = null, isStale = false, onRecal
       )}
 
       {/* Real Interactive OpenStreetMap Container */}
-      <div style={{ position: 'relative', width: '100%', height: '440px' }}>
+      <div style={{ position: 'relative', width: '100%', minHeight: '520px', height: '560px' }}>
         <div
           ref={mapContainerRef}
           style={{ width: '100%', height: '100%', zIndex: 1, borderRadius: '14px 14px 0 0' }}
@@ -293,16 +317,41 @@ export function RouteMap({ stops = [], geometry = null, isStale = false, onRecal
           fontSize: '13px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#13291C', fontWeight: '700' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#13291C',
+            fontWeight: '700',
+          }}
+        >
           <FiMapPin style={{ color: '#147D33' }} size={16} />
           <span>
             {stops[0]?.name} → {stops[stops.length - 1]?.name} ({stops.length} destinations)
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#56625B' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '12px',
+            color: '#56625B',
+          }}
+        >
           <span>{stops.map((s) => s.name).join(' • ')}</span>
-          <span style={{ fontSize: '11px', background: '#E5F2EA', color: '#0C4E28', padding: '3px 8px', borderRadius: '6px', fontWeight: '700' }}>
+          <span
+            style={{
+              fontSize: '11px',
+              background: '#E5F2EA',
+              color: '#0C4E28',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              fontWeight: '700',
+            }}
+          >
             OpenStreetMap Interactive
           </span>
         </div>

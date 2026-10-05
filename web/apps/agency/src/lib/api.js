@@ -14,12 +14,18 @@ import {
   createAuthApi,
   createAgencyRequestApi,
   createAgencyQuotationApi,
+  createAgencyRatingApi,
+  createAgencyProfileApi,
   createMessagingApi,
   createJobApi,
+  createNotificationApi,
 } from '@troublefree/api-client';
 
-const apiBaseUrl =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || 'http://localhost:5000';
+const rawUrl =
+  (typeof import.meta !== 'undefined' &&
+    (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL)) ||
+  'http://localhost:5001';
+const apiBaseUrl = rawUrl.replace(/\/api\/v1\/?$/, '');
 
 let unauthorizedListener = null;
 
@@ -33,9 +39,22 @@ export function setUnauthorizedListener(listener) {
 }
 
 export const authApi = createAuthApi(apiClient);
+export const agencyProfileApi = createAgencyProfileApi(apiClient);
 export const agencyRequestApi = createAgencyRequestApi(apiClient);
 export const agencyQuotationApi = createAgencyQuotationApi(apiClient);
+export const agencyRatingApi = createAgencyRatingApi(apiClient);
 export const messagingApi = createMessagingApi(apiClient);
 export const jobApi = createJobApi(apiClient);
+export const notificationApi = createNotificationApi(apiClient);
 
 export { apiBaseUrl };
+
+export function getMediaUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+export const resolveMediaUrl = getMediaUrl;

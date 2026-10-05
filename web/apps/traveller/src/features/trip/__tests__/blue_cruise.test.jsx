@@ -40,7 +40,7 @@ describe('Blue Cruise form selection & duration choices', () => {
     render(
       <MemoryRouter>
         <TravelRequestForm onSubmit={onSubmit} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Verify Blue Cruise is first
@@ -64,7 +64,7 @@ describe('Blue Cruise form selection & duration choices', () => {
       expect.objectContaining({
         packageType: 'blue_cruise',
         cruiseDuration: '6d_5n',
-      })
+      }),
     );
   });
 
@@ -87,7 +87,7 @@ describe('RequestReview displays Blue Cruise correctly', () => {
           travelStartDate: '2026-10-01',
           travelEndDate: '2026-10-04',
         }}
-      />
+      />,
     );
 
     expect(screen.getByText('SERVICE:')).toBeInTheDocument();

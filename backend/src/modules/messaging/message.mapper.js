@@ -11,8 +11,21 @@ import {
   maskContactDetails,
 } from '../contact/contact-visibility.js';
 
-export function toPublicMessage(message, { revealed = false } = {}) {
-  const body = revealed ? message.body : maskContactDetails(message.body);
+export function toPublicMessage(message, { revealed = false, currentUserId = null } = {}) {
+  const isDeletedForEveryone = Boolean(message.deletedForEveryoneAt);
+  const deletedForUsers = Array.isArray(message.deletedForUsers) ? message.deletedForUsers : [];
+  const deletedForMe = currentUserId ? deletedForUsers.includes(Number(currentUserId)) : false;
+  const isExpired = Boolean(message.expiresAt && new Date(message.expiresAt) <= new Date());
+
+  let body;
+  if (isDeletedForEveryone) {
+    body = 'This message was deleted';
+  } else if (isExpired) {
+    body = 'This message has expired';
+  } else {
+    body = revealed ? message.body : maskContactDetails(message.body);
+  }
+
   return {
     id: message.id,
     conversationId: message.conversationId,
@@ -21,6 +34,11 @@ export function toPublicMessage(message, { revealed = false } = {}) {
     body,
     metadata: message.metadata ?? null,
     readAt: message.readAt,
+    isDeletedForEveryone,
+    deletedForMe,
+    isExpired,
+    expiresAt: message.expiresAt ?? null,
+    deletedAt: message.deletedForEveryoneAt ?? null,
     createdAt: message.createdAt,
     updatedAt: message.updatedAt,
   };
@@ -28,7 +46,7 @@ export function toPublicMessage(message, { revealed = false } = {}) {
 
 export function toPublicConversation(
   conversation,
-  { revealed = false, traveller = null, agency = null, lastMessage = null } = {},
+  { revealed = false, traveller = null, agency = null, lastMessage = null, presence = null } = {},
 ) {
   return {
     id: conversation.id,
@@ -36,9 +54,11 @@ export function toPublicConversation(
     travellerId: conversation.travellerId,
     agencyId: conversation.agencyId,
     status: conversation.status,
+    disappearingTtl: conversation.disappearingTtl || 0,
     contactRevealed: revealed,
     traveller: traveller.participant,
     agency: agency.participant,
+    presence: presence || { isOnline: false, lastSeen: null },
     lastMessage: lastMessage ? toPublicMessage(lastMessage, { revealed }) : null,
     createdAt: conversation.createdAt,
     updatedAt: conversation.updatedAt,

@@ -8,7 +8,7 @@ export * from './variants.js';
 export const FAST = 0.15;
 export const NORMAL = 0.25;
 export const SLOW = 0.45;
-export const REVEAL = 0.50;
+export const REVEAL = 0.5;
 export const PAGE = 0.35;
 export const STAGGER = 0.08;
 

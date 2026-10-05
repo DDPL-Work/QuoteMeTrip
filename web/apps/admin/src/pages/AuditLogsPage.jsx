@@ -130,7 +130,9 @@ export function AuditLogsPage() {
               {logs.map((log) => (
                 <tr key={log.id} style={{ borderBottom: '1px solid #E2E8F0' }}>
                   <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap' }}>
-                    {new Date(log.createdAt).toLocaleString()}
+                    {log.createdAt || log.created_at
+                      ? new Date(log.createdAt || log.created_at).toLocaleString()
+                      : '—'}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
                     {log.actor ? (

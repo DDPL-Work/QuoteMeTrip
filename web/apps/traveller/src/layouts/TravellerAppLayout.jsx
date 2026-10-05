@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { AppHeader } from '../components/AppHeader.jsx';
 import { AppSidebar } from '../components/AppSidebar.jsx';
 import { MobileHeader } from '../components/MobileHeader.jsx';
@@ -10,6 +10,8 @@ import { notificationApi } from '../lib/api.js';
 
 export function TravellerAppLayout({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
+  const location = useLocation();
+  const isMessaging = location.pathname.includes('/messages');
 
   useEffect(() => {
     let active = true;
@@ -33,7 +35,10 @@ export function TravellerAppLayout({ children }) {
 
           <div className="tf-portal-shell">
             <AppSidebar />
-            <main className="tf-portal-main" id="main-content">
+            <main
+              className={`tf-portal-main ${isMessaging ? 'is-messaging-page' : ''}`}
+              id="main-content"
+            >
               {children || <Outlet />}
             </main>
           </div>

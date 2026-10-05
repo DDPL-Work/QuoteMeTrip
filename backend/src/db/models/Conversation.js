@@ -47,6 +47,12 @@ export class Conversation extends Model {
           allowNull: false,
           defaultValue: 'active',
         },
+        disappearingTtl: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: false,
+          defaultValue: 0,
+          field: 'disappearing_ttl',
+        },
       },
       {
         sequelize,

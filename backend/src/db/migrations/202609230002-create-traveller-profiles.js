@@ -31,6 +31,8 @@ export async function up(queryInterface, Sequelize) {
       allowNull: false,
       defaultValue: 'en',
     },
+    profile_picture: { type: Sequelize.TEXT, allowNull: true },
+    cover_image: { type: Sequelize.TEXT, allowNull: true },
     created_at: {
       type: Sequelize.DATE,
       allowNull: false,

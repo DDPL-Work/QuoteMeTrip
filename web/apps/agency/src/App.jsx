@@ -1,4 +1,4 @@
-// Agency application shell (Phase 5).
+// Agency application shell (Phase 5.1).
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/AuthContext.jsx';
@@ -15,6 +15,7 @@ import { MessagesPage } from './pages/messages.jsx';
 import { ConversationDetailPage } from './pages/conversation-detail.jsx';
 import { JobsPage } from './pages/jobs.jsx';
 import { JobDetailPage } from './pages/job-detail.jsx';
+import { ProfilePage } from './pages/profile.jsx';
 
 function Guarded({ children }) {
   return (
@@ -47,6 +48,14 @@ function App() {
           />
           <Route
             path="/"
+            element={
+              <Guarded>
+                <DashboardPage />
+              </Guarded>
+            }
+          />
+          <Route
+            path="/dashboard"
             element={
               <Guarded>
                 <DashboardPage />
@@ -130,6 +139,14 @@ function App() {
             element={
               <Guarded>
                 <JobDetailPage />
+              </Guarded>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <Guarded>
+                <ProfilePage />
               </Guarded>
             }
           />

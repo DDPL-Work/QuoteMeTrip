@@ -206,6 +206,8 @@ export function createTravellerApi(client) {
   return {
     me: () => unwrap(http.get('/api/v1/travellers/me')),
     updateMe: (input) => unwrap(http.patch('/api/v1/travellers/me', input)),
+    uploadProfilePicture: (data) => unwrap(http.post('/api/v1/travellers/me/profile-picture', data)),
+    uploadCoverImage: (data) => unwrap(http.post('/api/v1/travellers/me/cover-image', data)),
   };
 }
 
@@ -307,6 +309,34 @@ export function createAgencyRequestApi(client) {
 }
 
 /**
+ * Agency profile & coverage resource calls (Phase 5.3).
+ */
+export function createAgencyProfileApi(client) {
+  const { http } = client;
+
+  async function unwrap(promise) {
+    try {
+      const response = await promise;
+      return response.data?.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  }
+
+  return {
+    getProfile: () => unwrap(http.get('/api/v1/agency/profile')),
+    getCoverage: () => unwrap(http.get('/api/v1/agency/coverage')),
+    updateCoverage: (input) => unwrap(http.put('/api/v1/agency/coverage', input)),
+    getOnboardingStatus: () => unwrap(http.get('/api/v1/agency/onboarding-status')),
+    getDocuments: () => unwrap(http.get('/api/v1/agency/documents')),
+    uploadDocument: (input) => unwrap(http.post('/api/v1/agency/documents', input)),
+    deleteDocument: (documentId) => unwrap(http.delete(`/api/v1/agency/documents/${documentId}`)),
+    acceptAgreement: (input = {}) => unwrap(http.post('/api/v1/agency/agreement', input)),
+    submitOnboarding: () => unwrap(http.post('/api/v1/agency/onboarding/submit', {})),
+  };
+}
+
+/**
  * Agency quotation resource calls (Phase 5): own quotations only.
  */
 export function createAgencyQuotationApi(client) {
@@ -354,7 +384,10 @@ export function createMessagingApi(client) {
     listMessages: (id, params = {}) =>
       unwrap(http.get(`/api/v1/conversations/${id}/messages`, { params })),
     sendMessage: (id, input) => unwrap(http.post(`/api/v1/conversations/${id}/messages`, input)),
+    deleteMessage: (id, messageId, mode = 'me') =>
+      unwrap(http.delete(`/api/v1/conversations/${id}/messages/${messageId}?mode=${mode}`, { data: { mode } })),
     markRead: (id) => unwrap(http.patch(`/api/v1/conversations/${id}/read`, {})),
+    updateDisappearingTtl: (id, ttl) => unwrap(http.patch(`/api/v1/conversations/${id}/ttl`, { disappearingTtl: ttl, ttl })),
   };
 }
 
@@ -377,6 +410,8 @@ export function createJobApi(client) {
     list: () => unwrap(http.get('/api/v1/jobs')),
     getById: (id) => unwrap(http.get(`/api/v1/jobs/${id}`)),
     updateStatus: (id, status) => unwrap(http.patch(`/api/v1/jobs/${id}/status`, { status })),
+    submitRating: (id, rating) => unwrap(http.post(`/api/v1/jobs/${id}/rating`, { rating })),
+    getRating: (id) => unwrap(http.get(`/api/v1/jobs/${id}/rating`)),
   };
 }
 
@@ -443,6 +478,8 @@ export function createAdminApi(client) {
     createMembershipPlan: (input) => unwrap(http.post('/api/v1/admin/membership-plans', input)),
     updateMembershipPlan: (id, input) =>
       unwrap(http.patch(`/api/v1/admin/membership-plans/${id}`, input)),
+    deleteMembershipPlan: (id) =>
+      unwrap(http.delete(`/api/v1/admin/membership-plans/${id}`)),
 
     // Agency Memberships
     listMemberships: (params = {}) => unwrap(http.get('/api/v1/admin/memberships', { params })),
@@ -472,5 +509,71 @@ export function createAdminApi(client) {
 
     // Audit Logs
     listAuditLogs: (params = {}) => unwrap(http.get('/api/v1/admin/audit-logs', { params })),
+  };
+}
+
+/**
+ * Agency rating resource calls (Phase 5/6).
+ */
+export function createAgencyRatingApi(client) {
+  const { http } = client;
+
+  async function unwrap(promise) {
+    try {
+      const response = await promise;
+      return response.data?.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  }
+
+  return {
+    getRatingSummary: (agencyId) => unwrap(http.get(`/api/v1/agencies/${agencyId}/rating-summary`)),
+  };
+}
+
+/**
+ * Travel Guide public resource calls (Phase 6.5).
+ */
+export function createTravelGuideApi(client) {
+  const { http } = client;
+
+  async function unwrap(promise) {
+    try {
+      const response = await promise;
+      return response.data?.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  }
+
+  return {
+    getRegions: () => unwrap(http.get('/api/v1/travel-guide/regions')),
+    getDestinations: (params = {}) =>
+      unwrap(http.get('/api/v1/travel-guide/destinations', { params })),
+    getDestinationBySlug: (slug) => unwrap(http.get(`/api/v1/travel-guide/destinations/${slug}`)),
+    getArticles: (params = {}) => unwrap(http.get('/api/v1/travel-guide/articles', { params })),
+    getArticleBySlug: (slug) => unwrap(http.get(`/api/v1/travel-guide/articles/${slug}`)),
+  };
+}
+
+/**
+ * Weather public resource calls.
+ */
+export function createWeatherApi(client) {
+  const { http } = client;
+
+  async function unwrap(promise) {
+    try {
+      const response = await promise;
+      return response.data?.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  }
+
+  return {
+    getForecast: (destination, date) =>
+      unwrap(http.get('/api/v1/weather', { params: { destination, date } })),
   };
 }

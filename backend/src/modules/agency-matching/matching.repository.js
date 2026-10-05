@@ -8,7 +8,17 @@ import { initModels } from '../../db/models/index.js';
 
 export async function findRequestById(requestId, { transaction = null, registry = null } = {}) {
   const models = registry || initModels();
-  return models.TravelRequest.findByPk(requestId, { transaction });
+  return models.TravelRequest.findByPk(requestId, {
+    include: [
+      {
+        model: models.Route,
+        as: 'route',
+        include: [{ model: models.RouteStop, as: 'stops' }],
+      },
+      { model: models.TravelRequestDay, as: 'days' },
+    ],
+    transaction,
+  });
 }
 
 export async function findExistingMatch(travelRequestId, agencyId, { transaction = null } = {}) {
@@ -30,8 +40,8 @@ export async function createMatch({ travelRequestId, agencyId }, { transaction =
 }
 
 /**
- * Eligible agencies: profile approved + user active/agency + at least
- * one membership row that is status=active and within its time window.
+ * Candidate agencies: profile approved + user active/agency + active membership
+ * + eagerly loaded coverages and capabilities for eligibility evaluation.
  */
 export async function findEligibleAgencies({ transaction = null } = {}) {
   const models = initModels();
@@ -54,6 +64,16 @@ export async function findEligibleAgencies({ transaction = null } = {}) {
           [Op.or]: [{ endsAt: null }, { endsAt: { [Op.gt]: now } }],
         },
         required: true,
+      },
+      {
+        model: models.AgencyCoverage,
+        as: 'coverages',
+        required: false,
+      },
+      {
+        model: models.AgencyCapability,
+        as: 'capabilities',
+        required: false,
       },
     ],
     transaction,

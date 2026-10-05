@@ -36,13 +36,168 @@ async function resolveAgency(registry, userId, { transaction = null } = {}) {
 }
 
 /**
- * Region/request eligibility extension point. Phase 5 matches every
- * eligible agency; geographic or route-based rules override or wrap
- * this function in later phases without touching the pipeline.
+ * Authoritative backend eligibility evaluation:
+ * 1. User status is active + role is agency
+ * 2. Agency profile status is approved
+ * 3. Membership status is active and unexpired
+ * 4. Geographic coverage overlaps with request route/locations
+ * 5. Service capabilities satisfy request package/service needs
  */
-// eslint-disable-next-line no-unused-vars
+export function explainAgencyEligibility(agency, request) {
+  const reasons = [];
+
+  if (!agency) {
+    return { eligible: false, reasons: ['NO_AGENCY_PROVIDED'] };
+  }
+
+  // 1. Account / User status
+  if (!agency.user || agency.user.status !== 'active' || agency.user.role !== 'agency') {
+    reasons.push('USER_INACTIVE');
+  }
+
+  // 2. Agency profile status
+  if (agency.status === 'pending') {
+    reasons.push('AGENCY_PENDING');
+  } else if (agency.status === 'suspended') {
+    reasons.push('AGENCY_SUSPENDED');
+  } else if (agency.status === 'rejected') {
+    reasons.push('AGENCY_REJECTED');
+  } else if (agency.status !== 'approved') {
+    reasons.push('AGENCY_NOT_APPROVED');
+  }
+
+  // 3. Membership status
+  const now = new Date();
+  const hasActiveMembership = (agency.memberships || []).some((m) => {
+    if (m.status !== 'active') return false;
+    const startsAt = new Date(m.startsAt);
+    if (startsAt > now) return false;
+    if (m.endsAt) {
+      const endsAt = new Date(m.endsAt);
+      if (endsAt <= now) return false;
+    }
+    return true;
+  });
+
+  if (!hasActiveMembership) {
+    reasons.push('MEMBERSHIP_INACTIVE');
+  }
+
+  // 4. Geographic Coverage
+  const requestLocations = [
+    request?.route?.startLocation,
+    request?.route?.finalDestination,
+    ...(request?.route?.stops || []).map((s) => s.locationName),
+    ...(request?.days || []).map((d) => d.location),
+  ]
+    .filter(Boolean)
+    .map((l) => String(l).toLowerCase().trim());
+
+  const rawCoverages = (agency.coverages || [])
+    .map((c) => (c.locationName ? String(c.locationName).toLowerCase().trim() : ''))
+    .filter(Boolean);
+
+  const fallbackCoverages = [agency.city, agency.country]
+    .filter(Boolean)
+    .map((l) => String(l).toLowerCase().trim());
+
+  const agencyCoverages = rawCoverages.length > 0 ? rawCoverages : fallbackCoverages;
+
+  if (agencyCoverages.length === 0) {
+    reasons.push('EMPTY_COVERAGE');
+  } else if (requestLocations.length > 0) {
+    const hasLocationMatch = requestLocations.some((reqLoc) =>
+      agencyCoverages.some((covLoc) => reqLoc.includes(covLoc) || covLoc.includes(reqLoc)),
+    );
+    if (!hasLocationMatch) {
+      reasons.push('COVERAGE_MISMATCH');
+    }
+  }
+
+  // 5. Service Capabilities
+  let enabledCapabilities;
+  if (Array.isArray(agency.capabilities) && agency.capabilities.length > 0) {
+    const rawCapabilities = agency.capabilities
+      .filter((c) => c.isEnabled !== false)
+      .map((c) => c.serviceType);
+    enabledCapabilities = new Set(rawCapabilities);
+  } else {
+    const defaultCapabilities = [
+      'full_package',
+      'hotel',
+      'vehicle',
+      'driver',
+      'guide',
+      'blue_cruise',
+    ];
+    enabledCapabilities = new Set(defaultCapabilities);
+  }
+
+  if (enabledCapabilities.size === 0) {
+    reasons.push('EMPTY_SERVICES');
+  } else {
+    const pkg = request?.packageType;
+    if (pkg === 'full_package') {
+      const hasFull = enabledCapabilities.has('full_package');
+      const hasComponents =
+        enabledCapabilities.has('hotel') &&
+        enabledCapabilities.has('vehicle') &&
+        enabledCapabilities.has('driver') &&
+        (!request?.guideRequired || enabledCapabilities.has('guide'));
+      if (!hasFull && !hasComponents) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+    } else if (pkg === 'blue_cruise') {
+      if (!enabledCapabilities.has('blue_cruise') && !enabledCapabilities.has('full_package')) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+    } else if (pkg === 'hotel_only') {
+      if (!enabledCapabilities.has('hotel') && !enabledCapabilities.has('full_package')) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+    } else if (pkg === 'vehicle_driver') {
+      const hasVD =
+        enabledCapabilities.has('full_package') || enabledCapabilities.has('vehicle_driver');
+      const hasComponents = enabledCapabilities.has('vehicle') && enabledCapabilities.has('driver');
+      if (!hasVD && !hasComponents) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+    } else {
+      if (
+        request?.hotelRequired &&
+        !enabledCapabilities.has('hotel') &&
+        !enabledCapabilities.has('full_package')
+      ) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+      if (
+        request?.driverRequired &&
+        !enabledCapabilities.has('driver') &&
+        !enabledCapabilities.has('full_package')
+      ) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+    }
+
+    if (
+      request?.guideRequired &&
+      !enabledCapabilities.has('guide') &&
+      !enabledCapabilities.has('full_package')
+    ) {
+      if (!reasons.includes('SERVICE_MISMATCH')) {
+        reasons.push('SERVICE_MISMATCH');
+      }
+    }
+  }
+
+  return {
+    eligible: reasons.length === 0,
+    reasons,
+  };
+}
+
 export function isAgencyEligibleForRequest(agency, request) {
-  return true;
+  return explainAgencyEligibility(agency, request).eligible;
 }
 
 function assertSubmittable(request) {
@@ -287,7 +442,8 @@ async function contactContext(models, request) {
   return { user, profile, revealed };
 }
 
-export async function markRequestViewed(userId, requestId, { role = null } = {}) {
+export async function markRequestViewed(userId, requestId, roleOption = {}) {
+  const role = typeof roleOption === 'string' ? roleOption : roleOption?.role ?? null;
   assertAgency(role);
   const models = initModels();
   const agency = await resolveAgency(models, userId);

@@ -20,14 +20,28 @@ export function validateFileMetadata(file) {
     throw new Error('No file provided');
   }
 
-  const filename = path.basename(file.originalname || file.name || 'file');
-  const ext = path.extname(filename).toLowerCase();
+  let filename = path.basename(file.originalname || file.name || 'file');
+  let ext = path.extname(filename).toLowerCase();
   const mimeType = (file.mimetype || file.type || '').toLowerCase();
   const size = file.size || 0;
 
+  if (!ext && mimeType) {
+    const mimeToExt = {
+      'image/jpeg': '.jpg',
+      'image/jpg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+      'application/pdf': '.pdf',
+    };
+    ext = mimeToExt[mimeType] || '';
+    if (ext) {
+      filename = `${filename}${ext}`;
+    }
+  }
+
   if (!ALLOWED_EXTENSIONS.has(ext)) {
     throw new Error(
-      `Invalid file extension: ${ext}. Allowed extensions: ${Array.from(ALLOWED_EXTENSIONS).join(', ')}`,
+      `Invalid file extension: ${ext || '(none)'}. Allowed extensions: ${Array.from(ALLOWED_EXTENSIONS).join(', ')}`,
     );
   }
 
@@ -49,7 +63,7 @@ export function validateFileMetadata(file) {
   if (!destinationPath.startsWith(UPLOADS_DIR)) {
     throw new Error('Path traversal attempt detected.');
   }
-
+ 
   return {
     originalName: filename,
     safeFilename,

@@ -36,6 +36,9 @@ const EXPECTED_TABLES = [
   'travel_request_agencies',
   'quotations',
   'quotation_items',
+  // Phase 5.3 — agency coverage and service capabilities.
+  'agency_coverages',
+  'agency_capabilities',
   // Phase 6 — messaging, acceptance & jobs.
   'conversations',
   'messages',
@@ -53,7 +56,7 @@ const EXPECTED_TABLES = [
   'ratings',
 ];
 
-const EXPECTED_MIGRATION_COUNT = 30;
+const EXPECTED_MIGRATION_COUNT = 35;
 
 let db;
 

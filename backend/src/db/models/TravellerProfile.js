@@ -63,6 +63,16 @@ export class TravellerProfile extends Model {
           allowNull: false,
           defaultValue: 'en',
         },
+        profilePicture: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'profile_picture',
+        },
+        coverImage: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'cover_image',
+        },
       },
       {
         sequelize,

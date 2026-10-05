@@ -16,9 +16,12 @@ import {
   createRouteApi,
   createTravelRequestApi,
   createTravellerQuotationApi,
+  createAgencyRatingApi,
   createMessagingApi,
   createJobApi,
   createNotificationApi,
+  createTravelGuideApi,
+  createWeatherApi,
 } from '@troublefree/api-client';
 
 const rawUrl =
@@ -41,8 +44,21 @@ export const travellerApi = createTravellerApi(apiClient);
 export const routeApi = createRouteApi(apiClient);
 export const travelRequestApi = createTravelRequestApi(apiClient);
 export const travellerQuotationApi = createTravellerQuotationApi(apiClient);
+export const agencyRatingApi = createAgencyRatingApi(apiClient);
 export const messagingApi = createMessagingApi(apiClient);
 export const jobApi = createJobApi(apiClient);
 export const notificationApi = createNotificationApi(apiClient);
+export const travelGuideApi = createTravelGuideApi(apiClient);
+export const weatherApi = createWeatherApi(apiClient);
 
 export { apiBaseUrl };
+
+export function getMediaUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+export const resolveMediaUrl = getMediaUrl;

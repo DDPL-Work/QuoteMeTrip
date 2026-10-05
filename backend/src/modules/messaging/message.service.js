@@ -22,7 +22,7 @@ import {
   NOTIFICATION_EVENTS,
   emitNotificationEvent,
 } from '../notifications/notification-events.js';
-import { emitToConversation } from '../../realtime/socket.js';
+import { emitToConversation, getUserPresence } from '../../realtime/socket.js';
 
 function forbidden(message) {
   return new ForbiddenError(message, { code: MESSAGE_ERROR_CODES.FORBIDDEN });
@@ -192,6 +192,14 @@ export async function createConversation(userId, role, input) {
   };
 }
 
+async function resolveOtherUserId(models, conversation, currentUserId, role) {
+  if (role === 'traveller') {
+    const agency = await models.AgencyProfile.findByPk(conversation.agencyId);
+    return agency ? agency.userId : null;
+  }
+  return conversation.travellerId;
+}
+
 export async function listConversations(userId, role, { page, pageSize }) {
   const models = initModels();
   const where = {};
@@ -223,8 +231,10 @@ export async function listConversations(userId, role, { page, pageSize }) {
     const snippets = await buildSnippets(models, row);
     const lastMessage = await lastMessageFor(models, row.id);
     const unreadCount = await unreadCountFor(models, row.id, userId, role, agencyId);
+    const otherUserId = await resolveOtherUserId(models, row, userId, role);
+    const presence = getUserPresence(otherUserId);
     conversations.push({
-      ...toPublicConversation(row, { ...snippets, lastMessage }),
+      ...toPublicConversation(row, { ...snippets, lastMessage, presence }),
       unreadCount,
     });
   }
@@ -235,31 +245,176 @@ export async function getConversation(userId, role, conversationId) {
   const { conversation, models } = await assertConversationMember(conversationId, userId, role);
   const snippets = await buildSnippets(models, conversation);
   const lastMessage = await lastMessageFor(models, conversation.id);
-  return toPublicConversation(conversation, { ...snippets, lastMessage });
+  const otherUserId = await resolveOtherUserId(models, conversation, userId, role);
+  const presence = getUserPresence(otherUserId);
+  return toPublicConversation(conversation, { ...snippets, lastMessage, presence });
 }
 
 /* ------------------------------------------------------------------ */
 /* Messages                                                            */
 /* ------------------------------------------------------------------ */
 
-export async function listMessages(userId, role, conversationId, { page, pageSize }) {
+export async function listMessages(
+  userId,
+  role,
+  conversationId,
+  { page = 1, pageSize = 30, limit = 30, before = null } = {},
+) {
   const { conversation, models } = await assertConversationMember(conversationId, userId, role);
   const revealed = await isContactRevealedForRequest(conversation.travelRequestId, {
     registry: models,
   });
+
+  const effectiveLimit = Math.min(Math.max(limit || pageSize, 1), 100);
+
+  const where = { conversationId: conversation.id };
+  if (before !== null && before !== undefined) {
+    where.id = { [Op.lt]: Number(before) };
+  }
+
   const totalItems = await models.Message.count({ where: { conversationId: conversation.id } });
+
+  let rows;
+  if (before !== null && before !== undefined) {
+    const fetched = await models.Message.findAll({
+      where,
+      order: [['id', 'DESC']],
+      limit: effectiveLimit + 1,
+    });
+    const hasMore = fetched.length > effectiveLimit;
+    const items = hasMore ? fetched.slice(0, effectiveLimit) : fetched;
+    items.reverse();
+    rows = items;
+
+    const nextCursor = items.length > 0 ? items[0].id : null;
+    const mapped = rows
+      .filter((m) => {
+        const delFor = Array.isArray(m.deletedForUsers) ? m.deletedForUsers : [];
+        return !delFor.includes(Number(userId));
+      })
+      .map((m) => toPublicMessage(m, { revealed, currentUserId: userId }));
+
+    return {
+      messages: mapped,
+      pagination: {
+        limit: effectiveLimit,
+        before,
+        nextCursor,
+        hasMore,
+        totalItems,
+      },
+    };
+  }
+
+  if (page === 1) {
+    const fetched = await models.Message.findAll({
+      where: { conversationId: conversation.id },
+      order: [['id', 'DESC']],
+      limit: effectiveLimit + 1,
+    });
+    const hasMore = fetched.length > effectiveLimit;
+    const items = hasMore ? fetched.slice(0, effectiveLimit) : fetched;
+    items.reverse();
+    rows = items;
+
+    const nextCursor = items.length > 0 ? items[0].id : null;
+    const mapped = rows
+      .filter((m) => {
+        const delFor = Array.isArray(m.deletedForUsers) ? m.deletedForUsers : [];
+        return !delFor.includes(Number(userId));
+      })
+      .map((m) => toPublicMessage(m, { revealed, currentUserId: userId }));
+
+    return {
+      messages: mapped,
+      pagination: {
+        limit: effectiveLimit,
+        page: 1,
+        pageSize: effectiveLimit,
+        nextCursor,
+        hasMore,
+        totalItems,
+        totalPages: Math.max(1, Math.ceil(totalItems / effectiveLimit)),
+      },
+    };
+  }
+
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const current = Math.min(page, totalPages);
-  const rows = await models.Message.findAll({
+  rows = await models.Message.findAll({
     where: { conversationId: conversation.id },
-    order: [[models.sequelize.col('Message.id'), 'ASC']],
+    order: [['id', 'ASC']],
     offset: (current - 1) * pageSize,
     limit: pageSize,
   });
+
+  const mapped = rows
+    .filter((m) => {
+      const delFor = Array.isArray(m.deletedForUsers) ? m.deletedForUsers : [];
+      return !delFor.includes(Number(userId));
+    })
+    .map((m) => toPublicMessage(m, { revealed, currentUserId: userId }));
+
   return {
-    messages: rows.map((m) => toPublicMessage(m, { revealed })),
+    messages: mapped,
     pagination: { page: current, pageSize, totalItems, totalPages },
   };
+}
+
+export async function deleteMessage(
+  userId,
+  role,
+  conversationId,
+  messageId,
+  { mode = 'me' } = {},
+) {
+  const models = initModels();
+  const message = await models.Message.findByPk(messageId);
+  if (!message) {
+    throw notFound('Message not found.');
+  }
+
+  const targetConvId = conversationId && Number(conversationId) > 0 ? Number(conversationId) : message.conversationId;
+  const { conversation } = await assertConversationMember(targetConvId, userId, role);
+
+  if (Number(message.conversationId) !== Number(conversation.id)) {
+    throw notFound('Message does not belong to this conversation.');
+  }
+
+  if (mode === 'everyone') {
+    if (role === 'admin' || message.senderUserId !== Number(userId)) {
+      throw forbidden('You can only delete your own messages for everyone.');
+    }
+    await message.update({
+      deletedForEveryoneAt: new Date(),
+      deletedByUserId: Number(userId),
+    });
+
+    const revealed = await isContactRevealedForRequest(conversation.travelRequestId, {
+      registry: models,
+    });
+    const publicMessage = toPublicMessage(message, { revealed, currentUserId: userId });
+
+    emitToConversation(conversation.id, SOCKET_EVENTS.DELETED, {
+      conversationId: conversation.id,
+      messageId: message.id,
+      mode: 'everyone',
+      message: publicMessage,
+    });
+
+    return publicMessage;
+  }
+
+  const currentDeleted = Array.isArray(message.deletedForUsers) ? [...message.deletedForUsers] : [];
+  if (!currentDeleted.includes(Number(userId))) {
+    currentDeleted.push(Number(userId));
+    await message.update({ deletedForUsers: currentDeleted });
+  }
+
+  const revealed = await isContactRevealedForRequest(conversation.travelRequestId, {
+    registry: models,
+  });
+  return toPublicMessage(message, { revealed, currentUserId: userId });
 }
 
 export async function sendMessage(userId, role, conversationId, input) {
@@ -273,11 +428,17 @@ export async function sendMessage(userId, role, conversationId, input) {
     });
   }
 
+  let expiresAt = null;
+  if (conversation.disappearingTtl > 0) {
+    expiresAt = new Date(Date.now() + conversation.disappearingTtl * 1000);
+  }
+
   const message = await models.Message.create({
     conversationId: conversation.id,
     senderUserId: Number(userId),
     messageType: 'text',
     body: input.body,
+    expiresAt,
   });
   await conversation.update({ updatedAt: new Date() });
 
@@ -297,6 +458,39 @@ export async function sendMessage(userId, role, conversationId, input) {
     lastMessage: publicMessage,
   });
   return publicMessage;
+}
+
+export async function updateConversationTtl(userId, role, conversationId, ttlSeconds) {
+  const { conversation, models } = await assertConversationMember(conversationId, userId, role);
+  const ttl = Math.max(0, Number(ttlSeconds) || 0);
+  await conversation.update({ disappearingTtl: ttl });
+
+  const ttlLabels = {
+    0: 'Off',
+    86400: '24 hours',
+    604800: '7 days',
+    2592000: '30 days',
+  };
+  const label = ttlLabels[ttl] || `${ttl} seconds`;
+  const bodyText = `Disappearing messages set to ${label}`;
+
+  const sysMsg = await models.Message.create({
+    conversationId: conversation.id,
+    senderUserId: null,
+    messageType: 'system',
+    body: bodyText,
+  });
+  await conversation.update({ updatedAt: new Date() });
+
+  const publicSysMsg = toPublicMessage(sysMsg, { revealed: true });
+  emitToConversation(conversation.id, SOCKET_EVENTS.MESSAGE, { message: publicSysMsg });
+  emitToConversation(conversation.id, 'conversation:ttl', {
+    conversationId: conversation.id,
+    disappearingTtl: ttl,
+    systemMessage: publicSysMsg,
+  });
+
+  return { conversationId: conversation.id, disappearingTtl: ttl, systemMessage: publicSysMsg };
 }
 
 export async function markConversationRead(userId, role, conversationId) {

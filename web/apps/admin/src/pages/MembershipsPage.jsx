@@ -2,12 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { adminApi } from '../services/api.js';
 import { StatusBadge } from '@troublefree/ui';
+import { ConfirmModal } from '../components/ConfirmModal.jsx';
+import { AlertBanner } from '../components/AlertBanner.jsx';
 
 export function MembershipsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [memberships, setMemberships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null); // { title, message, action, variant }
+  const [actionLoading, setActionLoading] = useState(false);
 
   const [paymentModal, setPaymentModal] = useState(null); // { membership, paymentReference, notes }
 
@@ -45,36 +50,64 @@ export function MembershipsPage() {
   const handleConfirmPayment = async (e) => {
     e.preventDefault();
     if (!paymentModal) return;
+    setFeedback(null);
     try {
       await adminApi.confirmPayment(paymentModal.membership.id, {
         paymentReference: paymentModal.paymentReference,
         notes: paymentModal.notes,
       });
+      setFeedback({ type: 'success', message: 'Payment confirmed successfully.' });
       setPaymentModal(null);
       loadMemberships();
     } catch (err) {
-      alert(`Payment confirmation failed: ${err.message}`);
+      setFeedback({ type: 'error', message: `Payment confirmation failed: ${err.message}` });
     }
   };
 
-  const handleSuspend = async (memId) => {
-    if (!window.confirm('Suspend this agency membership?')) return;
-    try {
-      await adminApi.suspendMembership(memId);
-      loadMemberships();
-    } catch (err) {
-      alert(`Suspension failed: ${err.message}`);
-    }
+  const promptSuspend = (memId) => {
+    setConfirmDialog({
+      title: 'Suspend Agency Membership',
+      message: 'Are you sure you want to suspend this agency membership? The agency will lose matching eligibility while suspended.',
+      confirmText: 'Suspend Membership',
+      variant: 'warning',
+      action: async () => {
+        setActionLoading(true);
+        try {
+          await adminApi.suspendMembership(memId);
+          setFeedback({ type: 'success', message: 'Membership suspended successfully.' });
+          setConfirmDialog(null);
+          loadMemberships();
+        } catch (err) {
+          setFeedback({ type: 'error', message: `Suspension failed: ${err.message}` });
+          setConfirmDialog(null);
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
-  const handleReactivate = async (memId) => {
-    if (!window.confirm('Reactivate this agency membership?')) return;
-    try {
-      await adminApi.reactivateMembership(memId);
-      loadMemberships();
-    } catch (err) {
-      alert(`Reactivation failed: ${err.message}`);
-    }
+  const promptReactivate = (memId) => {
+    setConfirmDialog({
+      title: 'Reactivate Agency Membership',
+      message: 'Reactivate this agency membership? The agency will regain active matching eligibility.',
+      confirmText: 'Reactivate Membership',
+      variant: 'primary',
+      action: async () => {
+        setActionLoading(true);
+        try {
+          await adminApi.reactivateMembership(memId);
+          setFeedback({ type: 'success', message: 'Membership reactivated successfully.' });
+          setConfirmDialog(null);
+          loadMemberships();
+        } catch (err) {
+          setFeedback({ type: 'error', message: `Reactivation failed: ${err.message}` });
+          setConfirmDialog(null);
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
   return (
@@ -90,6 +123,14 @@ export function MembershipsPage() {
           Manage agency subscriptions, manual payment verification, and active windows.
         </p>
       </div>
+
+      {feedback && (
+        <AlertBanner
+          type={feedback.type}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
       {/* Filter Bar */}
       <div
@@ -209,7 +250,7 @@ export function MembershipsPage() {
                       {mem.status === 'active' && (
                         <button
                           type="button"
-                          onClick={() => handleSuspend(mem.id)}
+                          onClick={() => promptSuspend(mem.id)}
                           style={{
                             padding: '0.25rem 0.5rem',
                             background: '#DD6B20',
@@ -226,7 +267,7 @@ export function MembershipsPage() {
                       {mem.status === 'suspended' && (
                         <button
                           type="button"
-                          onClick={() => handleReactivate(mem.id)}
+                          onClick={() => promptReactivate(mem.id)}
                           style={{
                             padding: '0.25rem 0.5rem',
                             background: '#3182CE',
@@ -353,6 +394,20 @@ export function MembershipsPage() {
             </div>
           </form>
         </div>
+      )}
+
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={Boolean(confirmDialog)}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText={confirmDialog.confirmText}
+          cancelText="Cancel"
+          variant={confirmDialog.variant || 'warning'}
+          loading={actionLoading}
+          onConfirm={confirmDialog.action}
+          onCancel={() => !actionLoading && setConfirmDialog(null)}
+        />
       )}
     </div>
   );

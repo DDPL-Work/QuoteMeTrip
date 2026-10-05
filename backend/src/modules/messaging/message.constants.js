@@ -17,4 +17,5 @@ export const SOCKET_EVENTS = {
   MESSAGE: 'conversation:message',
   READ: 'conversation:read',
   UPDATED: 'conversation:updated',
+  DELETED: 'conversation:deleted',
 };

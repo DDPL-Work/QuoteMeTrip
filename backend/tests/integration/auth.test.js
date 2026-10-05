@@ -640,12 +640,19 @@ describe('google login', () => {
   });
 
   test('HTTP google endpoint reports unconfigured provider honestly', async () => {
-    assert.strictEqual(process.env.GOOGLE_CLIENT_ID || '', '');
-    const { status, json } = await api('POST', '/api/v1/auth/google', {
-      body: { idToken: 'anything' },
-    });
-    assert.strictEqual(status, 503);
-    assert.strictEqual(json.error.code, 'AUTH_GOOGLE_NOT_CONFIGURED');
+    const originalClientId = process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_ID;
+    try {
+      const { status, json } = await api('POST', '/api/v1/auth/google', {
+        body: { idToken: 'anything' },
+      });
+      assert.strictEqual(status, 503);
+      assert.strictEqual(json.error.code, 'AUTH_GOOGLE_NOT_CONFIGURED');
+    } finally {
+      if (originalClientId !== undefined) {
+        process.env.GOOGLE_CLIENT_ID = originalClientId;
+      }
+    }
   });
 });
 

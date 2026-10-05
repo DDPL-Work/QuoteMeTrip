@@ -39,6 +39,14 @@ export async function findAgencies(query = {}) {
         as: 'memberships',
         include: [{ model: models.MembershipPlan, as: 'plan' }],
       },
+      {
+        model: models.AgencyCoverage,
+        as: 'coverages',
+      },
+      {
+        model: models.AgencyCapability,
+        as: 'capabilities',
+      },
     ],
     order: [[models.sequelize.col('AgencyProfile.created_at'), 'DESC']],
     limit: pageSize,
@@ -78,6 +86,14 @@ export async function findAgencyById(id, { transaction = null } = {}) {
           { model: models.MembershipPlan, as: 'plan' },
           { model: models.User, as: 'confirmer', attributes: ['id', 'name', 'email'] },
         ],
+      },
+      {
+        model: models.AgencyCoverage,
+        as: 'coverages',
+      },
+      {
+        model: models.AgencyCapability,
+        as: 'capabilities',
       },
     ],
     transaction,

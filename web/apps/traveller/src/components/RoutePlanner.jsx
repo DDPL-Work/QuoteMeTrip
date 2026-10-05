@@ -77,35 +77,102 @@ export function RoutePlanner({
   const isCalculating = calculationStatus === 'calculating';
 
   return (
-    <div className="tf-route-planner-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div
+      className="tf-route-planner-container"
+      style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+    >
       {/* Step Header */}
-      <div style={{ background: '#FFFBF3', padding: '24px', borderRadius: '16px', border: '1px solid #E2DCD1' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#147D33', fontWeight: '700', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+      <div
+        style={{
+          background: '#FFFBF3',
+          padding: '24px',
+          borderRadius: '16px',
+          border: '1px solid #E2DCD1',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color: '#147D33',
+            fontWeight: '700',
+            fontSize: '13px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+          }}
+        >
           <FiNavigation size={18} /> Step 1: Design Your Route
         </div>
-        <h2 style={{ fontFamily: 'var(--serif, serif)', fontSize: '28px', color: '#13291C', margin: '8px 0 4px' }}>
+        <h2
+          style={{
+            fontFamily: 'var(--serif, serif)',
+            fontSize: '28px',
+            color: '#13291C',
+            margin: '8px 0 4px',
+          }}
+        >
           Where do you want to travel?
         </h2>
         <p style={{ color: '#4E5754', margin: 0, fontSize: '15px' }}>
-          Add your starting city, any intermediate stops, and your final destination. We will calculate distance, travel time, and recommended days automatically.
+          Add your starting city, any intermediate stops, and your final destination. We will
+          calculate distance, travel time, and recommended days automatically.
         </p>
       </div>
 
       {/* Grid Layout: Controls & Map */}
-      <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px', alignItems: 'start' }}>
-        
+      <div
+        className="animate-fade-in"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: '24px',
+          alignItems: 'start',
+        }}
+      >
         {/* Left Side: Stop Management Form */}
-        <div className="tf-motion-card" style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2DCD1', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
+        <div
+          className="tf-motion-card"
+          style={{
+            background: '#FFFFFF',
+            padding: '24px',
+            borderRadius: '16px',
+            border: '1px solid #E2DCD1',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}
+        >
           {/* Add Stop Form */}
-          <form onSubmit={handleAddStopSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: '#13291C', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <form
+            onSubmit={handleAddStopSubmit}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            <h3
+              style={{
+                fontSize: '17px',
+                fontWeight: '700',
+                margin: 0,
+                color: '#13291C',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <FiPlus style={{ color: '#FC7C00' }} /> Add Destination
             </h3>
-            
+
             <div style={{ display: 'flex', gap: '8px' }}>
               <div style={{ position: 'relative', flex: 1 }}>
-                <FiMapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#147D33' }} />
+                <FiMapPin
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#147D33',
+                  }}
+                />
                 <input
                   type="text"
                   value={newLocationName}
@@ -140,7 +207,7 @@ export function RoutePlanner({
                   fontSize: '13px',
                   background: '#F9F8F5',
                   color: '#13291C',
-                  fontWeight: '600'
+                  fontWeight: '600',
                 }}
               >
                 {stops.length === 0 ? (
@@ -174,7 +241,16 @@ export function RoutePlanner({
             </div>
 
             {inputError && (
-              <span role="alert" style={{ color: '#D93025', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span
+                role="alert"
+                style={{
+                  color: '#D93025',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
                 <FiAlertCircle /> {inputError}
               </span>
             )}
@@ -182,19 +258,34 @@ export function RoutePlanner({
 
           {/* Stop List */}
           <div style={{ marginTop: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '12px',
+              }}
+            >
               <span style={{ fontSize: '14px', fontWeight: '700', color: '#13291C' }}>
                 Selected Route ({stops.length} stops)
               </span>
               {stops.length > 0 && (
-                <span style={{ fontSize: '12px', color: '#4E5754' }}>
-                  Use arrows to reorder
-                </span>
+                <span style={{ fontSize: '12px', color: '#4E5754' }}>Use arrows to reorder</span>
               )}
             </div>
 
             {stops.length === 0 ? (
-              <div style={{ padding: '24px', textAlign: 'center', background: '#FFFBF3', border: '1px dashed #D5CDBF', borderRadius: '12px', color: '#56625B', fontSize: '14px' }}>
+              <div
+                style={{
+                  padding: '24px',
+                  textAlign: 'center',
+                  background: '#FFFBF3',
+                  border: '1px dashed #D5CDBF',
+                  borderRadius: '12px',
+                  color: '#56625B',
+                  fontSize: '14px',
+                }}
+              >
                 No stops added yet. Add your starting point above to begin.
               </div>
             ) : (
@@ -222,7 +313,17 @@ export function RoutePlanner({
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: '800', background: badgeColor, color: '#fff', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            background: badgeColor,
+                            color: '#fff',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            letterSpacing: '0.05em',
+                          }}
+                        >
                           {badgeText}
                         </span>
                         <strong style={{ fontSize: '15px', color: '#13291C' }}>{stop.name}</strong>
@@ -241,7 +342,7 @@ export function RoutePlanner({
                             cursor: isFirst ? 'not-allowed' : 'pointer',
                             opacity: isFirst ? 0.3 : 1,
                             padding: '6px',
-                            color: '#13291C'
+                            color: '#13291C',
                           }}
                         >
                           <FiArrowUp size={16} />
@@ -258,7 +359,7 @@ export function RoutePlanner({
                             cursor: isLast ? 'not-allowed' : 'pointer',
                             opacity: isLast ? 0.3 : 1,
                             padding: '6px',
-                            color: '#13291C'
+                            color: '#13291C',
                           }}
                         >
                           <FiArrowDown size={16} />
@@ -273,7 +374,7 @@ export function RoutePlanner({
                             background: 'transparent',
                             cursor: 'pointer',
                             padding: '6px',
-                            color: '#D93025'
+                            color: '#D93025',
                           }}
                         >
                           <FiTrash2 size={16} />
@@ -288,7 +389,16 @@ export function RoutePlanner({
 
           {/* Action Button */}
           {apiError && (
-            <div role="alert" style={{ background: '#FCE8E6', color: '#D93025', padding: '10px 14px', borderRadius: '8px', fontSize: '13.5px' }}>
+            <div
+              role="alert"
+              style={{
+                background: '#FCE8E6',
+                color: '#D93025',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '13.5px',
+              }}
+            >
               {apiError}
             </div>
           )}
@@ -300,7 +410,8 @@ export function RoutePlanner({
             style={{
               width: '100%',
               padding: '14px',
-              background: stops.length < 2 ? '#C4C4C4' : 'linear-gradient(135deg, #FC7C00 0%, #E06D00 100%)',
+              background:
+                stops.length < 2 ? '#C4C4C4' : 'linear-gradient(135deg, #FC7C00 0%, #E06D00 100%)',
               color: '#fff',
               border: 0,
               borderRadius: '12px',
@@ -327,12 +438,42 @@ export function RoutePlanner({
         </div>
 
         {/* Right Side: Route Map (Wider Footprint) */}
-        <div className="tf-motion-card" style={{ background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2DCD1', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
-          <div style={{ fontSize: '15px', fontWeight: '800', color: '#0C4E28', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          className="tf-motion-card"
+          style={{
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            border: '1px solid #E2DCD1',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '15px',
+              fontWeight: '800',
+              color: '#0C4E28',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FiMapPin style={{ color: '#147D33' }} size={18} /> Visual OpenStreetMap Route Preview
             </span>
-            <span style={{ fontSize: '12px', color: '#56625B', background: '#E5F2EA', padding: '4px 10px', borderRadius: '6px', fontWeight: '700' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#56625B',
+                background: '#E5F2EA',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontWeight: '700',
+              }}
+            >
               Interactive Canvas
             </span>
           </div>

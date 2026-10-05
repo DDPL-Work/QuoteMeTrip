@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { FiArrowLeft, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { agencyQuotationApi } from '../lib/api.js';
 import { AgencyQuotationDetail } from '../components/AgencyQuotationDetail.jsx';
 
@@ -27,7 +29,7 @@ export function QuotationDetailPage() {
     try {
       const data = await agencyQuotationApi.submit(id);
       setQuotation(data.quotation ?? data);
-      setNotice('Quotation submitted.');
+      setNotice('Quotation submitted successfully.');
     } catch (e) {
       setError(e?.message ?? 'Failed to submit quotation.');
     }
@@ -44,15 +46,70 @@ export function QuotationDetailPage() {
   }
 
   return (
-    <main>
-      <h1>Quotation #{id}</h1>
-      {error && <p role="alert">{error}</p>}
-      {notice && <p role="status">{notice}</p>}
+    <AgencyAppLayout activeItem="quotations">
+      <Link
+        to="/quotations"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          color: 'var(--agency-secondary)',
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          marginBottom: '1rem',
+          textDecoration: 'none',
+        }}
+      >
+        <FiArrowLeft /> Back to My Quotations
+      </Link>
+
+      <div className="agency-page-header" style={{ marginBottom: '1.25rem' }}>
+        <div>
+          <h1 className="agency-page-title" style={{ fontSize: '1.65rem' }}>
+            Quotation #{id}
+          </h1>
+          <p className="agency-page-subtitle">
+            Official customized proposal, service breakdown, and financial quote for client travel
+            request.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="agency-error-state" role="alert" style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <FiAlertCircle style={{ fontSize: '1.4rem' }} />
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      {notice && (
+        <div
+          style={{
+            backgroundColor: '#F0FDF4',
+            border: '1px solid #BBF7D0',
+            color: '#166534',
+            borderRadius: '0.5rem',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+          }}
+          role="status"
+        >
+          <FiCheckCircle /> {notice}
+        </div>
+      )}
+
       <AgencyQuotationDetail
         quotation={quotation}
         onSubmit={handleSubmit}
         onWithdraw={handleWithdraw}
       />
-    </main>
+    </AgencyAppLayout>
   );
 }

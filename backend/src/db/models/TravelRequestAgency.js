@@ -65,6 +65,7 @@ export class TravelRequestAgency extends Model {
         sequelize,
         tableName: 'travel_request_agencies',
         modelName: 'TravelRequestAgency',
+        underscored: true,
         indexes: [
           { fields: ['travel_request_id'] },
           { fields: ['agency_id'] },

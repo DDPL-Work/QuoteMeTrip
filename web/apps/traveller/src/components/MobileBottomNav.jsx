@@ -7,8 +7,18 @@ export function MobileBottomNav({ badges = {} }) {
   const navItems = [
     { label: 'Dashboard', icon: <Icons.Dashboard aria-hidden="true" />, to: '/app', exact: true },
     { label: 'Plan', icon: <Icons.PlanTrip aria-hidden="true" />, to: '/plan-trip' },
-    { label: 'Requests', icon: <Icons.Requests aria-hidden="true" />, to: '/travel-requests', badge: badges.requests },
-    { label: 'Messages', icon: <Icons.Messages aria-hidden="true" />, to: '/messages', badge: badges.messages },
+    {
+      label: 'Requests',
+      icon: <Icons.Requests aria-hidden="true" />,
+      to: '/travel-requests',
+      badge: badges.requests,
+    },
+    {
+      label: 'Messages',
+      icon: <Icons.Messages aria-hidden="true" />,
+      to: '/messages',
+      badge: badges.messages,
+    },
     { label: 'Profile', icon: <Icons.Profile aria-hidden="true" />, to: '/profile' },
   ];
 

@@ -85,9 +85,28 @@ export const TRANSLATIONS = {
     'guide.subtitle': 'Handcrafted itineraries, regional insights, and essential travel tips.',
     'guide.searchPlaceholder': 'Search travel articles...',
 
-    'agencies.title': 'Travel Agencies',
-    'agencies.subtitle': 'Browse verified local operators ready to provide custom trip quotations.',
-    'agencies.searchPlaceholder': 'Search agencies by name or city...',
+    'agency.coverage.title': 'Service Coverage & Capabilities',
+    'agency.coverage.subtitle':
+      'Select the regions you operate in and the services your agency provides to receive relevant travel requests.',
+    'agency.coverage.operatingAreas': 'Operating Areas / Geographic Coverage',
+    'agency.coverage.searchPlaceholder':
+      'Search destinations (e.g. Istanbul, Cappadocia, Antalya...)',
+    'agency.coverage.selectedAreas': 'Selected Operating Areas',
+    'agency.coverage.noAreas':
+      'No operating areas selected yet. Add at least one destination to receive matching requests.',
+    'agency.coverage.servicesProvided': 'Services Provided',
+    'agency.coverage.noServices':
+      'No services selected. Select the service capabilities your agency provides.',
+    'agency.coverage.save': 'Save Changes',
+    'agency.coverage.saving': 'Saving...',
+    'agency.coverage.saved': 'Changes Saved',
+    'agency.status.title': 'Onboarding Status',
+    'agency.status.pending': 'Pending Approval',
+    'agency.status.approved': 'Approved & Active',
+    'agency.status.suspended': 'Account Suspended',
+    'agency.status.rejected': 'Registration Rejected',
+    'agency.membership.active': 'Active Membership',
+    'agency.membership.inactive': 'Inactive Membership',
 
     'about.title': 'About Troublefree Holiday',
     'about.subtitle':
@@ -326,6 +345,28 @@ export const TRANSLATIONS = {
     'trip.cruiseDuration.4d_3n': '4 Gün / 3 Gece',
     'trip.cruiseDuration.6d_5n': '6 Gün / 5 Gece',
     'trip.cruiseDurationRequired': 'Lütfen bir mavi tur süresi seçin.',
+
+    'agency.coverage.title': 'Hizmet Kapsamı ve Yetkinlikler',
+    'agency.coverage.subtitle':
+      'Uygun seyahat taleplerini almak için faaliyet gösterdiğiniz bölgeleri ve sunduğunuz hizmetleri seçin.',
+    'agency.coverage.operatingAreas': 'Faaliyet Bölgeleri / Coğrafi Kapsam',
+    'agency.coverage.searchPlaceholder': 'Destinasyon ara (ör. İstanbul, Kapadokya, Antalya...)',
+    'agency.coverage.selectedAreas': 'Seçilen Faaliyet Bölgeleri',
+    'agency.coverage.noAreas':
+      'Henüz faaliyet bölgesi seçilmedi. Eşleşen talepleri almak için en az bir destinasyon ekleyin.',
+    'agency.coverage.servicesProvided': 'Sunulan Hizmetler',
+    'agency.coverage.noServices':
+      'Henüz hizmet seçilmedi. Acentenizin sağladığı hizmet yetkinliklerini seçin.',
+    'agency.coverage.save': 'Değişiklikleri Kaydet',
+    'agency.coverage.saving': 'Kaydediliyor...',
+    'agency.coverage.saved': 'Değişiklikler Kaydedildi',
+    'agency.status.title': 'Onay Durumu',
+    'agency.status.pending': 'Onay Bekliyor',
+    'agency.status.approved': 'Onaylandı ve Aktif',
+    'agency.status.suspended': 'Hesap Askıya Alındı',
+    'agency.status.rejected': 'Kayıt Reddedildi',
+    'agency.membership.active': 'Aktif Üyelik',
+    'agency.membership.inactive': 'Pasif Üyelik',
   },
 };
 
@@ -347,7 +388,7 @@ export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE }) {
       return SUPPORTED_LOCALES.includes(saved) ? saved : initialLocale;
     } catch {
       return initialLocale;
-    }    
+    }
   });
 
   const changeLocale = (nextLocale) => {

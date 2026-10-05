@@ -31,7 +31,7 @@ body {
   justify-content: center;
   min-height: 100vh;
   padding: 2rem 1.5rem;
-  background: radial-gradient(circle at 50% 20%, #147D33 0%, #0C4E28 50%, #072B16 100%);
+  background: radial-gradient(circle at 50% 20%, #147d33 0%, #0c4e28 50%, #072b16 100%);
   position: relative;
   box-sizing: border-box;
 }
@@ -56,7 +56,9 @@ body {
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   border-radius: 1.25rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.22),
+    0 2px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-sizing: border-box;
 }
@@ -66,13 +68,13 @@ body {
   font-family: var(--serif, serif);
   font-size: 1.75rem;
   font-weight: 800;
-  color: #0C4E28;
+  color: #0c4e28;
   letter-spacing: -0.02em;
 }
 
 .auth-subtitle {
   margin: 0 0 1.5rem;
-  color: #56625B;
+  color: #56625b;
   font-size: 0.95rem;
   line-height: 1.4;
 }
@@ -88,25 +90,25 @@ body {
 .auth-field label {
   font-weight: 700;
   font-size: 0.85rem;
-  color: #333F38;
+  color: #333f38;
 }
 
 .auth-field input {
   width: 100%;
   padding: 0.75rem 0.85rem;
   font-size: 0.95rem;
-  border: 1px solid #D5CDBF;
+  border: 1px solid #d5cdbf;
   border-radius: 0.6rem;
-  background: #FFFBF3;
-  color: #13291C;
+  background: #fffbf3;
+  color: #13291c;
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
 .auth-field input:focus {
-  border-color: #147D33;
-  background: #FFFFFF;
+  border-color: #147d33;
+  background: #ffffff;
   box-shadow: 0 0 0 3px rgba(20, 125, 51, 0.15);
 }
 
@@ -122,10 +124,10 @@ body {
 
 .auth-password-toggle {
   padding: 0 0.85rem;
-  background: #E5F2EA;
-  border: 1px solid #D5CDBF;
+  background: #e5f2ea;
+  border: 1px solid #d5cdbf;
   border-radius: 0.6rem;
-  color: #0C4E28;
+  color: #0c4e28;
   font-weight: 700;
   font-size: 0.8rem;
   cursor: pointer;
@@ -133,20 +135,20 @@ body {
 }
 
 .auth-password-toggle:hover {
-  background: #D1E7DA;
+  background: #d1e7da;
 }
 
 .auth-field-error {
   margin: 0.25rem 0 0;
-  color: #D93025;
+  color: #d93025;
   font-size: 0.825rem;
   font-weight: 600;
 }
 
 .auth-error {
-  color: #D93025;
-  background: #FCE8E6;
-  border: 1px solid #F8C4C1;
+  color: #d93025;
+  background: #fce8e6;
+  border: 1px solid #f8c4c1;
   border-radius: 0.6rem;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
@@ -159,13 +161,15 @@ body {
   padding: 0.85rem;
   font-size: 1rem;
   font-weight: 700;
-  color: #FFFFFF;
-  background: linear-gradient(135deg, #FC7C00 0%, #E06D00 100%);
+  color: #ffffff;
+  background: linear-gradient(135deg, #fc7c00 0%, #e06d00 100%);
   border: none;
   border-radius: 0.65rem;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(252, 124, 0, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .auth-submit:hover:not(:disabled) {
@@ -182,11 +186,11 @@ body {
   margin-top: 1.25rem;
   text-align: center;
   font-size: 0.9rem;
-  color: #56625B;
+  color: #56625b;
 }
 
 .auth-switch a {
-  color: #147D33;
+  color: #147d33;
   font-weight: 700;
   text-decoration: none;
 }
@@ -200,7 +204,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   margin: 1.25rem 0;
-  color: #66716B;
+  color: #66716b;
   font-size: 0.825rem;
   font-weight: 600;
 }
@@ -209,7 +213,7 @@ body {
 .auth-divider::after {
   content: '';
   flex: 1;
-  border-top: 1px solid #E2DCD1;
+  border-top: 1px solid #e2dcd1;
 }
 
 /* Motion & Micro-Animation System */
@@ -256,13 +260,18 @@ body {
 }
 
 /* Next-Level Card Hover Elevation & Shimmer Sweep */
-.tf-card, .tf-motion-card {
+.tf-card,
+.tf-motion-card {
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
 }
 
-.tf-card::after, .tf-motion-card::after {
+.tf-card::after,
+.tf-motion-card::after {
   content: '';
   position: absolute;
   top: -50%;
@@ -281,27 +290,37 @@ body {
   pointer-events: none;
 }
 
-.tf-card:hover::after, .tf-motion-card:hover::after {
+.tf-card:hover::after,
+.tf-motion-card:hover::after {
   opacity: 1;
   animation: tfShimmerSweep 0.85s ease-out forwards;
 }
 
-.tf-card:hover, .tf-motion-card:hover {
+.tf-card:hover,
+.tf-motion-card:hover {
   transform: translateY(-5px) scale(1.008);
-  box-shadow: 0 16px 36px -8px rgba(12, 78, 40, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 16px 36px -8px rgba(12, 78, 40, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.04);
   border-color: rgba(20, 125, 51, 0.3) !important;
 }
 
 /* Button Magnetic Micro-Interactions */
-.tf-btn, button {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+.tf-btn,
+button {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease;
 }
 
-.tf-btn:hover, button:hover:not(:disabled) {
+.tf-btn:hover,
+button:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.02);
 }
 
-.tf-btn:active, button:active:not(:disabled) {
+.tf-btn:active,
+button:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
 }
 
@@ -312,7 +331,9 @@ body {
 }
 
 .tf-zoom-img {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.5s ease;
 }
 
 .tf-zoom-container:hover .tf-zoom-img,
@@ -323,9 +344,15 @@ body {
 
 /* Floating Keyframes */
 @keyframes tfFloat {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .tf-floating {
@@ -333,8 +360,12 @@ body {
 }
 
 @keyframes tfShimmerSweep {
-  0% { left: -150%; }
-  100% { left: 150%; }
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 150%;
+  }
 }
 
 .custom-route-marker {

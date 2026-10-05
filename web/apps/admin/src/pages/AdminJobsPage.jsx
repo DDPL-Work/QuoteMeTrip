@@ -129,7 +129,8 @@ export function AdminJobsPage() {
                     </div>
                   </td>
                   <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#2E9E5B' }}>
-                    ${j.quotation?.priceTotal || '0.00'} {j.quotation?.currency}
+                    ${j.quotation?.priceTotal || j.quotation?.totalAmount || '0.00'}{' '}
+                    {j.quotation?.currency || 'USD'}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
                     {j.acceptedAt ? new Date(j.acceptedAt).toLocaleDateString() : '—'}

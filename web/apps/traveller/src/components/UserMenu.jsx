@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FiUser, FiLogOut, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
+import { getMediaUrl } from '../lib/api.js';
 
 export function UserMenu() {
   let user = null;
@@ -21,6 +23,9 @@ export function UserMenu() {
     ? `${user.firstName} ${user.lastName || ''}`.trim()
     : user?.email || 'Traveller';
   const email = user?.email || '';
+  const rawAvatar = user?.profile?.profilePicture || user?.profile?.avatarUrl || user?.profilePicture || user?.avatarUrl || null;
+  const avatarUrl = getMediaUrl(rawAvatar);
+  const initials = (displayName[0] || 'T').toUpperCase();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -41,10 +46,39 @@ export function UserMenu() {
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User account menu"
+        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
       >
-        <span className="tf-portal-user-avatar">👤</span>
+        <span
+          className="tf-portal-user-avatar"
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#147D33',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '12px',
+          }}
+        >
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          ) : (
+            initials
+          )}
+        </span>
         <span className="tf-portal-user-label">{displayName}</span>
-        <span style={{ fontSize: '10px' }}>▼</span>
+        <FiChevronDown size={14} style={{ color: '#56625B' }} />
       </button>
 
       {isOpen ? (
@@ -58,8 +92,9 @@ export function UserMenu() {
             className="tf-portal-dropdown-item"
             role="menuitem"
             onClick={() => setIsOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            ⚙️ My Profile
+            <FiUser size={16} /> My Profile
           </Link>
           <button
             type="button"
@@ -69,9 +104,9 @@ export function UserMenu() {
               setIsOpen(false);
               if (logout) logout();
             }}
-            style={{ color: 'var(--tf-portal-warn)' }}
+            style={{ color: '#D93025', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            🚪 Sign Out
+            <FiLogOut size={16} /> Sign Out
           </button>
         </div>
       ) : null}

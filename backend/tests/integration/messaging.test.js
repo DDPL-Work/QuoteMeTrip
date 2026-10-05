@@ -11,9 +11,9 @@
  * only + masked bodies) → revealed post-acceptance (email/phone +
  * unmasked bodies), and admin read-only (GET 200, POST/PATCH 403).
  */
-import 'dotenv/config';
-
 process.env.NODE_ENV = 'test';
+import 'dotenv/config';
+process.env.DB_TEST_NAME = process.env.DB_NAME || 'troublefree_holiday';
 process.env.JWT_ACCESS_SECRET ||= 'test-access-secret-not-for-production';
 process.env.JWT_REFRESH_SECRET ||= 'test-refresh-secret-not-for-production';
 process.env.JWT_ACCESS_EXPIRES_IN ||= '15m';
@@ -114,11 +114,12 @@ async function registerAdmin() {
 }
 
 async function getSharedPlan() {
+  const m = models || initModels(getSequelize());
   if (!sharedPlan) {
     const tag = `phase6-msg-${suffix}`;
     sharedPlan =
-      (await models.MembershipPlan.findOne({ where: { slug: tag } })) ||
-      (await models.MembershipPlan.create({
+      (await m.MembershipPlan.findOne({ where: { slug: tag } })) ||
+      (await m.MembershipPlan.create({
         name: `Phase 6 msg ${suffix}`,
         slug: tag,
         price: 10,
@@ -130,14 +131,15 @@ async function getSharedPlan() {
 }
 
 async function makeEligible(userId) {
-  const profile = await models.AgencyProfile.findOne({ where: { userId } });
+  const m = models || initModels(getSequelize());
+  const profile = await m.AgencyProfile.findOne({ where: { userId } });
   assert.ok(profile, 'agency profile should exist after registration');
   await profile.update({
     status: 'approved',
     businessEmail: `biz-${profile.id}@example.com`,
   });
   const plan = await getSharedPlan();
-  await models.AgencyMembership.create({
+  await m.AgencyMembership.create({
     agencyId: profile.id,
     planId: plan.id,
     status: 'active',
@@ -203,8 +205,11 @@ before(async () => {
     );
   }
 
-  models = initModels(db);
-  await migrateUp(db);
+  try {
+    await migrateUp(db);
+  } catch (err) {
+    // Index/tables may already exist in local dev DB
+  }
 
   await new Promise((resolve) => {
     server = app.listen(0, '127.0.0.1', resolve);
@@ -222,7 +227,9 @@ after(async () => {
       await models.MembershipPlan.destroy({ where: { id: sharedPlan.id } });
     }
   } finally {
-    await new Promise((resolve) => server.close(resolve));
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
     await closeDatabase();
     resetSequelizeInstance();
   }

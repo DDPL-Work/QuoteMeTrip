@@ -45,7 +45,11 @@ export function validateQuotationItemInput(item, index = 0) {
     item.description === undefined || item.description === null
       ? null
       : String(item.description).slice(0, 5000) || null;
-  return { itemType, title, description, quantity, unitPrice: unit };
+  const metadata =
+    item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+      ? item.metadata
+      : null;
+  return { itemType, title, description, quantity, unitPrice: unit, metadata };
 }
 
 export function validateItemsList(items, { required = false } = {}) {

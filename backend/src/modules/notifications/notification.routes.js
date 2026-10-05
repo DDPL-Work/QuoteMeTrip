@@ -10,12 +10,32 @@ notificationRoutes.use(authenticate);
 
 notificationRoutes.get('/', async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit, 10) || 50;
-    const offset = parseInt(req.query.offset, 10) || 0;
-    const notifications = await notificationService.getNotifications(req.user.id, limit, offset);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || req.query.pageSize, 10) || 50));
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = req.query.offset !== undefined ? Math.max(0, parseInt(req.query.offset, 10) || 0) : (page - 1) * limit;
+    const unreadOnly = req.query.unreadOnly === 'true' || req.query.unreadOnly === true || req.query.unreadOnly === '1';
+
+    const [notifications, total, unreadCount] = await Promise.all([
+      notificationService.getNotifications(req.user.id, limit, offset, { unreadOnly }),
+      notificationService.countNotifications(req.user.id, { unreadOnly }),
+      notificationService.getUnreadCount(req.user.id),
+    ]);
+
+    const items = toNotificationListDto(notifications);
+    items.total = total;
+    items.unreadCount = unreadCount;
+    items.pagination = {
+      page,
+      limit,
+      totalItems: total,
+      totalPages: Math.ceil(total / limit) || 1,
+    };
+
     res.json({
       status: 'success',
-      data: toNotificationListDto(notifications),
+      data: items,
+      pagination: items.pagination,
+      unreadCount,
     });
   } catch (err) {
     next(err);

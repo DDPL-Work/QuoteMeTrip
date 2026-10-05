@@ -3,7 +3,7 @@
 :root {
   /* Brand & Surface Colors (Source of Truth from HTML Reference) */
   --tf-portal-bg: #fffbf3;
-  --tf-portal-preloader-bg: #F5FAF7;
+  --tf-portal-preloader-bg: #f5faf7;
   --tf-portal-surface: #ffffff;
   --tf-portal-surface-soft: #fbf9f5;
   --tf-portal-surface-dark: #0c4e28;

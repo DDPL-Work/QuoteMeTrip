@@ -174,6 +174,7 @@ export async function createQuotation(userId, travelRequestId, input, { role = n
         quantity: line.quantity,
         unitPrice: line.unitPrice,
         totalPrice: line.lineTotal,
+        metadata: line.metadata ?? null,
       })),
       { transaction: t },
     );
@@ -253,6 +254,7 @@ export async function patchQuotation(userId, quotationId, patch, { role = null }
           quantity: line.quantity,
           unitPrice: line.unitPrice,
           totalPrice: line.lineTotal,
+          metadata: line.metadata ?? null,
         })),
         { transaction: t },
       );

@@ -6,11 +6,12 @@
 
 import { useState } from 'react';
 
-export function AuthLayout({ title, subtitle, children }) {
+export function AuthLayout({ title, subtitle, children, brand }) {
   return (
     <main className="auth-shell">
       <section className="auth-card" aria-label={title}>
-        <h1>{title}</h1>
+        {brand ? brand : null}
+        {title ? <h1>{title}</h1> : null}
         {subtitle ? <p className="auth-subtitle">{subtitle}</p> : null}
         {children}
       </section>

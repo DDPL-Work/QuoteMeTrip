@@ -67,7 +67,7 @@ export class TravelGuideService {
       where,
       order: [
         ['publishedAt', 'DESC'],
-        ['createdAt', 'DESC'],
+        ['id', 'DESC'],
       ],
     });
   }

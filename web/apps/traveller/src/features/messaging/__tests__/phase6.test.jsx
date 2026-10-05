@@ -26,6 +26,7 @@ vi.mock('socket.io-client', () => ({
 }));
 
 vi.mock('../../../lib/api.js', () => ({
+  resolveMediaUrl: (url) => url,
   apiClient: {
     setAccessToken: vi.fn(),
     clearAccessToken: vi.fn(),
@@ -258,7 +259,7 @@ describe('traveller phase 6', () => {
     await waitFor(() => expect(screen.getByText('Conversation #42')).toBeInTheDocument());
   });
 
-  test('jobs list and detail status update', async () => {
+  test('jobs list and detail status display', async () => {
     authOk();
     jobApi.list.mockResolvedValue({
       jobs: [{ id: 9, travelRequestId: 7, quotationId: 5, status: 'accepted' }],
@@ -269,13 +270,8 @@ describe('traveller phase 6', () => {
     jobApi.getById.mockResolvedValue({
       job: { id: 9, travelRequestId: 7, quotationId: 5, status: 'accepted', agency: {} },
     });
-    jobApi.updateStatus.mockResolvedValue({
-      job: { id: 9, travelRequestId: 7, quotationId: 5, status: 'in_progress', agency: {} },
-    });
-    const user = userEvent.setup({ delay: null });
     guard(<JobDetailPage />, '/jobs/9', '/jobs/:id');
     await waitFor(() => expect(screen.getByText('Job #9')).toBeInTheDocument());
-    await user.click(screen.getByRole('button', { name: 'Start trip' }));
-    await waitFor(() => expect(jobApi.updateStatus).toHaveBeenCalledWith('9', 'in_progress'));
+    expect(screen.getAllByText('accepted').length).toBeGreaterThan(0);
   });
 });

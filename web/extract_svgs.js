@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function rnd(seed) {
-  return function() {
+  return function () {
     seed = (seed * 9301 + 49297) % 233280;
     return seed / 233280;
   };
@@ -26,35 +26,35 @@ function scene(kind) {
 <g fill="#C98E62"><path d="M40 260 L62 150 Q70 140 78 150 L100 260Z"/><path d="M120 260 L138 176 Q145 166 152 176 L170 260Z"/><path d="M250 260 L272 160 Q281 148 290 160 L312 260Z"/><path d="M320 260 L336 190 Q342 182 348 190 L364 260Z"/></g>
 <path d="M0 226 Q120 212 220 222 T400 216 V260 H0Z" fill="#B77A52"/>
 ${[
-[90, 70, 26, '#A85F00'],
-[205, 52, 32, '#147D33'],
-[310, 86, 22, '#E0A43B'],
-[160, 118, 15, '#8A3517'],
-[365, 40, 14, '#A85F00'],
-[40, 40, 12, '#147D33'],
+  [90, 70, 26, '#A85F00'],
+  [205, 52, 32, '#147D33'],
+  [310, 86, 22, '#E0A43B'],
+  [160, 118, 15, '#8A3517'],
+  [365, 40, 14, '#A85F00'],
+  [40, 40, 12, '#147D33'],
 ]
-.map(
-  ([x, y, r, c]) =>
-    `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.15}" fill="${c}"/><path d="M${x - r * 0.7} ${y + r * 0.8} L${x - r * 0.2} ${y + r * 1.55} H${x + r * 0.2} L${x + r * 0.7} ${y + r * 0.8}Z" fill="${c}"/><rect x="${x - r * 0.22}" y="${y + r * 1.6}" width="${r * 0.44}" height="${r * 0.35}" fill="#5A3B2A"/><rect x="${x - 1}" y="${y - r * 1.15}" width="2" height="${r * 2.3}" fill="rgba(255,255,255,.25)"/>`,
-)
-.join('')}`;
+  .map(
+    ([x, y, r, c]) =>
+      `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.15}" fill="${c}"/><path d="M${x - r * 0.7} ${y + r * 0.8} L${x - r * 0.2} ${y + r * 1.55} H${x + r * 0.2} L${x + r * 0.7} ${y + r * 0.8}Z" fill="${c}"/><rect x="${x - r * 0.22}" y="${y + r * 1.6}" width="${r * 0.44}" height="${r * 0.35}" fill="#5A3B2A"/><rect x="${x - 1}" y="${y - r * 1.15}" width="2" height="${r * 2.3}" fill="rgba(255,255,255,.25)"/>`,
+  )
+  .join('')}`;
   }
   if (kind === 'coast') {
     s = `<rect width="400" height="260" fill="#CFE3E8"/><circle cx="330" cy="60" r="24" fill="#F7F1E4"/><rect y="150" width="400" height="110" fill="#2E6F8E"/>
 <g fill="#5A92AC"><rect x="220" y="170" width="80" height="3" rx="1.5"/><rect x="300" y="196" width="70" height="3" rx="1.5"/><rect x="240" y="226" width="110" height="3" rx="1.5"/></g>
 <path d="M0 96 Q60 84 120 100 Q170 116 200 150 L230 260 H0Z" fill="#A7825F"/><path d="M0 110 Q60 98 120 112 Q160 124 186 150 L210 260 H0Z" fill="#E9E1D3"/>
 ${(() => {
-const r = rnd(7);
-let h = '';
-for (let i = 0; i < 26; i++) {
-  const x = Math.floor(r() * 170),
-    y = 112 + Math.floor(r() * 120);
-  if (x > y * 0.9 - 20) continue;
-  const w = 14 + r() * 14,
-    hh = 10 + r() * 10;
-  h += `<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="#FFFFFF"/><rect x="${x + w * 0.3}" y="${y + hh * 0.35}" width="3" height="4" fill="#2B5C9E"/>`;
-}
-return h;
+  const r = rnd(7);
+  let h = '';
+  for (let i = 0; i < 26; i++) {
+    const x = Math.floor(r() * 170),
+      y = 112 + Math.floor(r() * 120);
+    if (x > y * 0.9 - 20) continue;
+    const w = 14 + r() * 14,
+      hh = 10 + r() * 10;
+    h += `<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="#FFFFFF"/><rect x="${x + w * 0.3}" y="${y + hh * 0.35}" width="3" height="4" fill="#2B5C9E"/>`;
+  }
+  return h;
 })()}
 <path d="M60 116 A12 12 0 0 1 84 116Z" fill="#2B5C9E"/><path d="M120 150 A10 10 0 0 1 140 150Z" fill="#2B5C9E"/><rect x="60" y="116" width="24" height="16" fill="#fff"/><rect x="120" y="150" width="20" height="14" fill="#fff"/>`;
   }
@@ -113,15 +113,15 @@ function mockPlan() {
 <rect width="320" height="210" rx="14" fill="#FFFBF3"/>
 <rect x="16" y="14" width="120" height="10" rx="5" fill="#0C4E28"/>
 ${[0, 1, 2]
-.map(
-(
-  i,
-) => `<g transform="translate(16,${38 + i * 52})"><rect width="288" height="44" rx="10" fill="#fff" stroke="#E2DCD1"/>
+  .map(
+    (
+      i,
+    ) => `<g transform="translate(16,${38 + i * 52})"><rect width="288" height="44" rx="10" fill="#fff" stroke="#E2DCD1"/>
 <text x="12" y="27" font-family="Poppins,sans-serif" font-size="15" font-weight="700" fill="#FC7C00">${i + 1}</text>
 <rect x="30" y="13" width="54" height="8" rx="4" fill="#C9C1B3"/><rect x="94" y="13" width="72" height="8" rx="4" fill="#13291C"/>
 <rect x="176" y="10" width="34" height="15" rx="7.5" fill="${['#147D33', '#147D33', '#E5F2EA'][i]}"/><rect x="216" y="10" width="28" height="15" rx="7.5" fill="${['#147D33', '#E5F2EA', '#E5F2EA'][i]}"/><rect x="250" y="10" width="28" height="15" rx="7.5" fill="#147D33"/></g>`,
-)
-.join('')}
+  )
+  .join('')}
 <rect x="16" y="194" width="288" height="1" fill="#EEE8DE"/>
 <g transform="translate(16,166)"><rect width="288" height="26" rx="8" fill="#fff" stroke="#B9AE9C" stroke-dasharray="4 4"/><text x="144" y="17" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11" font-weight="700" fill="#13291C">+ Add day</text></g></svg>`;
 }
@@ -130,12 +130,12 @@ function mockQuotes() {
   return `<svg viewBox="0 0 320 210" role="img" aria-label="Agency quotes" style="width: 100%; height: auto;">
 <rect width="320" height="210" rx="14" fill="#FFFBF3"/>
 ${[
-['#147D33', '2,450', '4.9', 1],
-['#E2DCD1', '1,980', '4.5', 0],
-['#E2DCD1', '2,190', '4.3', 0],
+  ['#147D33', '2,450', '4.9', 1],
+  ['#E2DCD1', '1,980', '4.5', 0],
+  ['#E2DCD1', '2,190', '4.3', 0],
 ]
-.map(
-([c, pr, rt, hi], i) => `<g transform="translate(16,${14 + i * 64})">
+  .map(
+    ([c, pr, rt, hi], i) => `<g transform="translate(16,${14 + i * 64})">
 <rect width="288" height="54" rx="12" fill="#fff" stroke="${c}" stroke-width="${hi ? 2 : 1}"/>
 <circle cx="26" cy="27" r="13" fill="#E5F2EA"/><text x="26" y="32" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12" font-weight="700" fill="#147D33">A${i + 1}</text>
 <rect x="48" y="14" width="86" height="9" rx="4.5" fill="#13291C"/>
@@ -143,8 +143,8 @@ ${[
 <rect x="96" y="32" width="26" height="9" rx="4.5" fill="#E5F2EA"/><rect x="126" y="32" width="34" height="9" rx="4.5" fill="#E5F2EA"/><rect x="164" y="32" width="22" height="9" rx="4.5" fill="#E5F2EA"/>
 <text x="276" y="26" text-anchor="end" font-family="Poppins,sans-serif" font-size="16" font-weight="700" fill="#13291C">€ ${pr}</text>
 ${hi ? '<rect x="196" y="32" width="80" height="16" rx="8" fill="#FC7C00"/><text x="236" y="43.5" text-anchor="middle" font-family="Poppins,sans-serif" font-size="9" font-weight="700" fill="#13291C">AGREE</text>' : ''}</g>`,
-)
-.join('')}</svg>`;
+  )
+  .join('')}</svg>`;
 }
 
 function mockPay() {
@@ -172,7 +172,7 @@ const out = {
   coast: scene('coast'),
   pyramids: scene('pyramids'),
   mountains: scene('mountains'),
-  ruins: scene('ruins')
+  ruins: scene('ruins'),
 };
 
 fs.writeFileSync('svgs.json', JSON.stringify(out, null, 2));

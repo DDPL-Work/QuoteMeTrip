@@ -21,7 +21,7 @@ function loadGisScript() {
   if (document.querySelector(`script[src="${GIS_SCRIPT}"]`)) {
     return new Promise((resolve, reject) => {
       const timer = setInterval(() => {
-        if (window.google?.accounts?.id) {
+        if (typeof window !== 'undefined' && window.google?.accounts?.id) {
           clearInterval(timer);
           resolve();
         }

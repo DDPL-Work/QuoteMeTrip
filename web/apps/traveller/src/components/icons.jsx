@@ -16,8 +16,8 @@ import {
   FiMapPin,
   FiMenu,
   FiX,
-  FiLogOut
-} from "react-icons/fi";
+  FiLogOut,
+} from 'react-icons/fi';
 
 export const Icons = {
   Dashboard: FiHome,
@@ -37,5 +37,5 @@ export const Icons = {
   MapPin: FiMapPin,
   Menu: FiMenu,
   Close: FiX,
-  Logout: FiLogOut
+  Logout: FiLogOut,
 };

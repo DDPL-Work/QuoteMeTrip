@@ -1,21 +1,25 @@
-// Agency job list (Phase 6).
-
 import { useEffect, useState } from 'react';
+import { FiBriefcase, FiAlertCircle } from 'react-icons/fi';
+import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { jobApi } from '../lib/api.js';
 import { JobListView } from '../components/Phase6.jsx';
 
 export function JobsPage() {
   const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
         const data = await jobApi.list();
         if (!cancelled) setJobs(data.jobs ?? []);
       } catch (e) {
         if (!cancelled) setError(e?.message ?? 'Failed to load jobs.');
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -24,10 +28,40 @@ export function JobsPage() {
   }, []);
 
   return (
-    <main className="tf-page">
-      <h1>Jobs</h1>
-      {error && <p role="alert">{error}</p>}
-      <JobListView jobs={jobs} />
-    </main>
+    <AgencyAppLayout activeItem="jobs">
+      <div className="agency-page-header">
+        <div>
+          <h1 className="agency-page-title">Active Trips & Jobs</h1>
+          <p className="agency-page-subtitle">
+            Manage confirmed travel bookings, execute accepted itineraries, and access revealed
+            traveller contact details.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="agency-error-state" role="alert" style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <FiAlertCircle style={{ fontSize: '1.4rem' }} />
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="agency-skeleton" style={{ height: '180px', borderRadius: '0.75rem' }} />
+      ) : jobs.length === 0 ? (
+        <div className="agency-empty-state">
+          <FiBriefcase className="agency-empty-icon" />
+          <h3 className="agency-empty-title">No jobs yet</h3>
+          <p className="agency-empty-subtitle">
+            Confirmed jobs will appear here as soon as a traveller accepts one of your submitted
+            quotations.
+          </p>
+        </div>
+      ) : (
+        <JobListView jobs={jobs} />
+      )}
+    </AgencyAppLayout>
   );
 }

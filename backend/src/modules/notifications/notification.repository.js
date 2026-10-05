@@ -13,18 +13,32 @@ export class NotificationRepository {
         status: NOTIFICATION_STATUS.PENDING,
         readAt: null,
       },
-      order: [['createdAt', 'DESC']],
+      order: [['created_at', 'DESC']],
       limit,
     });
   }
 
-  async findAllByUserId(userId, limit = 50, offset = 0) {
+  async findAllByUserId(userId, limit = 50, offset = 0, { unreadOnly = false } = {}) {
+    const where = { userId };
+    if (unreadOnly) {
+      where.readAt = null;
+      where.status = [NOTIFICATION_STATUS.PENDING, NOTIFICATION_STATUS.SENT];
+    }
     return await Notification.findAll({
-      where: { userId },
-      order: [['createdAt', 'DESC']],
+      where,
+      order: [['created_at', 'DESC']],
       limit,
       offset,
     });
+  }
+
+  async countByUserId(userId, { unreadOnly = false } = {}) {
+    const where = { userId };
+    if (unreadOnly) {
+      where.readAt = null;
+      where.status = [NOTIFICATION_STATUS.PENDING, NOTIFICATION_STATUS.SENT];
+    }
+    return await Notification.count({ where });
   }
 
   async countUnreadByUserId(userId) {

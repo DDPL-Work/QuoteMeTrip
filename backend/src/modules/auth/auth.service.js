@@ -463,6 +463,16 @@ export async function loginWithGoogle(idToken, context = {}, { verifyGoogle = nu
         });
       }
       assertAccountActive(user);
+      const existingUserIdentity = await repository.findIdentityForUser(user.id, GOOGLE_PROVIDER, {
+        transaction: t,
+        registry,
+      });
+      if (existingUserIdentity && existingUserIdentity.providerUserId !== identity.providerUserId) {
+        throw new AuthError('This account is already linked to a different Google account.', {
+          statusCode: 409,
+          code: AUTH_ERROR_CODES.GOOGLE_IDENTITY_CONFLICT,
+        });
+      }
     } else {
       user = await repository.createUser(
         { name: identity.name, email: identity.email, role: 'traveller', status: 'active' },

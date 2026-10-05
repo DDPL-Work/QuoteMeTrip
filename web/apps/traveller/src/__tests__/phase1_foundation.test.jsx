@@ -114,7 +114,7 @@ describe('Phase 1: Traveller Portal Foundation & Shell Unit Tests', () => {
       expect(screen.getByText(/John/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByAltText('Troublefree Holiday')).toBeInTheDocument();
+    expect(screen.getByAltText(/QuoteMeTrip|Troublefree/i)).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
   });
 

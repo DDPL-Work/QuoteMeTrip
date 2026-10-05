@@ -36,7 +36,12 @@ export function PublicHeader({ user, onSignOut }) {
     <header className="tf-pub-header">
       <div className="tf-pub-header-container">
         <a href="/" className="tf-header-brand">
-          <img src="/images/tfh_logo.png" alt="Troublefree Holiday" height="38" style={{ display: 'block' }} />
+          <img
+            src="/images/tfh_logo.png"
+            alt="Troublefree Holiday"
+            height="38"
+            style={{ display: 'block' }}
+          />
         </a>
 
         {/* Desktop Nav */}
@@ -154,7 +159,12 @@ export function PublicFooter() {
       <div className="tf-pub-footer-container">
         <div className="tf-footer-brand">
           <a href="/" className="tf-header-brand">
-            <img src="/images/tfh_logo.png" alt="Troublefree Holiday" height="34" style={{ display: 'block' }} />
+            <img
+              src="/images/tfh_logo.png"
+              alt="Troublefree Holiday"
+              height="34"
+              style={{ display: 'block' }}
+            />
           </a>
           <p className="tf-footer-tagline">
             Route-first trip planning and competitive agency quotations for seamless holidays in

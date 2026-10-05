@@ -2,12 +2,7 @@ import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { staggerContainer, REDUCED_MOTION_VARIANTS } from '../../motion/motion-config.js';
 
-export function StaggerContainer({
-  children,
-  className = '',
-  style = {},
-  staggerDelay = 0.06,
-}) {
+export function StaggerContainer({ children, className = '', style = {}, staggerDelay = 0.06 }) {
   const shouldReduceMotion = useReducedMotion();
   const variants = shouldReduceMotion ? REDUCED_MOTION_VARIANTS : staggerContainer(staggerDelay);
 

@@ -291,6 +291,7 @@ describe('protected routes and role guard', () => {
 
 describe('google login button', () => {
   test('hidden when no client ID is configured', async () => {
+    vi.stubEnv('VITE_GOOGLE_CLIENT_ID', '');
     authApi.refresh.mockRejectedValue(new Error('no session'));
     renderWithAuth(<HomePage />, { route: '/login' });
 

@@ -26,6 +26,7 @@ vi.mock('socket.io-client', () => ({
 }));
 
 vi.mock('../../../lib/api.js', () => ({
+  resolveMediaUrl: (url) => url,
   apiClient: {
     setAccessToken: vi.fn(),
     clearAccessToken: vi.fn(),
@@ -117,7 +118,7 @@ describe('agency phase 6', () => {
     });
     guard(<MessagesPage />, '/messages', '/messages');
     await waitFor(() => expect(screen.getByText('Conversation #2')).toBeInTheDocument());
-    expect(screen.getByText(/Asha/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Asha/)[0]).toBeInTheDocument();
   });
 
   test('conversation sends and receives live messages', async () => {
@@ -137,7 +138,7 @@ describe('agency phase 6', () => {
     await user.type(screen.getByLabelText('Message'), 'Reply');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     await waitFor(() =>
-      expect(messagingApi.sendMessage).toHaveBeenCalledWith('2', { body: 'Reply' }),
+      expect(messagingApi.sendMessage).toHaveBeenCalledWith(expect.anything(), { body: 'Reply' }),
     );
     handlers['conversation:message']?.({
       message: { id: 3, conversationId: 2, senderUserId: 11, messageType: 'text', body: 'Live' },

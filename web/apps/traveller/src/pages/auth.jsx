@@ -11,7 +11,15 @@ export function LoginPage() {
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to your Traveller account.">
       <div style={{ marginBottom: '16px', textAlign: 'left' }}>
-        <Link to="/" style={{ color: '#147D33', fontWeight: '600', fontSize: '13.5px', textDecoration: 'none' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#147D33',
+            fontWeight: '600',
+            fontSize: '13.5px',
+            textDecoration: 'none',
+          }}
+        >
           ← Back to Public Portal
         </Link>
       </div>
@@ -24,7 +32,15 @@ export function RegisterPage() {
   return (
     <AuthLayout title="Create your account" subtitle="Plan trouble-free holidays.">
       <div style={{ marginBottom: '16px', textAlign: 'left' }}>
-        <Link to="/" style={{ color: '#147D33', fontWeight: '600', fontSize: '13.5px', textDecoration: 'none' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#147D33',
+            fontWeight: '600',
+            fontSize: '13.5px',
+            textDecoration: 'none',
+          }}
+        >
           ← Back to Public Portal
         </Link>
       </div>

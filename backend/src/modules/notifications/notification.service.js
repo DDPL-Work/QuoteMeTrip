@@ -82,8 +82,12 @@ class NotificationService {
     return await notificationRepository.countUnreadByUserId(userId);
   }
 
-  async getNotifications(userId, limit, offset) {
-    return await notificationRepository.findAllByUserId(userId, limit, offset);
+  async countNotifications(userId, options = {}) {
+    return await notificationRepository.countByUserId(userId, options);
+  }
+
+  async getNotifications(userId, limit, offset, options = {}) {
+    return await notificationRepository.findAllByUserId(userId, limit, offset, options);
   }
 
   async markAsRead(notificationId, userId) {

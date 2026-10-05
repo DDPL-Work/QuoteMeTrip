@@ -33,6 +33,10 @@ export function validateTravellerProfilePatch(body = {}) {
     'country',
     'city',
     'preferredLocale',
+    'profilePicture',
+    'coverImage',
+    'avatarUrl',
+    'coverImageUrl',
   ];
   const unknown = Object.keys(body).filter((k) => !allowed.includes(k));
   if (unknown.length > 0) {
@@ -81,6 +85,18 @@ export function validateTravellerProfilePatch(body = {}) {
       throw invalid('Preferred locale must be one of: en, tr.');
     }
     output.preferredLocale = body.preferredLocale;
+  }
+
+  if (body.profilePicture !== undefined) {
+    output.profilePicture = body.profilePicture ? String(body.profilePicture).trim() : null;
+  } else if (body.avatarUrl !== undefined) {
+    output.profilePicture = body.avatarUrl ? String(body.avatarUrl).trim() : null;
+  }
+
+  if (body.coverImage !== undefined) {
+    output.coverImage = body.coverImage ? String(body.coverImage).trim() : null;
+  } else if (body.coverImageUrl !== undefined) {
+    output.coverImage = body.coverImageUrl ? String(body.coverImageUrl).trim() : null;
   }
 
   return output;

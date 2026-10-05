@@ -9,10 +9,13 @@
 // so the React auth provider — which owns navigation — can clear its
 // state and redirect to this app's own login page.
 
-import { createApiClient, createAuthApi } from '@troublefree/api-client';
+import { createApiClient, createAuthApi, createAdminApi } from '@troublefree/api-client';
 
-const apiBaseUrl =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || 'http://localhost:5000';
+const rawUrl =
+  (typeof import.meta !== 'undefined' &&
+    (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL)) ||
+  'http://localhost:5001';
+const apiBaseUrl = rawUrl.replace(/\/api\/v1\/?$/, '');
 
 let unauthorizedListener = null;
 
@@ -26,5 +29,6 @@ export function setUnauthorizedListener(listener) {
 }
 
 export const authApi = createAuthApi(apiClient);
+export const adminApi = createAdminApi(apiClient);
 
 export { apiBaseUrl };

@@ -126,6 +126,17 @@ export async function findIdentity(
   });
 }
 
-export async function createIdentity(attributes, { transaction = null, registry = null } = {}) {
+export function createIdentity(attributes, { transaction = null, registry = null } = {}) {
   return db(registry).AuthIdentity.create(attributes, { transaction });
+}
+
+export async function findIdentityForUser(
+  userId,
+  provider,
+  { transaction = null, registry = null } = {},
+) {
+  return db(registry).AuthIdentity.findOne({
+    where: { userId, provider },
+    transaction,
+  });
 }

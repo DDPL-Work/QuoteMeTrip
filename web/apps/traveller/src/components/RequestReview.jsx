@@ -77,7 +77,14 @@ export function RequestReview({
         >
           <FiCheckCircle size={18} /> Step 4: Final Review & Submission
         </div>
-        <h2 style={{ fontFamily: 'var(--serif, serif)', fontSize: '28px', color: '#13291C', margin: '8px 0 4px' }}>
+        <h2
+          style={{
+            fontFamily: 'var(--serif, serif)',
+            fontSize: '28px',
+            color: '#13291C',
+            margin: '8px 0 4px',
+          }}
+        >
           Review Your Travel Request
         </h2>
         <p style={{ color: '#4E5754', margin: 0, fontSize: '15px' }}>
@@ -86,8 +93,13 @@ export function RequestReview({
       </div>
 
       {/* Main Review Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-        
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '20px',
+        }}
+      >
         {/* Route Card */}
         <div
           style={{
@@ -100,14 +112,27 @@ export function RequestReview({
             gap: '12px',
           }}
         >
-          <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0C4E28', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#0C4E28',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
             <FiMapPin /> Route Overview
           </h3>
           <div style={{ fontSize: '15px', fontWeight: '700', color: '#13291C' }}>
             {route?.startLocation || 'Start'} → {route?.finalDestination || 'Destination'}
           </div>
           <div style={{ fontSize: '13.5px', color: '#4E5754' }}>
-            Distance: <b>{distanceKm} km</b> · Estimated drive: <b>{hours}h {mins}m</b>
+            Distance: <b>{distanceKm} km</b> · Estimated drive:{' '}
+            <b>
+              {hours}h {mins}m
+            </b>
           </div>
           {route?.stops && route.stops.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
@@ -142,11 +167,22 @@ export function RequestReview({
             gap: '12px',
           }}
         >
-          <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0C4E28', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#0C4E28',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
             <FiCalendar /> Dates & Travellers
           </h3>
           <div style={{ fontSize: '14.5px', color: '#13291C' }}>
-            Dates: <b>{form.travelStartDate || 'Not set'}</b> to <b>{form.travelEndDate || 'Not set'}</b>
+            Dates: <b>{form.travelStartDate || 'Not set'}</b> to{' '}
+            <b>{form.travelEndDate || 'Not set'}</b>
           </div>
           <div style={{ fontSize: '14px', color: '#4E5754', display: 'flex', gap: '16px' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -170,7 +206,17 @@ export function RequestReview({
             gap: '12px',
           }}
         >
-          <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0C4E28', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#0C4E28',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
             <FiHome /> Service Preferences
           </h3>
           <div style={{ fontSize: '14px', color: '#13291C' }}>
@@ -183,22 +229,59 @@ export function RequestReview({
           )}
           {form.accommodationType && (
             <div style={{ fontSize: '13.5px', color: '#4E5754' }}>
-              Accommodation: <b>{accommodationLabels[form.accommodationType] || form.accommodationType}</b>
+              Accommodation:{' '}
+              <b>{accommodationLabels[form.accommodationType] || form.accommodationType}</b>
             </div>
           )}
           <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
             {form.hotelRequired && (
-              <span style={{ fontSize: '12px', background: '#E5F2EA', color: '#0C4E28', padding: '3px 8px', borderRadius: '4px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  background: '#E5F2EA',
+                  color: '#0C4E28',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                }}
+              >
                 <FiHome size={12} /> Hotel
               </span>
             )}
             {form.guideRequired && (
-              <span style={{ fontSize: '12px', background: '#FFF1DC', color: '#B45A00', padding: '3px 8px', borderRadius: '4px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  background: '#FFF1DC',
+                  color: '#B45A00',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                }}
+              >
                 <FiUserCheck size={12} /> Guide
               </span>
             )}
             {form.driverRequired && (
-              <span style={{ fontSize: '12px', background: '#F0F4F8', color: '#1E3A8A', padding: '3px 8px', borderRadius: '4px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  background: '#F0F4F8',
+                  color: '#1E3A8A',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                }}
+              >
                 <FiTruck size={12} /> Driver
               </span>
             )}
@@ -218,7 +301,17 @@ export function RequestReview({
               gap: '12px',
             }}
           >
-            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0C4E28', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <h3
+              style={{
+                fontSize: '16px',
+                fontWeight: '700',
+                color: '#0C4E28',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
               <FiFileText /> Traveller Contact Info
             </h3>
             <div style={{ fontSize: '14px', color: '#13291C' }}>
@@ -267,8 +360,12 @@ export function RequestReview({
                 }}
               >
                 <div>
-                  <b style={{ color: '#0C4E28', marginRight: '8px' }}>Day {day.dayNumber || i + 1}:</b>
-                  <span style={{ fontWeight: '600', color: '#13291C' }}>{day.location || 'Destination'}</span>
+                  <b style={{ color: '#0C4E28', marginRight: '8px' }}>
+                    Day {day.dayNumber || i + 1}:
+                  </b>
+                  <span style={{ fontWeight: '600', color: '#13291C' }}>
+                    {day.location || 'Destination'}
+                  </span>
                   {day.title && <span style={{ color: '#4E5754' }}> — {day.title}</span>}
                 </div>
                 {day.hotelNotes && (

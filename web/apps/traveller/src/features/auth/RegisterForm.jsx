@@ -78,6 +78,16 @@ export function RegisterForm() {
           disabled={submitting}
         />
       </FormField>
+      <FormField id="phone" label="Contact number (Phone / WhatsApp)" error={fieldErrors.phone}>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+          placeholder="+90 555 123 4567"
+          disabled={submitting}
+        />
+      </FormField>
       <FormField id="firstName" label="First name (optional)">
         <input
           id="firstName"

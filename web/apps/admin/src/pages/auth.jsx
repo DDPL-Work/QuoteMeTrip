@@ -7,9 +7,32 @@ import { AuthLayout } from '@troublefree/ui';
 import { LoginForm } from '../features/auth/LoginForm.jsx';
 import { useAuth } from '../features/auth/auth-context.js';
 
+function AdminBrandHeader() {
+  return (
+    <div className="auth-brand-header">
+      <img
+        src="/images/tfh_logo.png"
+        alt="QuoteMeTrip Logo"
+        className="auth-brand-logo"
+        onError={(e) => {
+          e.target.style.display = 'none';
+        }}
+      />
+      <div className="auth-brand-info">
+        <span className="auth-brand-name">QuoteMeTrip</span>
+        <span className="auth-brand-badge">ADMIN PORTAL</span>
+      </div>
+    </div>
+  );
+}
+
 export function LoginPage() {
   return (
-    <AuthLayout title="Admin sign in" subtitle="Restricted area. Authorized personnel only.">
+    <AuthLayout
+      brand={<AdminBrandHeader />}
+      title="Admin Operations Sign In"
+      subtitle="Restricted workspace. Authorized personnel only."
+    >
       <LoginForm />
     </AuthLayout>
   );

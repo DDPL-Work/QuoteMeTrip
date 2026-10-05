@@ -9,6 +9,8 @@ import { initModels } from '../../db/models/index.js';
 import { NotFoundError } from '../../utils/errors.js';
 
 function toPublicProfile(user, profile) {
+  const profilePicture = profile?.profilePicture ?? null;
+  const coverImage = profile?.coverImage ?? null;
   return {
     id: user.id,
     email: user.email,
@@ -22,6 +24,10 @@ function toPublicProfile(user, profile) {
     country: profile?.country ?? null,
     city: profile?.city ?? null,
     preferredLocale: profile?.preferredLocale ?? 'en',
+    profilePicture,
+    coverImage,
+    avatarUrl: profilePicture,
+    coverImageUrl: coverImage,
   };
 }
 

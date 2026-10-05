@@ -66,14 +66,7 @@ export function ItineraryIllustration({ className, ...props }) {
       </g>
       <rect x="16" y="194" width="288" height="1" fill="#EEE8DE" />
       <g transform="translate(16,166)">
-        <rect
-          width="288"
-          height="26"
-          rx="8"
-          fill="#fff"
-          stroke="#B9AE9C"
-          strokeDasharray="4 4"
-        />
+        <rect width="288" height="26" rx="8" fill="#fff" stroke="#B9AE9C" strokeDasharray="4 4" />
         <text
           x="144"
           y="17"
