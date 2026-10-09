@@ -1036,8 +1036,15 @@ body {
 }
 
 .auth-brand-logo {
-  height: 34px;
+  height: 38px;
   width: auto;
+  object-fit: contain;
+}
+
+.auth-brand-header img[src*="tfh_logo.png"]:not([src*="dark"]) {
+  background: var(--agency-primary);
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 
 .auth-brand-name {

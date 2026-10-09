@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiAlertCircle } from 'react-icons/fi';
+import { toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { jobApi } from '../lib/api.js';
 import { JobDetailView } from '../components/Phase6.jsx';
@@ -17,7 +18,11 @@ export function JobDetailPage() {
         const data = await jobApi.getById(id);
         if (!cancelled) setJob(data.job ?? data);
       } catch (e) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load job.');
+        const msg = e?.message ?? 'Failed to load job.';
+        if (!cancelled) {
+          setError(msg);
+          toast.error(msg);
+        }
       }
     })();
     return () => {
@@ -29,8 +34,11 @@ export function JobDetailPage() {
     try {
       const data = await jobApi.updateStatus(id, status);
       setJob(data.job ?? data);
+      toast.success(`Job status updated to ${status}`);
     } catch (e) {
-      setError(e?.message ?? 'Failed to update job.');
+      const msg = e?.message ?? 'Failed to update job.';
+      setError(msg);
+      toast.error(msg);
     }
   }
 

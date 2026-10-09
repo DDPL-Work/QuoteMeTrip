@@ -46,7 +46,14 @@ export function toPublicMessage(message, { revealed = false, currentUserId = nul
 
 export function toPublicConversation(
   conversation,
-  { revealed = false, traveller = null, agency = null, lastMessage = null, presence = null } = {},
+  {
+    revealed = false,
+    traveller = null,
+    agency = null,
+    lastMessage = null,
+    presence = null,
+    travelRequest = null,
+  } = {},
 ) {
   return {
     id: conversation.id,
@@ -56,10 +63,11 @@ export function toPublicConversation(
     status: conversation.status,
     disappearingTtl: conversation.disappearingTtl || 0,
     contactRevealed: revealed,
-    traveller: traveller.participant,
-    agency: agency.participant,
+    traveller: traveller?.participant ?? null,
+    agency: agency?.participant ?? null,
     presence: presence || { isOnline: false, lastSeen: null },
     lastMessage: lastMessage ? toPublicMessage(lastMessage, { revealed }) : null,
+    travelRequest: travelRequest ?? null,
     createdAt: conversation.createdAt,
     updatedAt: conversation.updatedAt,
   };

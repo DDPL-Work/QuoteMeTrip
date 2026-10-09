@@ -55,7 +55,7 @@ describe('Homepage Componentization & Interaction Tests', () => {
     renderWithProviders(<PublicHomePage />);
     expect(screen.getByText(/Day-by-day holidays/i)).toBeInTheDocument();
     expect(screen.getByText('Popular routes')).toBeInTheDocument();
-    expect(screen.getByText('How Troublefree Holiday works')).toBeInTheDocument();
+    expect(screen.getByText('How QuoteMeTrip works')).toBeInTheDocument();
     expect(screen.getByText('With you while you plan')).toBeInTheDocument();
     expect(screen.getByText('Frequently asked questions')).toBeInTheDocument();
   });

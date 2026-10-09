@@ -38,10 +38,10 @@ export function HowItWorksSection() {
     <section className="g-sec" id="g-how">
       <div className="g-wrap">
         <HomeSectionHeader
-          title="How Troublefree Holiday works"
+          title="How QuoteMeTrip works"
           subtitle="Three steps from a rough idea to a confirmed, paid-for trip — with no booking fees."
-          actionText="Start step 1 →"
-          onActionClick={handleStartStep1}
+          actionText="Learn more →"
+          onActionClick={() => navigate('/how-it-works')}
         />
 
         <motion.div
@@ -81,7 +81,7 @@ export function HowItWorksSection() {
                 'Change your plan any time; every agency gets the new version',
                 'Old quotes are marked outdated so you never compare the wrong one',
               ]}
-              tip="Free for travellers. Agencies pay Troublefree Holiday, never you."
+              tip="Free for travellers. Agencies pay QuoteMeTrip, never you."
               ctaText="See my quotes"
               onCtaClick={() => navigate('/plan-trip')}
             />
@@ -92,7 +92,7 @@ export function HowItWorksSection() {
               stepNumber={3}
               badgeText="STEP 3 · SAME DAY"
               title="Agree, pay the agency, get confirmed"
-              description="Accept the quote you like. The agency sends a payment link and you pay them directly — Troublefree Holiday never touches your money."
+              description="Accept the quote you like. The agency sends a payment link and you pay them directly — QuoteMeTrip never touches your money."
               ticks={[
                 'Agreeing closes quoting and locks your price',
                 'Tick “deposit paid” with the amount and reference',

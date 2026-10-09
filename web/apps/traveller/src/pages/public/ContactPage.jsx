@@ -9,6 +9,8 @@ import { useState } from 'react';
 import { useI18n } from '@troublefree/i18n';
 import { SectionHeading, TextInput, Button } from '@troublefree/ui';
 import { submitContactForm } from '../../services/public-api.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
 export function ContactPage() {
   const { t } = useI18n();
@@ -16,6 +18,11 @@ export function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+
+  usePageMetadata(
+    'Contact Us - QuoteMeTrip Support',
+    'Get in touch with the QuoteMeTrip support team for inquiries, partner agency applications, or trip planning assistance.',
+  );
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -40,6 +47,8 @@ export function ContactPage() {
 
   return (
     <div className="tf-public-container">
+      <PublicBreadcrumbs items={[{ label: 'Contact Us' }]} />
+
       <SectionHeading
         title={t('contact.title', 'Contact Us')}
         subtitle={t('contact.subtitle', 'Have questions or feedback? Get in touch with our team.')}

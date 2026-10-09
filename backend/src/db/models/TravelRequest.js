@@ -80,6 +80,10 @@ export class TravelRequest extends Model {
           type: DataTypes.DATEONLY,
           allowNull: true,
         },
+        chosenDuration: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+        },
         numberOfTravellers: {
           type: DataTypes.INTEGER.UNSIGNED,
           allowNull: false,
@@ -121,7 +125,15 @@ export class TravelRequest extends Model {
           type: DataTypes.TEXT,
           allowNull: true,
         },
+        title: {
+          type: DataTypes.STRING(255),
+          allowNull: true,
+        },
         submittedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        archivedAt: {
           type: DataTypes.DATE,
           allowNull: true,
         },
@@ -130,7 +142,12 @@ export class TravelRequest extends Model {
         sequelize,
         tableName: 'travel_requests',
         modelName: 'TravelRequest',
-        indexes: [{ fields: ['traveller_id'] }, { fields: ['route_id'] }, { fields: ['status'] }],
+        indexes: [
+          { fields: ['traveller_id'] },
+          { fields: ['route_id'] },
+          { fields: ['status'] },
+          { fields: ['traveller_id', 'archived_at'] },
+        ],
       },
     );
 

@@ -1,303 +1,259 @@
-import React from 'react';
-import { Modal, Button, StatusBadge } from '@troublefree/ui';
-import { QUOTATION_TYPE_LABELS } from '@troublefree/types';
-import { FiCalendar, FiCheckCircle, FiXCircle, FiTag, FiFileText, FiShield } from 'react-icons/fi';
+import React, { useState } from 'react';
+import {
+  QuotationDocument,
+  downloadQuotationDoc,
+  printQuotationDocument,
+} from '@troublefree/ui';
+import {
+  FiPrinter,
+  FiDownload,
+  FiZoomIn,
+  FiZoomOut,
+  FiX,
+  FiFileText,
+} from 'react-icons/fi';
 
-export function QuotationPreviewModal({ isOpen, onClose, formData = {}, travelRequest = {} }) {
+export function QuotationPreviewModal({
+  isOpen,
+  onClose,
+  formData = {},
+  travelRequest = {},
+  agencyProfile = null,
+}) {
+  const [zoom, setZoom] = useState(100);
+
   if (!isOpen) return null;
 
+  // Build canonical document object from formData + request context
   const items = formData.items || [];
-  const inclusions = Array.isArray(formData.inclusions) ? formData.inclusions : [];
-  const exclusions = Array.isArray(formData.exclusions) ? formData.exclusions : [];
-
+  const taxRate = Number(formData.taxRate || 0);
   const subtotal = items.reduce(
     (sum, item) => sum + (Number(item.quantity) || 1) * (Number(item.unitPrice) || 0),
     0,
   );
+  const taxAmount = taxRate > 0 ? Math.round(subtotal * (taxRate / 100) * 100) / 100 : 0;
+  const totalAmount = Math.round((subtotal + taxAmount) * 100) / 100;
 
-  const formattedTotal = subtotal
-    ? new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: formData.currency || 'USD',
-      }).format(subtotal)
-    : `${formData.currency || '$'}${subtotal}`;
+  const quotationData = {
+    ...formData,
+    id: formData.id || 'DRAFT',
+    travelRequestId: travelRequest?.id || formData.travelRequestId,
+    subtotal,
+    taxRate,
+    taxAmount,
+    taxLabel: formData.taxLabel || (taxRate > 0 ? `(including ${taxRate}% Tax)` : ''),
+    totalAmount,
+    currency: formData.currency || 'USD',
+    greeting: formData.greeting || {
+      recipient: travelRequest?.traveller?.firstName || 'Valued Guest',
+      title: `Greetings from ${agencyProfile?.agencyName || formData.branding?.agencyName || 'QuoteMeTrip'} !!!`,
+      message: 'As per our discussion, following is the travel package quotation details.',
+    },
+    packageOverview: formData.packageOverview || {
+      tripId: `QRY-${travelRequest?.id || formData.id || '101'}`,
+      destination: travelRequest?.route?.destination || formData.destination || 'Selected Tour Route',
+      startDate: travelRequest?.travelStartDate || formData.startDate,
+      endDate: travelRequest?.travelEndDate || formData.endDate,
+      duration: travelRequest?.durationDays ? `${travelRequest.durationDays - 1} Nights / ${travelRequest.durationDays} Days` : 'Custom Duration',
+      adults: travelRequest?.numberOfTravellers || 2,
+      children: 0,
+      infants: 0,
+    },
+    branding: formData.branding || {
+      agencyName: agencyProfile?.agencyName || 'QuoteMeTrip',
+      logoUrl: agencyProfile?.logoPath || null,
+      phone: agencyProfile?.phone || null,
+      email: agencyProfile?.businessEmail || null,
+      address: [agencyProfile?.address, agencyProfile?.city, agencyProfile?.country].filter(Boolean).join(', ') || null,
+    },
+    items: formData.items || [],
+    itineraryDays: formData.itineraryDays || [],
+    paymentDetails: formData.paymentDetails || null,
+    inclusions: formData.inclusions || [],
+    exclusions: formData.exclusions || [],
+    termsSections: formData.termsSections || [],
+  };
+
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 10, 150));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 10, 60));
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Quotation Offer Preview">
-      <div style={{ padding: '8px 0', fontFamily: 'system-ui, sans-serif' }}>
-        {/* PDF Document Header */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #0c4e28 0%, #147d33 100%)',
-            color: '#ffffff',
-            padding: '20px 24px',
-            borderRadius: '12px',
-            marginBottom: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        backgroundColor: 'rgba(15, 23, 42, 0.75)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Official Quotation Document Preview"
+    >
+      {/* Modal Fixed Header */}
+      <div
+        className="no-print"
+        style={{
+          height: '64px',
+          backgroundColor: '#0f172a',
+          color: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          borderBottom: '1px solid #1e293b',
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <FiFileText style={{ fontSize: '1.4rem', color: '#38bdf8' }} />
           <div>
-            <div
-              style={{
-                fontSize: '0.75rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                opacity: 0.9,
-              }}
-            >
-              Official Travel Proposal
-            </div>
-            <h3 style={{ margin: '4px 0 0 0', fontSize: '1.25rem', fontWeight: 700 }}>
-              {QUOTATION_TYPE_LABELS[formData.quotationType] ||
-                formData.quotationType ||
-                'Travel Package Proposal'}
+            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>
+              Official Travel Quotation Preview
             </h3>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <span
-              style={{
-                background: 'rgba(255,255,255,0.2)',
-                padding: '4px 10px',
-                borderRadius: '20px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-              }}
-            >
-              DRAFT PREVIEW
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+              A4 Portrait Printable Layout &bull; {quotationData.packageOverview?.tripId}
             </span>
           </div>
         </div>
 
-        {/* Travel Request Context */}
-        {travelRequest?.id && (
+        {/* Toolbar Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div
             style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              marginBottom: '20px',
-              fontSize: '0.875rem',
-              color: '#475569',
-            }}
-          >
-            <strong>Travel Request #{travelRequest.id}</strong> —{' '}
-            {travelRequest.numberOfTravellers || 1} Travellers
-            {travelRequest.travelStartDate && (
-              <span style={{ marginLeft: '12px' }}>
-                ({new Date(travelRequest.travelStartDate).toLocaleDateString()} –{' '}
-                {travelRequest.travelEndDate
-                  ? new Date(travelRequest.travelEndDate).toLocaleDateString()
-                  : ''}
-                )
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Itemized Breakdown Table */}
-        <div style={{ marginBottom: '20px' }}>
-          <h4
-            style={{
-              fontSize: '0.95rem',
-              fontWeight: 700,
-              color: '#0f172a',
-              marginBottom: '10px',
               display: 'flex',
               alignItems: 'center',
+              backgroundColor: '#1e293b',
+              borderRadius: '6px',
+              padding: '2px 8px',
+              marginRight: '8px',
               gap: '6px',
             }}
           >
-            <FiTag /> Itemized Service Breakdown
-          </h4>
-
-          {items.length === 0 ? (
-            <p style={{ color: '#94a3b8', fontSize: '0.875rem', fontStyle: 'italic' }}>
-              No items added yet.
-            </p>
-          ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-              <thead>
-                <tr
-                  style={{
-                    background: '#f1f5f9',
-                    borderBottom: '1px solid #cbd5e1',
-                    textAlign: 'left',
-                    color: '#475569',
-                  }}
-                >
-                  <th style={{ padding: '8px 10px' }}>Description</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'center' }}>Qty</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Unit Price</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, idx) => {
-                  const lineTotal = (Number(item.quantity) || 1) * (Number(item.unitPrice) || 0);
-                  return (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '8px 10px', fontWeight: 500, color: '#1e293b' }}>
-                        {item.title || item.description || `Service #${idx + 1}`}
-                      </td>
-                      <td style={{ padding: '8px 10px', textAlign: 'center', color: '#64748b' }}>
-                        {item.quantity || 1}
-                      </td>
-                      <td style={{ padding: '8px 10px', textAlign: 'right', color: '#64748b' }}>
-                        {formData.currency} {item.unitPrice || 0}
-                      </td>
-                      <td
-                        style={{
-                          padding: '8px 10px',
-                          textAlign: 'right',
-                          fontWeight: 600,
-                          color: '#0f172a',
-                        }}
-                      >
-                        {formData.currency} {lineTotal}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pricing Summary */}
-        <div
-          style={{
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <span
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              title="Zoom Out"
               style={{
-                fontSize: '0.8rem',
-                color: '#166534',
-                fontWeight: 600,
-                textTransform: 'uppercase',
+                background: 'transparent',
+                border: 'none',
+                color: '#cbd5e1',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
-              Total Offer Amount
+              <FiZoomOut />
+            </button>
+            <span style={{ fontSize: '0.75rem', color: '#e2e8f0', minWidth: '36px', textAlign: 'center' }}>
+              {zoom}%
             </span>
-            {formData.validUntil && (
-              <div
-                style={{
-                  fontSize: '0.8rem',
-                  color: '#15803d',
-                  marginTop: '2px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <FiCalendar size={12} /> Valid until:{' '}
-                {new Date(formData.validUntil).toLocaleDateString()}
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              title="Zoom In"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#cbd5e1',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <FiZoomIn />
+            </button>
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0c4e28' }}>
-            {formattedTotal}
-          </div>
-        </div>
 
-        {/* Inclusions / Exclusions */}
-        {(inclusions.length > 0 || exclusions.length > 0) && (
-          <div
+          <button
+            type="button"
+            onClick={printQuotationDocument}
             style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '12px',
-              marginBottom: '20px',
-              fontSize: '0.85rem',
-            }}
-          >
-            {inclusions.length > 0 && (
-              <div
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  padding: '12px',
-                }}
-              >
-                <strong style={{ color: '#166534', display: 'block', marginBottom: '6px' }}>
-                  Inclusions
-                </strong>
-                <ul style={{ margin: 0, paddingLeft: '16px', color: '#334155' }}>
-                  {inclusions.map((inc, i) => (
-                    <li key={i}>{inc}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {exclusions.length > 0 && (
-              <div
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
-                  padding: '12px',
-                }}
-              >
-                <strong style={{ color: '#991b1b', display: 'block', marginBottom: '6px' }}>
-                  Exclusions
-                </strong>
-                <ul style={{ margin: 0, paddingLeft: '16px', color: '#334155' }}>
-                  {exclusions.map((exc, i) => (
-                    <li key={i}>{exc}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Notes */}
-        {formData.notes && (
-          <div
-            style={{
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#0c4e28',
+              color: '#ffffff',
+              border: 'none',
               borderRadius: '6px',
-              padding: '12px',
-              marginBottom: '20px',
+              padding: '7px 14px',
               fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
             }}
           >
-            <strong style={{ color: '#334155', display: 'block', marginBottom: '4px' }}>
-              Terms & Notes
-            </strong>
-            <p style={{ margin: 0, color: '#475569', whiteSpace: 'pre-wrap' }}>{formData.notes}</p>
-          </div>
-        )}
+            <FiPrinter /> Print / PDF
+          </button>
 
-        {/* Footer buttons */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '12px',
-            paddingTop: '12px',
-            borderTop: '1px solid #e2e8f0',
-          }}
-        >
-          <Button variant="outline" onClick={onClose}>
-            Close Preview
-          </Button>
+          <button
+            type="button"
+            onClick={() => downloadQuotationDoc(quotationData)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: '#1e293b',
+              color: '#38bdf8',
+              border: '1px solid #38bdf8',
+              borderRadius: '6px',
+              padding: '7px 14px',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <FiDownload /> Download Word DOC
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close Preview"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              padding: '8px',
+              fontSize: '1.25rem',
+              marginLeft: '8px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <FiX />
+          </button>
         </div>
       </div>
-    </Modal>
+
+      {/* Modal Scrollable Workspace */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          backgroundColor: '#334155',
+          padding: '30px 16px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+          style={{
+            transform: `scale(${zoom / 100})`,
+            transformOrigin: 'top center',
+            transition: 'transform 0.15s ease-out',
+            width: '100%',
+            maxWidth: '210mm',
+          }}
+        >
+          <QuotationDocument quotation={quotationData} />
+        </div>
+      </div>
+    </div>
   );
 }

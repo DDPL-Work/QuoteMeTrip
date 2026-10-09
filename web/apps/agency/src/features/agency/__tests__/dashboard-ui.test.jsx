@@ -33,7 +33,14 @@ vi.mock('../../../lib/api.js', () => ({
   },
   jobApi: { list: vi.fn() },
   messagingApi: { listConversations: vi.fn() },
-  notificationApi: { list: vi.fn() },
+  notificationApi: {
+    list: vi.fn(() => Promise.resolve({ data: [], unreadCount: 0 })),
+    getUnreadCount: vi.fn(() => Promise.resolve({ count: 0 })),
+    markAsRead: vi.fn(() => Promise.resolve({})),
+    markAllAsRead: vi.fn(() => Promise.resolve({})),
+    registerPushToken: vi.fn(() => Promise.resolve({})),
+    unregisterPushToken: vi.fn(() => Promise.resolve({})),
+  },
 }));
 
 import {

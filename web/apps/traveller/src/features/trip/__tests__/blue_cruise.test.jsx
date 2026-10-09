@@ -17,7 +17,7 @@ describe('AppPreloader visual & background tests', () => {
     expect(preloader).toBeInTheDocument();
     expect(preloader).toHaveStyle('background-color: #F5FAF7');
 
-    const img = screen.getByAltText('Loading Troublefree Holiday');
+    const img = screen.getByAltText('Loading QuoteMeTrip');
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute('src', '/images/Code_Generated_Image.gif');
     expect(img).toHaveStyle('max-width: 860px');

@@ -1,19 +1,23 @@
 /**
- * Agency Detail Page (/agencies/:id) — Track B.
+ * Agency Detail Page (/agencies/:id) — QuoteMeTrip.
  *
  * Public-safe agency profile view. Exposes public metadata only.
  * NO private contact info (phone/email/WhatsApp) is displayed pre-acceptance.
  */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useI18n } from '@troublefree/i18n';
 import { CTASection } from '@troublefree/ui';
 import { getAgencyById } from '../../services/public-api.js';
 import { useAuth } from '../../features/auth/auth-context.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
-export function AgencyDetailPage() {
-  const { id } = useParams();
+export function AgencyDetailPage({ agencyId }) {
+  const params = useParams();
+  const id = agencyId || params.id;
+
   const { t } = useI18n();
   const { user } = useAuth();
   const [data, setData] = useState(null);
@@ -41,6 +45,12 @@ export function AgencyDetailPage() {
     };
   }, [id]);
 
+  const agencyName = data?.agency?.agencyName || 'Agency Profile';
+  usePageMetadata(
+    `${agencyName} - Verified Travel Agency in ${data?.agency?.city || 'Turkey'}`,
+    data?.agency?.bio || 'Verified travel agency on QuoteMeTrip.',
+  );
+
   if (loading) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 0' }}>
@@ -54,9 +64,9 @@ export function AgencyDetailPage() {
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
         <h2>Agency Not Found</h2>
         <p className="tf-card-text">{error || 'The requested agency profile does not exist.'}</p>
-        <a href="/agencies" className="tf-btn tf-btn-primary">
+        <Link to="/agencies" className="tf-btn tf-btn-primary">
           Back to Agencies
-        </a>
+        </Link>
       </div>
     );
   }
@@ -65,6 +75,13 @@ export function AgencyDetailPage() {
 
   return (
     <div className="tf-public-container">
+      <PublicBreadcrumbs
+        items={[
+          { label: 'Agencies', to: '/agencies' },
+          { label: agency.agencyName },
+        ]}
+      />
+
       <div className="tf-card" style={{ padding: '2rem', marginBottom: '3rem' }}>
         <div className="tf-agency-header" style={{ marginBottom: '1.5rem' }}>
           <div
@@ -136,3 +153,5 @@ export function AgencyDetailPage() {
     </div>
   );
 }
+
+export default AgencyDetailPage;

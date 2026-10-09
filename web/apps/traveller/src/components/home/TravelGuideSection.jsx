@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { FiClipboard, FiSliders, FiCreditCard } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import { HomeSectionHeader } from './HomeSectionHeader.jsx';
 import { TravelGuideCard } from './TravelGuideCard.jsx';
 import { AgencyPromoCard } from './AgencyPromoCard.jsx';
@@ -7,26 +8,29 @@ import { AgencyPromoCard } from './AgencyPromoCard.jsx';
 const GUIDES = [
   {
     icon: FiClipboard,
-    title: 'How to plan day by day',
+    title: 'Istanbul city planning guide',
     description: 'Set dates and stops first, then add hotels, guides and activities per day.',
-    href: '#guide',
+    href: '/travel-guides/istanbul',
   },
   {
     icon: FiSliders,
-    title: 'Comparing quotes properly',
-    description: 'Look at what is included — hotels, vehicle, guide — not just the total price.',
-    href: '#guide',
+    title: 'Cappadocia & balloon flight guide',
+    description: 'Look at what is included — hotels, vehicle, balloon — not just the total price.',
+    href: '/travel-guides/cappadocia',
   },
   {
     icon: FiCreditCard,
-    title: 'Paying the agency safely',
-    description: 'Use the agency’s payment link or bank transfer and keep your receipt.',
-    href: '#guide',
+    title: 'Ephesus & Aegean coastal routes',
+    description: 'Historical marble streets, certified guides and direct safe payment.',
+    href: '/travel-guides/ephesus',
   },
 ];
 
 export function TravelGuideSection({ onGuideClick, onPartnerClick }) {
+  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
+
+  const handlePartnerClick = onPartnerClick || (() => navigate('/agencies/turkey'));
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -49,7 +53,9 @@ export function TravelGuideSection({ onGuideClick, onPartnerClick }) {
       <div className="g-wrap">
         <HomeSectionHeader
           title="With you while you plan"
-          subtitle="Simple guides for a trouble-free trip."
+          subtitle="Handcrafted guides for a trouble-free trip across Turkey."
+          actionText="View all travel guides →"
+          onActionClick={() => navigate('/travel-guides')}
         />
         <motion.div
           className="g-help"
@@ -70,7 +76,7 @@ export function TravelGuideSection({ onGuideClick, onPartnerClick }) {
             </motion.div>
           ))}
           <motion.div variants={shouldReduceMotion ? {} : cardVariants}>
-            <AgencyPromoCard onPartnerClick={onPartnerClick} />
+            <AgencyPromoCard onPartnerClick={handlePartnerClick} />
           </motion.div>
         </motion.div>
       </div>

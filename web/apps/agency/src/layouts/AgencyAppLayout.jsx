@@ -19,7 +19,15 @@ import {
 } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n, SUPPORTED_LOCALES } from '@troublefree/i18n';
-import { notificationApi } from '../lib/api.js';
+import * as apiModule from '../lib/api.js';
+const notificationApi = apiModule?.notificationApi;
+const messagingApi = apiModule?.messagingApi;
+import { NotificationPanel } from '../components/NotificationPanel.jsx';
+import {
+  requestNotificationPermissionAndRegister,
+  initForegroundNotificationListener,
+} from '../lib/firebase.js';
+import { connectMessagingSocket } from '../lib/socket.js';
 
 export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCount = 0 }) {
   const { user, logout } = useAuth();
@@ -37,6 +45,8 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
     }
   });
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
   const toggleSidebarCollapsed = () => {
     setSidebarCollapsed((prev) => {
@@ -64,6 +74,83 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Initialize FCM push registration, foreground listener, and Socket.IO real-time notifications
+  useEffect(() => {
+    if (notificationApi) {
+      try {
+        requestNotificationPermissionAndRegister(notificationApi).catch(() => {});
+      } catch {
+        // Ignore in test or unsupported environments
+      }
+    }
+
+    const seenIds = new Set();
+    const handleIncoming = (item) => {
+      const id = item?.id || item?.data?.id || `${item?.title || item?.notification?.title}_${Date.now()}`;
+      if (seenIds.has(id)) return;
+      seenIds.add(id);
+      setTimeout(() => seenIds.delete(id), 10000);
+
+      setUnreadNotifications((prev) => prev + 1);
+      if (
+        item?.eventType === 'MESSAGE_RECEIVED' ||
+        item?.entityType === 'MESSAGE' ||
+        item?.data?.conversationId
+      ) {
+        setUnreadMessagesCount((prev) => prev + 1);
+      }
+      window.dispatchEvent(new CustomEvent('qmt:notification:new', { detail: item }));
+    };
+
+    const cleanupPromise = initForegroundNotificationListener((payload) => {
+      handleIncoming(payload);
+    });
+
+    let socket = null;
+    try {
+      socket = connectMessagingSocket();
+      if (socket) {
+        socket.on('notification:new', handleIncoming);
+      }
+    } catch {
+      // Safe fallback in test or serverless environments
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('notification:new', handleIncoming);
+      }
+      cleanupPromise
+        .then((unsub) => {
+          if (typeof unsub === 'function') unsub();
+        })
+        .catch(() => {});
+    };
+  }, [location.pathname]);
+
+  // Fetch unread messages count across all conversations
+  useEffect(() => {
+    let active = true;
+    if (typeof messagingApi?.listConversations === 'function') {
+      try {
+        const p = messagingApi.listConversations({ page: 1, pageSize: 50 });
+        if (p && typeof p.then === 'function') {
+          p.then((res) => {
+            if (!active) return;
+            const items = res?.conversations || [];
+            const totalUnread = items.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+            setUnreadMessagesCount(totalUnread);
+          }).catch(() => {});
+        }
+      } catch {
+        // Safe fallback in mock or test environments
+      }
+    }
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
 
   // Fetch unread notifications count if API exists
   useEffect(() => {
@@ -125,6 +212,7 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
       label: t('dashboard.summary.messages', 'Conversations'),
       path: '/messages',
       icon: FiMessageSquare,
+      badge: unreadMessagesCount > 0 ? unreadMessagesCount : null,
     },
     {
       key: 'jobs',
@@ -177,18 +265,25 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
         </div>
 
         <div className="agency-header-actions">
-          {/* Notifications button */}
-          <button
-            type="button"
-            className="agency-header-btn"
-            onClick={() => navigate('/messages')}
-            aria-label={`Notifications (${unreadNotifications} unread)`}
-          >
-            <FiBell />
-            {unreadNotifications > 0 && (
-              <span className="agency-badge-count">{unreadNotifications}</span>
-            )}
-          </button>
+          {/* Notifications button & dropdown panel */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="agency-header-btn"
+              onClick={() => setNotificationPanelOpen((prev) => !prev)}
+              aria-label={`Notifications (${unreadNotifications} unread)`}
+            >
+              <FiBell />
+              {unreadNotifications > 0 && (
+                <span className="agency-badge-count">{unreadNotifications}</span>
+              )}
+            </button>
+            <NotificationPanel
+              isOpen={notificationPanelOpen}
+              onClose={() => setNotificationPanelOpen(false)}
+              onUnreadCountChange={setUnreadNotifications}
+            />
+          </div>
 
           {/* Language Switcher */}
           <div className="tf-lang-switcher" style={{ background: 'rgba(255,255,255,0.12)' }}>

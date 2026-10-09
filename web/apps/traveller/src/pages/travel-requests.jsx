@@ -8,38 +8,28 @@ import {
   FiBriefcase,
   FiArrowRight,
   FiPlus,
-  FiFileText,
   FiClock,
-  FiFilter,
   FiSearch,
+  FiTrash2,
+  FiArchive,
+  FiLayers,
+  FiDollarSign,
+  FiMessageSquare,
 } from 'react-icons/fi';
 import {
   PageHeader,
-  Card,
   Button,
   StatusBadge,
   Skeleton,
   EmptyState,
   ErrorState,
+  ConfirmDialog,
+  toast,
+  getTravelRequestDisplayName,
+  formatRequestIdentifier,
 } from '@troublefree/ui';
 import { travelRequestApi } from '../lib/api.js';
 import { MotionPage } from '../components/motion/MotionPage.jsx';
-
-function getRouteTitle(r) {
-  if (r.route?.stops && r.route.stops.length > 0) {
-    const sorted = [...r.route.stops].sort(
-      (a, b) => (a.orderIndex ?? a.stopOrder ?? 0) - (b.orderIndex ?? b.stopOrder ?? 0),
-    );
-    const names = sorted.map((s) => s.name || s.cityName || s.city || s.location).filter(Boolean);
-    if (names.length > 1) {
-      return `${names[0]} → ${names[names.length - 1]}${names.length > 2 ? ` (${names.length} stops)` : ''}`;
-    }
-    if (names.length === 1) return names[0];
-  }
-  if (r.route?.name) return r.route.name;
-  if (r.destination) return `${r.origin ? `${r.origin} → ` : ''}${r.destination}`;
-  return `Custom Itinerary #${r.id}`;
-}
 
 function formatDateRange(start, end) {
   if (!start) return 'Flexible Dates';
@@ -53,6 +43,8 @@ export function TravelRequestsPage() {
   const [error, setError] = useState(null);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [requestToDelete, setRequestToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadRequests = async () => {
     setLoading(true);
@@ -75,33 +67,57 @@ export function TravelRequestsPage() {
   const metrics = useMemo(() => {
     const total = items.length;
     const submitted = items.filter((r) => r.status === 'submitted').length;
-    const quoted = items.filter((r) => r.status === 'quoted' || (r.quotationsCount && r.quotationsCount > 0)).length;
+    const quoted = items.filter((r) => r.status === 'quoted' || (r.quotesCount && r.quotesCount > 0) || (r.quotationsCount && r.quotationsCount > 0)).length;
     const accepted = items.filter((r) => r.status === 'accepted' || r.status === 'job_created').length;
     return { total, submitted, quoted, accepted };
   }, [items]);
 
   const filteredItems = useMemo(() => {
     return items.filter((r) => {
-      if (filterStatus !== 'ALL' && r.status !== filterStatus.toLowerCase()) {
+      if (filterStatus === 'QUOTED') {
+        const isQuoted = r.status === 'quoted' || (r.quotesCount && r.quotesCount > 0) || (r.quotationsCount && r.quotationsCount > 0);
+        if (!isQuoted) return false;
+      } else if (filterStatus !== 'ALL' && r.status !== filterStatus.toLowerCase()) {
         return false;
       }
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const route = getRouteTitle(r).toLowerCase();
+        const disp = getTravelRequestDisplayName(r).toLowerCase();
         const idStr = String(r.id);
+        const refStr = formatRequestIdentifier(r.id).toLowerCase();
         const pkg = (r.packageType || '').toLowerCase();
-        return route.includes(query) || idStr.includes(query) || pkg.includes(query);
+        return disp.includes(query) || idStr.includes(query) || refStr.includes(query) || pkg.includes(query);
       }
       return true;
     });
   }, [items, filterStatus, searchQuery]);
+
+  const handleDeleteRequest = async () => {
+    if (!requestToDelete) return;
+    setDeleting(true);
+    try {
+      const res = await travelRequestApi.delete(requestToDelete.id);
+      const isArchived = res?.archived;
+      toast.success(
+        isArchived
+          ? `Request ${formatRequestIdentifier(requestToDelete.id)} archived from your workspace.`
+          : `Draft ${formatRequestIdentifier(requestToDelete.id)} deleted successfully.`
+      );
+      setRequestToDelete(null);
+      await loadRequests();
+    } catch (err) {
+      toast.error(err?.message || 'Could not delete travel request.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <MotionPage>
       <main className="tf-portal-page" aria-label="Travel Requests Page">
         <PageHeader
           title="Travel Requests"
-          subtitle="View, track, and manage your custom travel requests and agency quotations."
+          subtitle="Your central travel workspace: track requests, compare quotes, chat with agencies, and manage bookings."
           actions={
             <Link to="/plan-trip">
               <Button variant="primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
@@ -161,7 +177,7 @@ export function TravelRequestsPage() {
             }}
           >
             <div style={{ color: 'var(--tf-portal-text-muted, #4E5754)', fontSize: '0.85rem' }}>
-              Quoted
+              Quotes Received
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#FC7C00' }}>
               {metrics.quoted}
@@ -177,7 +193,7 @@ export function TravelRequestsPage() {
             }}
           >
             <div style={{ color: 'var(--tf-portal-text-muted, #4E5754)', fontSize: '0.85rem' }}>
-              Accepted Offers
+              Accepted Bookings
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0C4E28' }}>
               {metrics.accepted}
@@ -219,7 +235,7 @@ export function TravelRequestsPage() {
             ))}
           </div>
 
-          <div style={{ position: 'relative', minWidth: '220px' }}>
+          <div style={{ position: 'relative', minWidth: '240px' }}>
             <FiSearch
               size={15}
               style={{
@@ -232,7 +248,7 @@ export function TravelRequestsPage() {
             />
             <input
               type="text"
-              placeholder="Search destination or ID…"
+              placeholder="Search destination, QRY-ID…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -251,9 +267,9 @@ export function TravelRequestsPage() {
         {/* Content list */}
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Skeleton height="120px" borderRadius="12px" />
-            <Skeleton height="120px" borderRadius="12px" />
-            <Skeleton height="120px" borderRadius="12px" />
+            <Skeleton height="130px" borderRadius="12px" />
+            <Skeleton height="130px" borderRadius="12px" />
+            <Skeleton height="130px" borderRadius="12px" />
           </div>
         ) : error ? (
           <ErrorState title="Could not load travel requests" message={error} onRetry={loadRequests} />
@@ -275,9 +291,11 @@ export function TravelRequestsPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {filteredItems.map((r) => {
-              const routeTitle = getRouteTitle(r);
-              const dateRange = formatDateRange(r.startDate || r.travelDates?.startDate, r.endDate || r.travelDates?.endDate);
-              const travellersCount = r.adultsCount ? `${r.adultsCount} Adult${r.adultsCount > 1 ? 's' : ''}${r.childrenCount ? `, ${r.childrenCount} Child` : ''}` : `${r.travellerCount || 1} Traveller(s)`;
+              const displayName = getTravelRequestDisplayName(r);
+              const refId = formatRequestIdentifier(r.id);
+              const dateRange = formatDateRange(r.startDate || r.travelStartDate, r.endDate || r.travelEndDate);
+              const travellersCount = r.numberOfTravellers ? `${r.numberOfTravellers} Traveller(s)` : `${r.travellerCount || 1} Traveller(s)`;
+              const quotesCount = r.quotesCount ?? r.quotationsCount ?? 0;
               const luggage = r.luggageCount ? `${r.luggageCount} bags` : null;
 
               return (
@@ -287,29 +305,34 @@ export function TravelRequestsPage() {
                     background: '#fff',
                     borderRadius: '12px',
                     border: '1px solid var(--tf-portal-border, #E2DCD1)',
-                    padding: '20px 24px',
+                    padding: '22px 26px',
                     display: 'flex',
                     flexWrap: 'wrap',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '16px',
+                    gap: '20px',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                     transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
                   }}
                 >
-                  <div style={{ flex: '1 1 360px' }}>
+                  <div style={{ flex: '1 1 380px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                       <span
                         style={{
                           fontSize: '0.8rem',
                           fontWeight: 700,
-                          color: 'var(--tf-portal-green, #147D33)',
-                          background: 'var(--tf-portal-green-soft, #E5F2EA)',
-                          padding: '3px 8px',
+                          color: '#147D33',
+                          background: '#E5F2EA',
+                          padding: '3px 9px',
                           borderRadius: '6px',
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.5px',
                         }}
                       >
-                        Request #{r.id}
+                        {refId}
+                      </span>
+                      <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
+                        {`Request #${r.id} (${r.status})`}
                       </span>
                       <StatusBadge status={r.status} />
                       {r.packageType && (
@@ -326,21 +349,39 @@ export function TravelRequestsPage() {
                           {r.packageType.replace('_', ' ')}
                         </span>
                       )}
+                      {quotesCount > 0 && (
+                        <span
+                          style={{
+                            fontSize: '0.8rem',
+                            color: '#FC7C00',
+                            background: '#FFF4E6',
+                            border: '1px solid #FFE0B2',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <FiLayers size={12} /> {quotesCount} quote{quotesCount > 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
 
                     <h2
                       style={{
                         margin: '0 0 10px',
-                        fontSize: '1.25rem',
-                        fontWeight: 600,
+                        fontSize: '1.3rem',
+                        fontWeight: 700,
                         color: 'var(--tf-portal-text-primary, #13291C)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                       }}
                     >
-                      <FiMapPin size={18} style={{ color: '#147D33', flexShrink: 0 }} />
-                      <span>{routeTitle}</span>
+                      <FiMapPin size={20} style={{ color: '#147D33', flexShrink: 0 }} />
+                      <span>{displayName}</span>
                     </h2>
 
                     <div
@@ -363,6 +404,11 @@ export function TravelRequestsPage() {
                           <FiBriefcase size={14} /> {luggage}
                         </span>
                       )}
+                      {r.days?.length > 0 && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <FiClock size={14} /> {r.days.length} Day Itinerary
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -371,41 +417,80 @@ export function TravelRequestsPage() {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'flex-end',
-                      gap: '10px',
-                      minWidth: '160px',
+                      gap: '12px',
+                      minWidth: '200px',
                     }}
                   >
-                    <div style={{ fontSize: '0.85rem', color: '#4E5754', textAlign: 'right' }}>
-                      {r.quotationsCount !== undefined ? (
-                        <span>
-                          <strong>{r.quotationsCount}</strong> quotation{r.quotationsCount === 1 ? '' : 's'}
-                        </span>
-                      ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <FiClock size={13} /> Active Request
-                        </span>
-                      )}
-                    </div>
+                    {r.latestQuotePrice && (
+                      <div style={{ textAlign: 'right', fontSize: '0.85rem' }}>
+                        <span style={{ color: '#717D79', display: 'block', fontSize: '0.75rem' }}>Latest Quote</span>
+                        <strong style={{ fontSize: '1.15rem', color: '#147D33' }}>
+                          {r.latestQuoteCurrency || '$'} {Number(r.latestQuotePrice).toLocaleString()}
+                        </strong>
+                      </div>
+                    )}
 
-                    <Link to={`/travel-requests/${r.id}`} aria-label={`Request #${r.id} (${r.status})`}>
-                      <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
-                        {`Request #${r.id} (${r.status})`}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Link to={`/travel-requests/${r.id}`} aria-label={`Open Request ${refId} Workspace`}>
+                        <Button
+                          variant="primary"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 18px' }}
+                        >
+                          <span>Open Workspace</span>
+                          <FiArrowRight size={14} />
+                        </Button>
+                      </Link>
+
                       <Button
-                        variant="primary"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        variant="outline"
+                        title={quotesCount > 0 ? 'Archive request' : 'Delete request'}
+                        onClick={() => setRequestToDelete(r)}
+                        style={{
+                          padding: '9px 12px',
+                          color: '#C53030',
+                          borderColor: '#FED7D7',
+                          background: '#FFF5F5',
+                        }}
                       >
-                        <span>View Details</span>
-                        <FiArrowRight size={14} />
+                        <FiTrash2 size={15} />
                       </Button>
-                    </Link>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* Delete / Archive Confirmation Dialog */}
+        {requestToDelete && (
+          <ConfirmDialog
+            isOpen={Boolean(requestToDelete)}
+            title={
+              (requestToDelete.quotesCount > 0 || requestToDelete.status !== 'draft')
+                ? 'Archive Travel Request?'
+                : 'Delete Travel Request?'
+            }
+            message={
+              (requestToDelete.quotesCount > 0 || requestToDelete.status !== 'draft')
+                ? `Request "${getTravelRequestDisplayName(requestToDelete)}" (${formatRequestIdentifier(requestToDelete.id)}) has received quotations or has been submitted. It will be safely archived from your active workspace.`
+                : `Are you sure you want to permanently delete draft request "${getTravelRequestDisplayName(requestToDelete)}" (${formatRequestIdentifier(requestToDelete.id)})?`
+            }
+            confirmText={
+              deleting
+                ? 'Processing…'
+                : (requestToDelete.quotesCount > 0 || requestToDelete.status !== 'draft')
+                  ? 'Archive Request'
+                  : 'Delete Permanently'
+            }
+            cancelText="Cancel"
+            confirmVariant="danger"
+            onConfirm={handleDeleteRequest}
+            onCancel={() => setRequestToDelete(null)}
+          />
+        )}
       </main>
     </MotionPage>
   );
 }
+export default TravelRequestsPage;

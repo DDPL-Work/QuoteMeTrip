@@ -17,10 +17,11 @@ describe('QuotationBuilder Component', () => {
     );
 
     expect(screen.getByRole('button', { name: /1\. Basic Details/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /2\. Hotels \(1\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /2\. Hotels \(0\)/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /3\. Transports \(0\)/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /4\. Activities & Tours \(0\)/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /5\. Terms & Notes/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /5\. Day Wise Itinerary/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /10\. Preview & Finalize/i })).toBeInTheDocument();
   });
 
   test('navigates through steps and switches active workspace', async () => {

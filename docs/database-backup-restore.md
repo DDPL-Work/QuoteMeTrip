@@ -1,6 +1,6 @@
 # Database Backup & Restore Guide
 
-**Project:** Troublefree Holiday  
+**Project:** QuoteMeTrip  
 **Database Engine:** MySQL 8  
 **ORM:** Sequelize 6
 

@@ -1,6 +1,6 @@
 # Production Release Checklist
 
-**Project:** Troublefree Holiday  
+**Project:** QuoteMeTrip  
 **Phase:** 9 — Deployment Readiness
 
 ---

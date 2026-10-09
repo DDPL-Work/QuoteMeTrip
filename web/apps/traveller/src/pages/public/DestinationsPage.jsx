@@ -1,13 +1,17 @@
 /**
- * Destinations List Page (/destinations) — Track B.
+ * Destinations List Page (/destinations) — QuoteMeTrip.
  *
- * Searchable & filterable destination grid with loading, empty, and error states.
+ * Searchable & filterable destination directory with country links,
+ * loading, empty, and error states.
  */
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useI18n } from '@troublefree/i18n';
 import { SectionHeading, DestinationCard } from '@troublefree/ui';
 import { getDestinations } from '../../services/public-api.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
 export function DestinationsPage() {
   const { t } = useI18n();
@@ -16,6 +20,11 @@ export function DestinationsPage() {
   const [region, setRegion] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  usePageMetadata(
+    'Explore Destinations in Turkey',
+    'Discover inspiring destinations across Turkey including Istanbul, Cappadocia, Antalya, Pamukkale, and Ephesus. Build your custom travel route.',
+  );
 
   useEffect(() => {
     let active = true;
@@ -38,6 +47,8 @@ export function DestinationsPage() {
 
   return (
     <div className="tf-public-container">
+      <PublicBreadcrumbs items={[{ label: 'Destinations' }]} />
+
       <SectionHeading
         title={t('destinations.title', 'Explore Destinations')}
         subtitle={t(
@@ -45,6 +56,35 @@ export function DestinationsPage() {
           'Discover inspiring places and start planning your custom travel route.',
         )}
       />
+
+      {/* Featured Country Hub Banner */}
+      <div
+        className="tf-card"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          padding: '1.25rem 1.75rem',
+          marginBottom: '2rem',
+          background: 'linear-gradient(135deg, rgba(20, 125, 51, 0.08), rgba(245, 197, 24, 0.12))',
+          border: '1px solid rgba(20, 125, 51, 0.2)',
+        }}
+      >
+        <div>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--tf-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Featured Region
+          </span>
+          <h3 style={{ margin: '0.2rem 0', fontSize: '1.25rem' }}>Turkey (Türkiye) Country Guide</h3>
+          <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--tf-text-muted)' }}>
+            View national travel essentials, popular holiday circuits, and regional services.
+          </p>
+        </div>
+        <Link to="/destinations/turkey" className="tf-btn tf-btn-primary tf-btn-sm">
+          Explore Turkey Hub →
+        </Link>
+      </div>
 
       <div className="tf-filter-bar">
         <input
@@ -116,3 +156,5 @@ export function DestinationsPage() {
     </div>
   );
 }
+
+export default DestinationsPage;

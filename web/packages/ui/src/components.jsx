@@ -11,7 +11,7 @@ function toneFor(status) {
   return STATUS_BADGE_TONES[status] ?? 'neutral';
 }
 
-export function AppHeader({ brand = 'Troublefree Holiday', links = [], userLabel, onSignOut }) {
+export function AppHeader({ brand = 'QuoteMeTrip', links = [], userLabel, onSignOut }) {
   return (
     <header className="tf-header">
       <span className="tf-header-brand">

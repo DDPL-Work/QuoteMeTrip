@@ -11,15 +11,19 @@ function AdminBrandHeader() {
   return (
     <div className="auth-brand-header">
       <img
-        src="/images/tfh_logo.png"
+        src="/images/tfh_logo_dark.png"
         alt="QuoteMeTrip Logo"
         className="auth-brand-logo"
         onError={(e) => {
           e.target.style.display = 'none';
+          const fallback = e.target.parentElement?.querySelector('.auth-brand-name');
+          if (fallback) fallback.style.display = 'inline-block';
         }}
       />
       <div className="auth-brand-info">
-        <span className="auth-brand-name">QuoteMeTrip</span>
+        <span className="auth-brand-name" style={{ display: 'none' }}>
+          QuoteMeTrip
+        </span>
         <span className="auth-brand-badge">ADMIN PORTAL</span>
       </div>
     </div>

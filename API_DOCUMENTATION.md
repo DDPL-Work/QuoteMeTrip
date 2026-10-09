@@ -3,7 +3,7 @@
 > **Base URL**: `/api/v1`  
 > **Documentation File**: [docs/api.md](file:///c:/Users/ashish%20kathait/Downloads/troublefree-holiday/docs/api.md)
 
-This document lists all RESTful API endpoints developed across Phases 1–8 of the **Troublefree Holiday** platform.
+This document lists all RESTful API endpoints developed across Phases 1–8 of the **QuoteMeTrip** platform.
 
 ---
 

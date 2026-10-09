@@ -87,6 +87,20 @@ export class Quotation extends Model {
           allowNull: false,
           defaultValue: 0,
         },
+        taxRate: {
+          type: DataTypes.DECIMAL(5, 2),
+          allowNull: false,
+          defaultValue: 0,
+        },
+        taxAmount: {
+          type: DataTypes.DECIMAL(12, 2),
+          allowNull: false,
+          defaultValue: 0,
+        },
+        taxLabel: {
+          type: DataTypes.STRING(190),
+          allowNull: true,
+        },
         validUntil: {
           type: DataTypes.DATEONLY,
           allowNull: true,
@@ -95,9 +109,53 @@ export class Quotation extends Model {
           type: DataTypes.TEXT,
           allowNull: true,
         },
+        greeting: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        packageOverview: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        itineraryDays: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        paymentDetails: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        inclusions: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        exclusions: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        termsSections: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+        branding: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
         submittedAt: {
           type: DataTypes.DATE,
           allowNull: true,
+        },
+        version: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: false,
+          defaultValue: 1,
+        },
+        parentQuotationId: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+          references: { model: 'quotations', key: 'id' },
+          onDelete: 'SET NULL',
+          onUpdate: 'CASCADE',
         },
       },
       {
@@ -108,6 +166,9 @@ export class Quotation extends Model {
           { fields: ['travel_request_id'] },
           { fields: ['agency_id'] },
           { fields: ['status'] },
+          { fields: ['travel_request_id', 'created_at'] },
+          { fields: ['travel_request_id', 'status', 'created_at'] },
+          { fields: ['agency_id', 'travel_request_id', 'created_at'] },
         ],
       },
     );

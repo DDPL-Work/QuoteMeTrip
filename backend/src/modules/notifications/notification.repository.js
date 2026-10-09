@@ -69,22 +69,66 @@ export class NotificationRepository {
 
   async findPushToken(userId, platform) {
     return await PushToken.findOne({
-      where: { userId, platform },
+      where: { userId, platform, isActive: true },
     });
   }
 
-  async upsertPushToken(userId, token, platform) {
+  async findActivePushTokens(userId) {
+    return await PushToken.findAll({
+      where: { userId, isActive: true },
+    });
+  }
+
+  async upsertPushToken(userId, tokenData, platform = 'web') {
+    const token = typeof tokenData === 'string' ? tokenData : tokenData.token;
+    const fid = typeof tokenData === 'object' ? tokenData.fid : null;
+    const browser = typeof tokenData === 'object' ? tokenData.browser : null;
+    const deviceLabel = typeof tokenData === 'object' ? tokenData.deviceLabel : null;
+    const permissionStatus = typeof tokenData === 'object' ? tokenData.permissionStatus || 'granted' : 'granted';
+    const plat = (typeof tokenData === 'object' ? tokenData.platform : platform) || 'web';
+
     const existing = await PushToken.findOne({ where: { token } });
     if (existing) {
       if (existing.userId !== userId) {
         existing.userId = userId;
       }
-      existing.platform = platform;
+      existing.platform = plat;
+      if (fid) existing.fid = fid;
+      if (browser) existing.browser = browser;
+      if (deviceLabel) existing.deviceLabel = deviceLabel;
+      existing.permissionStatus = permissionStatus;
+      existing.isActive = true;
       existing.lastUsedAt = new Date();
       await existing.save();
       return existing;
     }
-    return await PushToken.create({ userId, token, platform, lastUsedAt: new Date() });
+
+    return await PushToken.create({
+      userId,
+      token,
+      fid,
+      platform: plat,
+      browser,
+      deviceLabel,
+      permissionStatus,
+      isActive: true,
+      lastUsedAt: new Date(),
+    });
+  }
+
+  async deactivatePushTokens(tokens) {
+    if (!tokens || tokens.length === 0) return 0;
+    const [count] = await PushToken.update(
+      { isActive: false },
+      { where: { token: tokens } },
+    );
+    return count;
+  }
+
+  async removePushToken(userId, token) {
+    return await PushToken.destroy({
+      where: { userId, token },
+    });
   }
 }
 

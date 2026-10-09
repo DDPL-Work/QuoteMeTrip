@@ -94,7 +94,7 @@ describe('Phase 1: Traveller Portal Foundation & Shell Unit Tests', () => {
       expect(screen.getByText('Portal Content')).toBeInTheDocument();
     });
 
-    expect(screen.getAllByText(/Troublefree/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Troublefree|QuoteMeTrip/i).length).toBeGreaterThan(0);
     expect(screen.getByText('Plan My Trip')).toBeInTheDocument();
     expect(screen.getByText('Travel Requests')).toBeInTheDocument();
   });

@@ -30,7 +30,9 @@ export function AppSidebar({ badges = {}, onItemClick }) {
       const next = !prev;
       try {
         localStorage.setItem('qmt_sidebar_collapsed', String(next));
-      } catch {}
+      } catch {
+        // ignore storage access errors
+      }
       return next;
     });
   };

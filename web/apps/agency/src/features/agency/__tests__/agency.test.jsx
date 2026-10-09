@@ -32,6 +32,17 @@ vi.mock('../../../lib/api.js', () => ({
     submit: vi.fn(),
     withdraw: vi.fn(),
   },
+  messagingApi: {
+    listConversations: vi.fn(() => Promise.resolve({ conversations: [] })),
+  },
+  notificationApi: {
+    list: vi.fn(() => Promise.resolve({ data: [], unreadCount: 0 })),
+    getUnreadCount: vi.fn(() => Promise.resolve({ count: 0 })),
+    markAsRead: vi.fn(() => Promise.resolve({})),
+    markAllAsRead: vi.fn(() => Promise.resolve({})),
+    registerPushToken: vi.fn(() => Promise.resolve({})),
+    unregisterPushToken: vi.fn(() => Promise.resolve({})),
+  },
 }));
 
 import { authApi, agencyRequestApi, agencyQuotationApi } from '../../../lib/api.js';

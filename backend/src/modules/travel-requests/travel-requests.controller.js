@@ -72,3 +72,8 @@ export const deleteDay = asyncHandler(async (req, res) => {
   const result = await service.deleteDay(req.user.id, req.params.id, req.params.dayId, roleOf(req));
   return successResponse(res, { data: result, message: 'Day deleted.' });
 });
+
+export const deleteRequest = asyncHandler(async (req, res) => {
+  const result = await service.deleteRequest(req.user.id, req.params.id, roleOf(req));
+  return successResponse(res, { data: result, message: result.message || 'Travel request deleted.' });
+});

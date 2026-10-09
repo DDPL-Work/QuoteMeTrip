@@ -18,6 +18,9 @@ import {
   emitNotificationEvent,
 } from '../notifications/notification-events.js';
 import { isContactRevealedForRequest, getTravellerContact } from '../contact/contact-visibility.js';
+import { resolveRequestTitle } from '../travel-requests/travel-requests.service.js';
+import { toPublicQuotation } from '../quotations/quotation.mapper.js';
+import { toPublicJob, jobAgencySnippet, jobTravellerSnippet } from '../jobs/job.mapper.js';
 
 function assertAgency(role) {
   if (role && role !== 'agency') {
@@ -266,9 +269,33 @@ function toPublicTravellerSnippet(user, travellerProfile, { revealed = false } =
   return getTravellerContact(user, travellerProfile, { revealed });
 }
 
-function toPublicInboxRequest(request, match, { user = null, profile = null, revealed = false }) {
+function toPublicInboxRequest(
+  request,
+  match,
+  {
+    user = null,
+    profile = null,
+    revealed = false,
+    quotation = null,
+    quotations = [],
+    conversation = null,
+    job = null,
+  } = {},
+) {
+  const title = request.title || null;
+  const destination =
+    request.destination ||
+    request.route?.finalDestination ||
+    request.route?.startLocation ||
+    request.days?.[0]?.location ||
+    null;
+  const displayName = resolveRequestTitle(request);
+
   return {
     id: request.id,
+    title,
+    displayName,
+    destination,
     status: request.status,
     travelStartDate: request.travelStartDate,
     travelEndDate: request.travelEndDate,
@@ -307,6 +334,10 @@ function toPublicInboxRequest(request, match, { user = null, profile = null, rev
           respondedAt: match.respondedAt,
         }
       : undefined,
+    myQuotation: quotation || null,
+    myQuotations: quotations || [],
+    conversation: conversation || null,
+    job: job || null,
     createdAt: request.createdAt,
     updatedAt: request.updatedAt,
   };
@@ -430,7 +461,65 @@ export async function getInboxRequest(userId, requestId, { role = null } = {}) {
   if (request.route?.stops) {
     request.route.stops.sort((a, b) => a.sequence - b.sequence);
   }
-  return toPublicInboxRequest(request, match, await contactContext(models, request));
+
+  const { user, profile, revealed } = await contactContext(models, request);
+
+  // Load agency's quotations for this request
+  let myQuotation = null;
+  const myQuotations = [];
+  const quoteRows = await models.Quotation.findAll({
+    where: { travelRequestId: request.id, agencyId: agency.id },
+    include: [{ model: models.QuotationItem, as: 'items' }],
+    order: [
+      [models.sequelize.col('Quotation.created_at'), 'DESC'],
+      [models.sequelize.col('Quotation.updated_at'), 'DESC'],
+    ],
+  });
+  for (const qRow of quoteRows) {
+    const pub = toPublicQuotation(qRow, { agency, revealed });
+    myQuotations.push(pub);
+  }
+  if (myQuotations.length > 0) {
+    myQuotation = myQuotations[0];
+  }
+
+  // Load conversation for this request and agency if any
+  let conversation = null;
+  const convRow = await models.Conversation.findOne({
+    where: { travelRequestId: request.id, agencyId: agency.id },
+  });
+  if (convRow) {
+    conversation = {
+      id: convRow.id,
+      travelRequestId: convRow.travelRequestId,
+      status: convRow.status,
+      disappearingTtl: convRow.disappearingTtl || 0,
+      createdAt: convRow.createdAt,
+      updatedAt: convRow.updatedAt,
+    };
+  }
+
+  // Load job if active
+  let job = null;
+  const jobRow = await models.Job.findOne({
+    where: { travelRequestId: request.id, agencyId: agency.id },
+  });
+  if (jobRow) {
+    job = toPublicJob(jobRow, {
+      traveller: jobTravellerSnippet(user, profile, { revealed }),
+      agency: jobAgencySnippet(agency, { revealed }),
+    });
+  }
+
+  return toPublicInboxRequest(request, match, {
+    user,
+    profile,
+    revealed,
+    quotation: myQuotation,
+    quotations: myQuotations,
+    conversation,
+    job,
+  });
 }
 
 async function contactContext(models, request) {

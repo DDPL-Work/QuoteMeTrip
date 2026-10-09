@@ -2,7 +2,7 @@
 
 ## Overview
 
-Troublefree Holiday is a modular monolithic backend serving three
+QuoteMeTrip is a modular monolithic backend serving three
 independent React web applications (Traveller, Agency, Admin), built
 as an npm-workspaces monorepo.
 

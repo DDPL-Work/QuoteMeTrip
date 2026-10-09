@@ -16,7 +16,20 @@ import {
 } from 'react-icons/fi';
 import { validateRequestInput } from '../features/trip/validation.js';
 
+function calculateEndDate(startDateStr, durationDays) {
+  if (!startDateStr || !durationDays || durationDays < 1) return '';
+  try {
+    const d = new Date(startDateStr);
+    if (isNaN(d.getTime())) return '';
+    d.setDate(d.getDate() + (Number(durationDays) - 1));
+    return d.toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+}
+
 const DEFAULT_FORM = {
+  chosenDuration: 5,
   travelStartDate: '',
   travelEndDate: '',
   numberOfTravellers: 2,
@@ -40,7 +53,40 @@ export function TravelRequestForm({
   const [errors, setErrors] = useState({});
 
   const setField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === 'chosenDuration') {
+        const dur = Number(value) || 1;
+        next.chosenDuration = dur;
+        if (prev.travelStartDate) {
+          next.travelEndDate = calculateEndDate(prev.travelStartDate, dur);
+        }
+      } else if (field === 'travelStartDate') {
+        next.travelStartDate = value;
+        // Auto-calculate end date when start date changes
+        if (value && (prev.chosenDuration || next.chosenDuration)) {
+          next.travelEndDate = calculateEndDate(value, prev.chosenDuration || next.chosenDuration);
+        }
+      } else if (field === 'travelEndDate') {
+        next.travelEndDate = value;
+      } else if (field === 'packageType') {
+        next.packageType = value;
+        if (value === 'hotel_only') {
+          next.hotelRequired = true;
+          next.driverRequired = false;
+          next.guideRequired = false;
+        } else if (value === 'vehicle_driver') {
+          next.hotelRequired = false;
+          next.driverRequired = true;
+          next.guideRequired = false;
+        } else if (value === 'full_package') {
+          next.hotelRequired = true;
+          next.driverRequired = true;
+          next.guideRequired = true;
+        }
+      }
+      return next;
+    });
   };
 
   const handleCruiseDurationSelect = (durationId, nights) => {
@@ -151,10 +197,50 @@ export function TravelRequestForm({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '20px',
           }}
         >
+          {/* Chosen Duration */}
+          <div>
+            <label
+              htmlFor="chosen-duration-select"
+              style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#4E5754',
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
+              Your Chosen Trip Duration
+            </label>
+            <select
+              id="chosen-duration-select"
+              aria-label="Your Chosen Trip Duration"
+              value={form.chosenDuration || 5}
+              onChange={(e) => setField('chosenDuration', Number(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                borderRadius: '10px',
+                border: '1px solid #D5CDBF',
+                fontSize: '14px',
+                background: '#FFFBF3',
+                color: '#13291C',
+                outline: 'none',
+                boxSizing: 'border-box',
+                cursor: 'pointer',
+              }}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 20, 21, 30].map((d) => (
+                <option key={d} value={d}>
+                  {d} {d === 1 ? 'Day' : 'Days'}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Start Date */}
           <div>
             <label
@@ -195,7 +281,7 @@ export function TravelRequestForm({
             )}
           </div>
 
-          {/* End Date */}
+          {/* End Date (Auto-calculated from Chosen Duration) */}
           <div>
             <label
               style={{
@@ -206,7 +292,7 @@ export function TravelRequestForm({
                 marginBottom: '6px',
               }}
             >
-              Travel End Date
+              Travel End Date (Auto)
             </label>
             <input
               type="date"

@@ -1,6 +1,6 @@
 // @troublefree/types
 //
-// Shared contracts for the Troublefree Holiday domains. Backend
+// Shared contracts for the QuoteMeTrip domains. Backend
 // validation is authoritative — these constants mirror the backend
 // ENUMs so the Traveller, Agency, and Admin apps never duplicate
 // business vocabularies.
@@ -142,6 +142,8 @@ export const SOCKET_EVENTS = {
   MESSAGE: 'conversation:message',
   READ: 'conversation:read',
   UPDATED: 'conversation:updated',
+  DELETED: 'conversation:deleted',
+  DELETED_FOR_EVERYONE: 'MESSAGE_DELETED_FOR_EVERYONE',
 };
 
 // --- Phase 7: admin operations, memberships & commissions --------
@@ -200,3 +202,115 @@ export const ELIGIBILITY_REASONS = [
   'EMPTY_SERVICES',
   'SERVICE_MISMATCH',
 ];
+
+// --- Request-Centric Workspace Helpers ----------------------------
+
+export const TRAVEL_REQUEST_DISPLAY_STATUSES = {
+  draft: 'Draft',
+  submitted: 'Submitted',
+  matching: 'Matching',
+  quoted: 'Quote Received',
+  accepted: 'Booking Confirmed',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
+};
+
+/**
+ * Resolves a human-friendly display name for a travel request.
+ * Prioritizes destination / route data over generic IDs.
+ *
+ * Logic:
+ * 1. Explicit request title if one exists (e.g. "Udaipur Holiday" or "Turkey Discovery Trip")
+ * 2. Destination name (e.g. "Udaipur, India")
+ * 3. Start → final destination (e.g. "Istanbul → Ephesus")
+ * 4. Route summary from stops or days
+ * 5. Safe fallback: "Travel Request"
+ */
+export function getTravelRequestDisplayName(request) {
+  if (!request) return 'Travel Request';
+
+  // If passed a plain string
+  if (typeof request === 'string') {
+    const trimmed = request.trim();
+    if (trimmed && !/^Request\s*#?\d+$/i.test(trimmed)) {
+      return trimmed;
+    }
+    return trimmed || 'Travel Request';
+  }
+
+  // 1. Explicit title if provided
+  const explicitTitle = request.title || request.tripTitle;
+  if (
+    explicitTitle &&
+    typeof explicitTitle === 'string' &&
+    explicitTitle.trim() &&
+    !/^Request\s*#?\d+$/i.test(explicitTitle.trim())
+  ) {
+    return explicitTitle.trim();
+  }
+
+  // 2. Direct destination field
+  if (
+    request.destination &&
+    typeof request.destination === 'string' &&
+    request.destination.trim() &&
+    !/^Request\s*#?\d+$/i.test(request.destination.trim())
+  ) {
+    return request.destination.trim();
+  }
+
+  // 3. Route information
+  const route = request.route;
+  if (route) {
+    const start = route.startLocation?.trim();
+    const final = route.finalDestination?.trim();
+    if (start && final && start.toLowerCase() !== final.toLowerCase()) {
+      return `${start} → ${final}`;
+    }
+    if (final) return final;
+    if (start) return start;
+
+    if (Array.isArray(route.stops) && route.stops.length > 0) {
+      const stopNames = route.stops
+        .map((s) => (typeof s === 'string' ? s.trim() : s?.locationName?.trim() || s?.name?.trim()))
+        .filter(Boolean);
+      if (stopNames.length >= 2) {
+        return `${stopNames[0]} → ${stopNames[stopNames.length - 1]}`;
+      }
+      if (stopNames.length === 1) {
+        return stopNames[0];
+      }
+    }
+  }
+
+  // 4. Day-by-day itinerary locations
+  if (Array.isArray(request.days) && request.days.length > 0) {
+    const locations = request.days
+      .map((d) => d?.location?.trim() || d?.title?.trim())
+      .filter((loc) => Boolean(loc) && !/^Day\s*\d+/i.test(loc));
+    if (locations.length > 0) {
+      const uniqueLocs = [...new Set(locations)];
+      if (uniqueLocs.length >= 2) {
+        return `${uniqueLocs[0]} → ${uniqueLocs[uniqueLocs.length - 1]}`;
+      }
+      return uniqueLocs[0];
+    }
+  }
+
+  // 5. Special cruise packages
+  if (request.packageType === 'blue_cruise') {
+    return 'Blue Cruise Voyage';
+  }
+
+  // 6. Safe fallback with secondary ID
+  return request.id ? `Travel Request #${request.id}` : 'Travel Request';
+}
+
+/**
+ * Format request identifier as QRY-xxxx
+ */
+export function formatRequestIdentifier(id) {
+  if (!id) return '';
+  return `QRY-${id}`;
+}
+

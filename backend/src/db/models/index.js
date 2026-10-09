@@ -297,6 +297,15 @@ export function initModels(sequelize = getSequelize()) {
   });
   Quotation.belongsTo(AgencyProfile, { foreignKey: 'agencyId', as: 'agency' });
 
+  // Quotation 1:N Quotation (revisions)
+  Quotation.hasMany(Quotation, {
+    foreignKey: 'parentQuotationId',
+    as: 'revisions',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  });
+  Quotation.belongsTo(Quotation, { foreignKey: 'parentQuotationId', as: 'parentQuotation' });
+
   // Quotation 1:N QuotationItem (items die with the quotation)
   Quotation.hasMany(QuotationItem, {
     foreignKey: 'quotationId',

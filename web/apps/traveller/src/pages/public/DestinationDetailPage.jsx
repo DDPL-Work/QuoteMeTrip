@@ -1,26 +1,29 @@
 /**
- * Destination Detail Page (/destinations/:slug) — Track B.
+ * Destination Detail Page (/destinations/:countrySlug/:destinationSlug) — QuoteMeTrip.
  *
  * Detailed view featuring hero image, location, description, highlights,
- * related travel guides, and a prominent "Plan a Trip to <Destination>" CTA.
+ * relevant travel services, related travel guides, and a prominent "Plan a Trip to <Destination>" CTA.
  */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useI18n } from '@troublefree/i18n';
 import { GuideCard, CTASection } from '@troublefree/ui';
 import { getDestinationBySlug } from '../../services/public-api.js';
 import { useAuth } from '../../features/auth/auth-context.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
 export function DestinationDetailPage() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = params.destinationSlug || params.slug;
+  const countrySlug = params.countrySlug || 'turkey';
+
   const { t } = useI18n();
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
 
   useEffect(() => {
     let active = true;
@@ -28,7 +31,7 @@ export function DestinationDetailPage() {
     setError(null);
     (async () => {
       try {
-        const res = await getDestinationBySlug(slug);
+        const res = await getDestinationBySlug(slug, countrySlug);
         if (active) setData(res);
       } catch (err) {
         if (active) setError(err?.message || 'Destination not found.');
@@ -39,7 +42,17 @@ export function DestinationDetailPage() {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, countrySlug]);
+
+  const destName = data?.destination?.name || 'Destination';
+  usePageMetadata(
+    `${destName} Travel Guide & Highlights`,
+    data?.destination?.tagline || data?.destination?.description,
+  );
+
+  const planTripHref = user
+    ? `/plan-trip?destination=${encodeURIComponent(destName)}`
+    : `/login?redirect=${encodeURIComponent(`/plan-trip?destination=${destName}`)}`;
 
   if (loading) {
     return (
@@ -54,14 +67,14 @@ export function DestinationDetailPage() {
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
         <h2>Destination Not Found</h2>
         <p className="tf-card-text">{error || 'The requested destination does not exist.'}</p>
-        <a href="/destinations" className="tf-btn tf-btn-primary">
+        <Link to="/destinations" className="tf-btn tf-btn-primary">
           Back to Destinations
-        </a>
+        </Link>
       </div>
     );
   }
 
-  const { destination, relatedGuides } = data;
+  const { destination, relatedGuides, relevantServices } = data;
 
   return (
     <div>
@@ -70,7 +83,7 @@ export function DestinationDetailPage() {
         style={{
           position: 'relative',
           height: '24rem',
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url(${destination.image})`,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.72)), url(${destination.image})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           color: '#ffffff',
@@ -89,13 +102,21 @@ export function DestinationDetailPage() {
           <h1 style={{ fontSize: '3rem', margin: '0 0 0.5rem', fontWeight: 800 }}>
             {destination.name}
           </h1>
-          <p style={{ fontSize: '1.2rem', color: '#e2e8f0', margin: 0, maxWidth: '36rem' }}>
+          <p style={{ fontSize: '1.2rem', color: '#e2e8f0', margin: 0, maxWidth: '38rem' }}>
             {destination.tagline}
           </p>
         </div>
       </section>
 
       <div className="tf-public-container">
+        <PublicBreadcrumbs
+          items={[
+            { label: 'Destinations', to: '/destinations' },
+            { label: destination.country || 'Turkey', to: `/destinations/${destination.countrySlug || 'turkey'}` },
+            { label: destination.name },
+          ]}
+        />
+
         <div
           style={{
             display: 'grid',
@@ -138,7 +159,10 @@ export function DestinationDetailPage() {
                   <strong>Region:</strong> {destination.region}
                 </p>
                 <p>
-                  <strong>Country:</strong> {destination.country}
+                  <strong>Country:</strong>{' '}
+                  <Link to={`/destinations/${destination.countrySlug || 'turkey'}`} style={{ color: 'var(--tf-primary)' }}>
+                    {destination.country}
+                  </Link>
                 </p>
                 <p>
                   <strong>Best Time to Visit:</strong> {destination.bestTimeToVisit}
@@ -154,6 +178,31 @@ export function DestinationDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Relevant Travel Services */}
+        {relevantServices && relevantServices.length > 0 && (
+          <section style={{ marginBottom: '3.5rem' }}>
+            <h2 style={{ fontSize: '1.6rem', marginBottom: '0.5rem' }}>
+              Available Travel Services in {destination.name}
+            </h2>
+            <p style={{ color: 'var(--tf-text-muted)', marginBottom: '1.5rem' }}>
+              Add verified local services to your custom itinerary for {destination.name}.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+              {relevantServices.map((svc) => (
+                <div key={svc.id} className="tf-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+                  <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem' }}>{svc.name}</h3>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--tf-text-muted)', margin: '0 0 1rem', flex: 1 }}>
+                    {svc.tagline}
+                  </p>
+                  <Link to={`/travel-services/${svc.slug}`} className="tf-btn tf-btn-ghost tf-btn-sm" style={{ alignSelf: 'flex-start' }}>
+                    Service Details →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Related Guides */}
         {relatedGuides && relatedGuides.length > 0 && (
@@ -178,3 +227,5 @@ export function DestinationDetailPage() {
     </div>
   );
 }
+
+export default DestinationDetailPage;

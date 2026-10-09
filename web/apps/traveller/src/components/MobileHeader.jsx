@@ -9,7 +9,7 @@ export function MobileHeader({ notificationCount = 0, onNotificationClick }) {
       <Link to="/app" className="tf-portal-logo" aria-label="QuoteMeTrip Home">
         <img
           src="/images/tfh_logo.png"
-          alt="QuoteMeTrip Troublefree Holiday"
+          alt="QuoteMeTrip QuoteMeTrip"
           style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
         />
       </Link>

@@ -43,6 +43,8 @@ export function clearNotificationListeners() {
   listeners.clear();
 }
 
+import { handleDomainNotificationEvent } from './domain-notification-handler.js';
+
 export function emitNotificationEvent(event, payload = {}) {
   console.log(
     JSON.stringify({
@@ -52,6 +54,16 @@ export function emitNotificationEvent(event, payload = {}) {
       ...payload,
     }),
   );
+
+  // Invoke domain notification handler asynchronously (failsafe)
+  setImmediate(() => {
+    try {
+      handleDomainNotificationEvent(event, payload);
+    } catch (err) {
+      console.error('[NotificationEventBus] Failed to process domain notification:', err.message);
+    }
+  });
+
   const targets = listeners.get(event);
   if (!targets) {
     return;

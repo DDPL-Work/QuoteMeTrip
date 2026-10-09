@@ -22,7 +22,7 @@ import {
   NOTIFICATION_EVENTS,
   emitNotificationEvent,
 } from '../notifications/notification-events.js';
-import { emitToConversation, getUserPresence } from '../../realtime/socket.js';
+import { emitToConversation, emitToUser, getUserPresence } from '../../realtime/socket.js';
 
 function forbidden(message) {
   return new ForbiddenError(message, { code: MESSAGE_ERROR_CODES.FORBIDDEN });
@@ -51,10 +51,48 @@ async function buildSnippets(models, conversation, { transaction = null } = {}) 
     transaction,
   });
   const agency = await models.AgencyProfile.findByPk(conversation.agencyId, { transaction });
+
+  let travelRequest = null;
+  if (conversation.travelRequestId) {
+    const reqRow = await models.TravelRequest.findByPk(conversation.travelRequestId, {
+      include: [
+        { model: models.Route, as: 'route' },
+        { model: models.TravelRequestDay, as: 'days' },
+      ],
+      transaction,
+    });
+    if (reqRow) {
+      const dest =
+        reqRow.destination ||
+        reqRow.route?.finalDestination ||
+        reqRow.route?.startLocation ||
+        reqRow.days?.[0]?.location ||
+        null;
+      let dispName = reqRow.title;
+      if (!dispName && reqRow.route) {
+        const s = reqRow.route.startLocation?.trim();
+        const f = reqRow.route.finalDestination?.trim();
+        if (s && f && s.toLowerCase() !== f.toLowerCase()) dispName = `${s} → ${f}`;
+        else dispName = f || s;
+      }
+      if (!dispName && reqRow.days?.length > 0) {
+        dispName = reqRow.days[0].location;
+      }
+      travelRequest = {
+        id: reqRow.id,
+        title: reqRow.title || null,
+        displayName: dispName || `Travel Request #${reqRow.id}`,
+        destination: dest,
+        status: reqRow.status,
+      };
+    }
+  }
+
   return {
     revealed,
     traveller: travellerSnippet(user, profile, { revealed }),
     agency: agencySnippet(agency, { revealed }),
+    travelRequest,
   };
 }
 
@@ -200,9 +238,12 @@ async function resolveOtherUserId(models, conversation, currentUserId, role) {
   return conversation.travellerId;
 }
 
-export async function listConversations(userId, role, { page, pageSize }) {
+export async function listConversations(userId, role, { page, pageSize, travelRequestId = null } = {}) {
   const models = initModels();
   const where = {};
+  if (travelRequestId) {
+    where.travelRequestId = Number(travelRequestId);
+  }
   if (role === 'traveller') {
     where.travellerId = Number(userId);
   } else if (role === 'agency') {
@@ -386,21 +427,62 @@ export async function deleteMessage(
       throw forbidden('You can only delete your own messages for everyone.');
     }
     await message.update({
+      body: 'This message was deleted',
       deletedForEveryoneAt: new Date(),
       deletedByUserId: Number(userId),
     });
+
+    // Invalidate/sanitize any persistent notifications that referenced this message
+    if (models.Notification) {
+      try {
+        const notifs = await models.Notification.findAll({
+          where: {
+            eventType: NOTIFICATION_EVENTS.MESSAGE_RECEIVED,
+          },
+        });
+        for (const n of notifs) {
+          const d = typeof n.data === 'string' ? JSON.parse(n.data) : (n.data || {});
+          if (Number(d.messageId) === Number(message.id)) {
+            await n.update({
+              body: 'This message was deleted',
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[deleteMessage] Notification sanitization non-fatal error:', err.message);
+      }
+    }
 
     const revealed = await isContactRevealedForRequest(conversation.travelRequestId, {
       registry: models,
     });
     const publicMessage = toPublicMessage(message, { revealed, currentUserId: userId });
 
-    emitToConversation(conversation.id, SOCKET_EVENTS.DELETED, {
+    const deletePayload = {
       conversationId: conversation.id,
       messageId: message.id,
       mode: 'everyone',
+      deletedAt: message.deletedForEveryoneAt,
       message: publicMessage,
-    });
+    };
+
+    emitToConversation(conversation.id, SOCKET_EVENTS.DELETED, deletePayload);
+    emitToConversation(conversation.id, SOCKET_EVENTS.DELETED_FOR_EVERYONE, deletePayload);
+
+    // Deliver to both participants' direct user rooms so background/other-chat tabs receive tombstone immediately
+    try {
+      const agencyProfile = await models.AgencyProfile.findByPk(conversation.agencyId, { attributes: ['userId'] });
+      if (conversation.travellerId) {
+        emitToUser(conversation.travellerId, SOCKET_EVENTS.DELETED, deletePayload);
+        emitToUser(conversation.travellerId, SOCKET_EVENTS.DELETED_FOR_EVERYONE, deletePayload);
+      }
+      if (agencyProfile?.userId) {
+        emitToUser(agencyProfile.userId, SOCKET_EVENTS.DELETED, deletePayload);
+        emitToUser(agencyProfile.userId, SOCKET_EVENTS.DELETED_FOR_EVERYONE, deletePayload);
+      }
+    } catch {
+      // non-blocking
+    }
 
     return publicMessage;
   }
@@ -457,6 +539,23 @@ export async function sendMessage(userId, role, conversationId, input) {
     conversationId: conversation.id,
     lastMessage: publicMessage,
   });
+
+  try {
+    const agencyProfile = await models.AgencyProfile.findByPk(conversation.agencyId, { attributes: ['userId'] });
+    const updatePayload = {
+      conversationId: conversation.id,
+      lastMessage: publicMessage,
+      updatedAt: message.createdAt,
+    };
+    if (conversation.travellerId) {
+      emitToUser(conversation.travellerId, SOCKET_EVENTS.UPDATED, updatePayload);
+    }
+    if (agencyProfile?.userId) {
+      emitToUser(agencyProfile.userId, SOCKET_EVENTS.UPDATED, updatePayload);
+    }
+  } catch {
+    // non-blocking
+  }
   return publicMessage;
 }
 

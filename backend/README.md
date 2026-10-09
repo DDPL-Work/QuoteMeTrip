@@ -1,6 +1,6 @@
 # @troublefree/backend
 
-Express.js API for the Troublefree Holiday platform (modular monolith).
+Express.js API for the QuoteMeTrip platform (modular monolith).
 
 ## Phase 1 scope
 

@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FormField, PasswordInput, LoadingButton, AuthError } from '@troublefree/ui';
+import { FormField, PasswordInput, LoadingButton, AuthError, toast } from '@troublefree/ui';
 import { useAuth } from './auth-context.js';
 import { friendlyAuthMessage } from './friendly-message.js';
 
@@ -30,15 +30,21 @@ export function LoginForm() {
     if (!EMAIL_PATTERN.test(email)) next.email = 'Enter a valid agency email address.';
     if (!password) next.password = 'Enter your password.';
     setFieldErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      toast.error(Object.values(next)[0]);
+      return;
+    }
 
     setSubmitting(true);
     setError('');
     try {
       await login({ email, password });
+      toast.success('Logged in successfully');
       navigate(location.state?.from || '/', { replace: true });
     } catch (err) {
-      setError(friendlyAuthMessage(err));
+      const msg = friendlyAuthMessage(err);
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

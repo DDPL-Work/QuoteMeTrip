@@ -1,13 +1,16 @@
 /**
- * Travel Guide List Page (/travel-guide) — Track B.
+ * Travel Guide List Page (/travel-guides) — QuoteMeTrip.
  *
- * Searchable article grid for destination advice, itineraries, and tips.
+ * Searchable & filterable article directory for destination advice,
+ * itineraries, and insider tips.
  */
 
 import { useEffect, useState } from 'react';
 import { useI18n } from '@troublefree/i18n';
 import { SectionHeading, GuideCard } from '@troublefree/ui';
 import { getTravelGuides } from '../../services/public-api.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
 export function TravelGuidePage() {
   const { t } = useI18n();
@@ -16,6 +19,11 @@ export function TravelGuidePage() {
   const [category, setCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  usePageMetadata(
+    'Turkey Travel Guides & Itineraries',
+    'Handcrafted travel guides for Turkey: Istanbul city advice, Cappadocia hot air balloon guides, Gallipoli battlefields, Pamukkale travertines, Ephesus ruins, and Antalya coast.',
+  );
 
   useEffect(() => {
     let active = true;
@@ -38,11 +46,13 @@ export function TravelGuidePage() {
 
   return (
     <div className="tf-public-container">
+      <PublicBreadcrumbs items={[{ label: 'Travel Guides' }]} />
+
       <SectionHeading
-        title={t('guide.title', 'Travel Guide')}
+        title={t('guide.title', 'Travel Guides')}
         subtitle={t(
           'guide.subtitle',
-          'Handcrafted itineraries, regional insights, and essential travel tips.',
+          'Handcrafted itineraries, regional insights, and essential travel tips across Turkey.',
         )}
       />
 
@@ -50,7 +60,7 @@ export function TravelGuidePage() {
         <input
           type="text"
           className="tf-input tf-search-input"
-          placeholder={t('guide.searchPlaceholder', 'Search travel articles...')}
+          placeholder={t('guide.searchPlaceholder', 'Search travel articles by topic or destination...')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search travel guides"
@@ -63,10 +73,12 @@ export function TravelGuidePage() {
           aria-label="Filter by category"
         >
           <option value="all">{t('common.all', 'All Categories')}</option>
-          <option value="trip planning">Trip Planning</option>
+          <option value="city guide">City Guide</option>
           <option value="adventure">Adventure</option>
-          <option value="beaches & nature">Beaches & Nature</option>
-          <option value="culinary">Culinary</option>
+          <option value="history & culture">History & Culture</option>
+          <option value="nature & heritage">Nature & Heritage</option>
+          <option value="archaeology">Archaeology</option>
+          <option value="coast & beaches">Coast & Beaches</option>
         </select>
       </div>
 
@@ -112,3 +124,5 @@ export function TravelGuidePage() {
     </div>
   );
 }
+
+export default TravelGuidePage;

@@ -11,6 +11,7 @@ import { RequestReview } from '../components/RequestReview.jsx';
 import { WeatherCard } from '../components/WeatherCard.jsx';
 
 import { MotionPage } from '../components/motion/MotionPage.jsx';
+import { toast } from '../components/feedback/ToastProvider.jsx';
 
 /**
  * PlanTripPage (Phase 4 — Route-First Master Planning Engine)
@@ -28,10 +29,20 @@ export function PlanTripPage() {
   const location = useLocation();
 
   const [activeStep, setActiveStep] = useState(1);
-  const [notice, setNotice] = useState(null);
-  const [errorNotice, setErrorNotice] = useState(null);
+  const [notice, setNoticeState] = useState(null);
+  const [errorNotice, setErrorNoticeState] = useState(null);
   const [profile, setProfile] = useState(null);
   const [requestDraftId, setRequestDraftId] = useState(null);
+
+  const setNotice = (msg) => {
+    setNoticeState(msg);
+    if (msg) toast.success(msg);
+  };
+
+  const setErrorNotice = (msg) => {
+    setErrorNoticeState(msg);
+    if (msg) toast.error(msg);
+  };
 
   // Parse URL search params if coming from Public Homepage search
   const queryParams = new URLSearchParams(location.search);

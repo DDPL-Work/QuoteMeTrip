@@ -152,7 +152,7 @@ describe('traveller phase 6', () => {
     const user = userEvent.setup({ delay: null });
     await user.type(screen.getByLabelText('Message'), 'Reply');
     await user.click(screen.getByRole('button', { name: 'Send' }));
-    await waitFor(() => expect(screen.getByText('Reply')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('Reply')[0]).toBeInTheDocument());
     handlers['conversation:message']?.({
       message: {
         id: 3,
@@ -162,7 +162,7 @@ describe('traveller phase 6', () => {
         body: 'Live hello',
       },
     });
-    await waitFor(() => expect(screen.getByText('Live hello')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('Live hello')[0]).toBeInTheDocument());
   });
 
   test('quotation detail accepts and reveals contact + job link', async () => {

@@ -52,6 +52,8 @@ export function AgencyRequestDetail({ request, match, onMarkViewed, isViewed }) 
 
   const dayPlan = request.dayPlan ?? request.itineraryDays ?? request.stops ?? [];
   const notes = request.specialRequests ?? request.notes ?? request.comments;
+  const myQuotation = request.myQuotation || null;
+  const myQuotations = request.myQuotations || (myQuotation ? [myQuotation] : []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -135,7 +137,7 @@ export function AgencyRequestDetail({ request, match, onMarkViewed, isViewed }) 
           )}
 
           <Link to={`/requests/${id}/quotations/new`} className="agency-btn agency-btn-accent">
-            <FiFileText /> Create quotation
+            <FiFileText /> {myQuotations.length > 0 ? 'Create revised quotation' : 'Create quotation'}
           </Link>
         </div>
       </div>

@@ -24,6 +24,7 @@ router.post('/', controller.create);
 router.get('/', controller.list);
 router.get('/:id', controller.getById);
 router.patch('/:id', controller.patch);
+router.delete('/:id', controller.deleteRequest);
 router.post('/:id/submit', controller.submit);
 router.post('/:id/cancel', controller.cancel);
 router.post('/:id/days', controller.addDay);

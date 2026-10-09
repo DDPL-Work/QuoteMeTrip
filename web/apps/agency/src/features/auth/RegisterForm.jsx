@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FormField, PasswordInput, LoadingButton, AuthError } from '@troublefree/ui';
+import { FormField, PasswordInput, LoadingButton, AuthError, toast } from '@troublefree/ui';
 import { useAuth } from './auth-context.js';
 import { friendlyAuthMessage } from './friendly-message.js';
 import { authApi } from '../../lib/api.js';
@@ -39,15 +39,21 @@ export function RegisterForm() {
     if (input.password.length < 8) next.password = 'Password must be at least 8 characters.';
     if (input.passwordConfirm !== input.password) next.passwordConfirm = 'Passwords do not match.';
     setFieldErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      toast.error(Object.values(next)[0]);
+      return;
+    }
 
     setSubmitting(true);
     setError('');
     try {
       await register(() => authApi.registerAgency(input));
+      toast.success('Registration submitted successfully');
       navigate('/', { replace: true });
     } catch (err) {
-      setError(friendlyAuthMessage(err));
+      const msg = friendlyAuthMessage(err);
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

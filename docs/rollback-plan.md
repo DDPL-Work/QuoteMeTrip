@@ -1,6 +1,6 @@
 # Production Rollback Plan
 
-**Project:** Troublefree Holiday  
+**Project:** QuoteMeTrip  
 **Phase:** 9 — Operations & Deployment
 
 This document describes step-by-step procedure for rolling back code, environment, database, and reverse-proxy configurations in the event of an emergency during release.

@@ -4,9 +4,9 @@ Technology: React.js + Node.js / Express.js + MySQL
 Development Team: 2–3 Developers
 Development Timeline: Standard Web Platform — 8 Business Weeks | Pro Platform — 12–13 Business Weeks
 SEO: Explicitly Excluded
-Prepared from the Troublefree Holiday preliminary scope dated 19 September 2026.
+Prepared from the QuoteMeTrip preliminary scope dated 19 September 2026.
 1. Project Overview
-Troublefree Holiday is planned as a two-sided travel marketplace and quotation platform connecting Travellers with
+QuoteMeTrip is planned as a two-sided travel marketplace and quotation platform connecting Travellers with
 tourism Agencies. Travellers create route-based travel requests and Agencies respond with quotations. An Admin interface
 manages agency approval, memberships, requests, jobs, reporting and operational activities.
 The platform consists of three principal interfaces: Traveller, Agency and Admin. The source scope defines a route-first
@@ -521,5 +521,5 @@ AI translation — Included
 AI quotation comparison — Included
 SEO Excluded Excluded
 38. Source Basis
-Primary source: Troublefree Holiday preliminary scope/proposal dated 19 September 2026. The source identifies itself as a
+Primary source: QuoteMeTrip preliminary scope/proposal dated 19 September 2026. The source identifies itself as a
 preliminary scope/proposal and not a final contract. 

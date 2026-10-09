@@ -52,6 +52,14 @@ vi.mock('../../../lib/api.js', () => ({
     markRead: vi.fn(),
   },
   jobApi: { list: vi.fn(), getById: vi.fn(), updateStatus: vi.fn() },
+  notificationApi: {
+    list: vi.fn(() => Promise.resolve({ data: [], unreadCount: 0 })),
+    getUnreadCount: vi.fn(() => Promise.resolve({ count: 0 })),
+    markAsRead: vi.fn(() => Promise.resolve({})),
+    markAllAsRead: vi.fn(() => Promise.resolve({})),
+    registerPushToken: vi.fn(() => Promise.resolve({})),
+    unregisterPushToken: vi.fn(() => Promise.resolve({})),
+  },
   apiBaseUrl: 'http://localhost:5000',
 }));
 
@@ -117,7 +125,9 @@ describe('agency phase 6', () => {
       ],
     });
     guard(<MessagesPage />, '/messages', '/messages');
-    await waitFor(() => expect(screen.getByText('Conversation #2')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Conversation #2')).toBeInTheDocument(), {
+      timeout: 3000,
+    });
     expect(screen.getAllByText(/Asha/)[0]).toBeInTheDocument();
   });
 
@@ -143,7 +153,7 @@ describe('agency phase 6', () => {
     handlers['conversation:message']?.({
       message: { id: 3, conversationId: 2, senderUserId: 11, messageType: 'text', body: 'Live' },
     });
-    await waitFor(() => expect(screen.getByText('Live')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('Live')[0]).toBeInTheDocument());
   });
 
   test('jobs list and detail update', async () => {

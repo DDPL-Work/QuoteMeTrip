@@ -11,6 +11,7 @@ import {
   FiClock,
 } from 'react-icons/fi';
 import { agencyProfileApi } from '../lib/api.js';
+import { toast } from '@troublefree/ui';
 
 const DOCUMENT_TYPES = [
   { id: 'license', label: 'Operating Licence / Tourism Certificate' },
@@ -27,8 +28,18 @@ export default function AgencyOnboardingWizard({ onComplete }) {
   const [agreementChecked, setAgreementChecked] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [docType, setDocType] = useState('license');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsgState] = useState('');
+  const [successMsg, setSuccessMsgState] = useState('');
+
+  const setErrorMsg = (msg) => {
+    setErrorMsgState(msg);
+    if (msg) toast.error(msg);
+  };
+
+  const setSuccessMsg = (msg) => {
+    setSuccessMsgState(msg);
+    if (msg) toast.success(msg);
+  };
 
   const loadData = async () => {
     try {

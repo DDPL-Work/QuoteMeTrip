@@ -16,6 +16,9 @@ import {
   emitRequestMatchedEvents,
 } from '../agency-matching/matching.service.js';
 import { validateDayInput } from './travel-requests.validation.js';
+import { toPublicQuotation } from '../quotations/quotation.mapper.js';
+import { toPublicJob, jobAgencySnippet } from '../jobs/job.mapper.js';
+import { isContactRevealedForRequest, getTravellerContact } from '../contact/contact-visibility.js';
 
 function assertTraveller(role) {
   if (role && role !== 'traveller') {
@@ -42,14 +45,57 @@ function toPublicDay(day) {
   };
 }
 
+export function resolveRequestTitle(request) {
+  if (!request) return 'Travel Request';
+  if (request.title && typeof request.title === 'string' && request.title.trim() && !/^Request\s*#?\d+$/i.test(request.title.trim())) {
+    return request.title.trim();
+  }
+  const route = request.route;
+  if (route) {
+    const start = route.startLocation?.trim();
+    const final = route.finalDestination?.trim();
+    if (start && final && start.toLowerCase() !== final.toLowerCase()) {
+      return `${start} → ${final}`;
+    }
+    if (final) return final;
+    if (start) return start;
+  }
+  if (Array.isArray(request.days) && request.days.length > 0) {
+    const locs = request.days.map((d) => d.location?.trim()).filter(Boolean);
+    if (locs.length >= 2) return `${locs[0]} → ${locs[locs.length - 1]}`;
+    if (locs.length === 1) return locs[0];
+  }
+  if (request.packageType === 'blue_cruise') return 'Blue Cruise Voyage';
+  return request.id ? `Travel Request #${request.id}` : 'Travel Request';
+}
+
 export function toPublicRequest(request, { profile = null } = {}) {
+  const title = request.title || null;
+  const destination =
+    request.destination ||
+    request.route?.finalDestination ||
+    request.route?.startLocation ||
+    request.days?.[0]?.location ||
+    null;
+  const displayName = resolveRequestTitle(request);
+
   return {
     id: request.id,
+    title,
+    displayName,
+    destination,
     travellerId: request.travellerId,
     routeId: request.routeId,
     status: request.status,
     travelStartDate: request.travelStartDate,
     travelEndDate: request.travelEndDate,
+    chosenDuration:
+      request.chosenDuration ??
+      (request.travelStartDate && request.travelEndDate
+        ? Math.round(
+            (new Date(request.travelEndDate) - new Date(request.travelStartDate)) / 86400000,
+          ) + 1
+        : null),
     numberOfTravellers: request.numberOfTravellers,
     luggageCount: request.luggageCount,
     accommodationType: request.accommodationType,
@@ -60,6 +106,7 @@ export function toPublicRequest(request, { profile = null } = {}) {
     cruiseDuration: request.cruiseDuration ?? null,
     specialRequests: request.specialRequests,
     submittedAt: request.submittedAt,
+    archivedAt: request.archivedAt ?? null,
     route: request.route ? toPublicRoute(request.route) : undefined,
     days: (request.days || []).map(toPublicDay),
     traveller: profile || undefined,
@@ -172,6 +219,7 @@ export async function createRequest(travellerId, input, { role = null } = {}) {
         packageType: input.packageType ?? null,
         cruiseDuration: input.cruiseDuration ?? null,
         specialRequests: input.specialRequests ?? null,
+        title: input.title ?? null,
       },
       { transaction: t },
     );
@@ -190,11 +238,16 @@ export async function createRequest(travellerId, input, { role = null } = {}) {
   return toPublicRequest(request, { profile });
 }
 
-export async function listRequests(travellerId, { role = null } = {}) {
+export async function listRequests(travellerId, { role = null, includeArchived = false } = {}) {
   assertTraveller(role);
   const models = initModels();
+  const where = { travellerId };
+  if (!includeArchived) {
+    where.archivedAt = null;
+  }
+
   const rows = await models.TravelRequest.findAll({
-    where: { travellerId },
+    where,
     // NOTE: order by the physical `updated_at` column (not the
     // `updatedAt` attribute string) so the ORDER BY stays valid with
     // joined includes under `underscored: true` column mapping.
@@ -208,17 +261,125 @@ export async function listRequests(travellerId, { role = null } = {}) {
       { model: models.TravelRequestDay, as: 'days' },
     ],
   });
+
+  const requestIds = rows.map((r) => r.id);
+  let quotesByRequestId = {};
+  if (requestIds.length > 0) {
+    const quotes = await models.Quotation.findAll({
+      where: {
+        travelRequestId: requestIds,
+        status: ['submitted', 'accepted', 'rejected'],
+      },
+      attributes: ['id', 'travelRequestId', 'totalAmount', 'currency', 'status', 'created_at', 'updated_at'],
+    });
+    for (const q of quotes) {
+      if (!quotesByRequestId[q.travelRequestId]) {
+        quotesByRequestId[q.travelRequestId] = [];
+      }
+      quotesByRequestId[q.travelRequestId].push(q);
+    }
+  }
+
   return rows.map((r) => {
     if (r.route?.stops) r.route.stops.sort((a, b) => a.sequence - b.sequence);
     if (r.days) r.days.sort((a, b) => a.dayNumber - b.dayNumber);
-    return toPublicRequest(r);
+    const pub = toPublicRequest(r);
+    const relQuotes = quotesByRequestId[r.id] || [];
+    pub.quotesCount = relQuotes.length;
+    const latest = relQuotes[relQuotes.length - 1];
+    pub.latestQuotePrice = latest ? Number(latest.totalAmount) : null;
+    pub.latestQuoteCurrency = latest ? latest.currency : null;
+    return pub;
   });
 }
 
 export async function getRequest(travellerId, requestId, { role = null } = {}) {
   assertTraveller(role);
-  const { request, profile } = await loadRequest(requestId, travellerId, { withProfile: true });
-  return toPublicRequest(request, { profile });
+  const models = initModels();
+  const { request, profile } = await loadRequest(requestId, travellerId, { models, withProfile: true });
+
+  // Load related quotations (lightweight / public)
+  const quotationRows = await models.Quotation.findAll({
+    where: { travelRequestId: request.id, status: ['submitted', 'accepted', 'rejected'] },
+    include: [
+      { model: models.QuotationItem, as: 'items' },
+      { model: models.AgencyProfile, as: 'agency' },
+    ],
+    order: [[models.sequelize.col('Quotation.created_at'), 'DESC']],
+  });
+  const revealed = await isContactRevealedForRequest(request.id, { registry: models });
+
+  const { ratingService } = await import('../ratings/rating.service.js');
+  const agencyRatings = {};
+  for (const q of quotationRows) {
+    if (q.agencyId && agencyRatings[q.agencyId] === undefined) {
+      try {
+        agencyRatings[q.agencyId] = await ratingService.getAgencyRatingSummary(q.agencyId);
+      } catch {
+        agencyRatings[q.agencyId] = null;
+      }
+    }
+  }
+
+  const quotes = quotationRows.map((q) => {
+    const ag = q.agency
+      ? { ...(q.agency.toJSON ? q.agency.toJSON() : q.agency), ratingSummary: agencyRatings[q.agencyId] || null }
+      : null;
+    return toPublicQuotation(q, { agency: ag, revealed });
+  });
+  const acceptedQuote = quotes.find((q) => q.status === 'accepted') || null;
+
+  // Load associated job if accepted / in progress
+  let job = null;
+  const jobRow = await models.Job.findOne({
+    where: { travelRequestId: request.id },
+    include: [{ model: models.AgencyProfile, as: 'agency' }],
+  });
+  if (jobRow) {
+    job = toPublicJob(jobRow, {
+      traveller: { participant: getTravellerContact(null, profile, { revealed }) },
+      agency: jobAgencySnippet(jobRow.agency, { revealed }),
+    });
+  }
+
+  const pub = toPublicRequest(request, { profile });
+  pub.quotesCount = quotes.length;
+  pub.quotes = quotes;
+  pub.acceptedQuote = acceptedQuote;
+  pub.job = job;
+  return pub;
+}
+
+export async function deleteRequest(travellerId, requestId, { role = null } = {}) {
+  assertTraveller(role);
+  const models = initModels();
+  const { request } = await loadRequest(requestId, travellerId, { models });
+
+  if (request.status === 'accepted') {
+    throw new ValidationError('Accepted travel requests with an active or confirmed booking cannot be deleted.', {
+      code: 'TRAVEL_REQUEST_NOT_DELETABLE',
+    });
+  }
+
+  const job = await models.Job.findOne({ where: { travelRequestId: request.id } });
+  if (job) {
+    throw new ValidationError('Cannot delete travel request with an active job.', {
+      code: 'TRAVEL_REQUEST_NOT_DELETABLE',
+    });
+  }
+
+  const quotationCount = await models.Quotation.count({ where: { travelRequestId: request.id } });
+  const conversationCount = await models.Conversation.count({ where: { travelRequestId: request.id } });
+
+  // If operational records exist or state has progressed past draft: soft delete / archive
+  if (quotationCount > 0 || conversationCount > 0 || request.status !== 'draft') {
+    await request.update({ archivedAt: new Date() });
+    return { success: true, archived: true, message: 'Travel request archived from your list.' };
+  }
+
+  // Clean, fresh draft: safe to delete
+  await request.destroy();
+  return { success: true, deleted: true, message: 'Draft travel request deleted.' };
 }
 
 function assertDraft(request) {
@@ -238,6 +399,7 @@ export async function patchRequest(travellerId, requestId, patch, { role = null 
   await withTransaction(async (t) => {
     const updatable = {};
     for (const key of [
+      'title',
       'travelStartDate',
       'travelEndDate',
       'numberOfTravellers',

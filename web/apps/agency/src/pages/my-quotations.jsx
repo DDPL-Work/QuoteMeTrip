@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FiFileText, FiAlertCircle } from 'react-icons/fi';
+import { toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { agencyQuotationApi } from '../lib/api.js';
 import { AgencyQuotationList } from '../components/AgencyQuotationList.jsx';
@@ -17,7 +18,11 @@ export function MyQuotationsPage() {
         const data = await agencyQuotationApi.list();
         if (!cancelled) setQuotations(data.quotations ?? data ?? []);
       } catch (e) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load quotations.');
+        const msg = e?.message ?? 'Failed to load quotations.';
+        if (!cancelled) {
+          setError(msg);
+          toast.error(msg);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

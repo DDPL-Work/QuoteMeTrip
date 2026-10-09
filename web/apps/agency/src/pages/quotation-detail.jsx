@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { ToastProvider, toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { agencyQuotationApi } from '../lib/api.js';
 import { AgencyQuotationDetail } from '../components/AgencyQuotationDetail.jsx';
@@ -16,7 +17,9 @@ export function QuotationDetailPage() {
       const data = await agencyQuotationApi.getById(id);
       setQuotation(data.quotation ?? data);
     } catch (e) {
-      setError(e?.message ?? 'Failed to load quotation.');
+      const msg = e?.message ?? 'Failed to load quotation.';
+      setError(msg);
+      toast.error(msg);
     }
   }
 
@@ -29,9 +32,13 @@ export function QuotationDetailPage() {
     try {
       const data = await agencyQuotationApi.submit(id);
       setQuotation(data.quotation ?? data);
-      setNotice('Quotation submitted successfully.');
+      const msg = 'Quotation submitted successfully.';
+      setNotice(msg);
+      toast.success(msg);
     } catch (e) {
-      setError(e?.message ?? 'Failed to submit quotation.');
+      const msg = e?.message ?? 'Failed to submit quotation.';
+      setError(msg);
+      toast.error(msg);
     }
   }
 
@@ -39,9 +46,13 @@ export function QuotationDetailPage() {
     try {
       const data = await agencyQuotationApi.withdraw(id);
       setQuotation(data.quotation ?? data);
-      setNotice('Quotation withdrawn.');
+      const msg = 'Quotation withdrawn.';
+      setNotice(msg);
+      toast.info(msg);
     } catch (e) {
-      setError(e?.message ?? 'Failed to withdraw quotation.');
+      const msg = e?.message ?? 'Failed to withdraw quotation.';
+      setError(msg);
+      toast.error(msg);
     }
   }
 

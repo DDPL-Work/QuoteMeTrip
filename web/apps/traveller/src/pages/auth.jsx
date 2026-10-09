@@ -7,9 +7,34 @@ import { LoginForm } from '../features/auth/LoginForm.jsx';
 import { RegisterForm } from '../features/auth/RegisterForm.jsx';
 import { useAuth } from '../features/auth/auth-context.js';
 
+function TravellerBrandHeader() {
+  return (
+    <div className="auth-brand-header">
+      <img
+        src="/images/tfh_logo_dark.png"
+        alt="QuoteMeTrip"
+        className="auth-brand-logo"
+        onError={(e) => {
+          e.target.style.display = 'none';
+          const fallback = e.target.parentElement?.querySelector('.auth-brand-name');
+          if (fallback) fallback.style.display = 'inline-block';
+        }}
+      />
+      <span className="auth-brand-name" style={{ display: 'none' }}>
+        QuoteMeTrip
+      </span>
+      <span className="auth-brand-badge">TRAVELLER</span>
+    </div>
+  );
+}
+
 export function LoginPage() {
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your Traveller account.">
+    <AuthLayout
+      brand={<TravellerBrandHeader />}
+      title="Welcome back"
+      subtitle="Sign in to your Traveller account."
+    >
       <div style={{ marginBottom: '16px', textAlign: 'left' }}>
         <Link
           to="/"
@@ -30,7 +55,11 @@ export function LoginPage() {
 
 export function RegisterPage() {
   return (
-    <AuthLayout title="Create your account" subtitle="Plan trouble-free holidays.">
+    <AuthLayout
+      brand={<TravellerBrandHeader />}
+      title="Create your account"
+      subtitle="Plan trouble-free holidays."
+    >
       <div style={{ marginBottom: '16px', textAlign: 'left' }}>
         <Link
           to="/"

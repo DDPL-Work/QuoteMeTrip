@@ -160,6 +160,73 @@ async function run() {
     currency: 'USD',
     validUntil: '2026-12-01',
     notes: 'Premium Cappadocia honeymoon package with cave suite, private VIP transfers, and sunrise balloon excursion.',
+    taxRate: 5,
+    taxLabel: '(including 5% GST)',
+    greeting: {
+      recipient: 'Elena Rostova',
+      title: 'Greetings from Cappadocia Elite Tours !!!',
+      message: 'As per our discussion, following is the complete customized travel proposal details.',
+    },
+    packageOverview: {
+      tripId: 'QRY-E2E-101',
+      destination: 'Cappadocia, Turkey',
+      startDate: '2026-11-01',
+      endDate: '2026-11-06',
+      duration: '5 Nights',
+      adults: 2,
+      children: 0,
+      infants: 0,
+    },
+    itineraryDays: [
+      {
+        dayNumber: 1,
+        weekday: 'Sunday',
+        date: '2026-11-01',
+        title: 'Arrival in Cappadocia & Fairy Chimney Sunset',
+        description: 'Meet and greet at airport with private transfer to Sultan Cave Suites. Evening sunset walk at Rose Valley.',
+      },
+      {
+        dayNumber: 2,
+        weekday: 'Monday',
+        date: '2026-11-02',
+        title: 'Sunrise Hot Air Balloon Flight & Goreme Open Air Museum',
+        description: 'Early morning hot air balloon flight over Cappadocia valleys followed by champagne breakfast and guided historic cave tour.',
+      },
+    ],
+    paymentDetails: {
+      includePaymentDetails: true,
+      bankName: 'National Merchant Bank',
+      accountHolder: 'Cappadocia Elite Tours Ltd',
+      accountNumber: 'TR990001234567890123456789',
+      ifscSwift: 'NMBTRISXXX',
+      branch: 'Goreme Central',
+      paymentInstructions: 'Please quote Trip Reference QRY-E2E-101 in transfer description.',
+    },
+    inclusions: [
+      '5 Nights Luxury Cave Suite Accommodation',
+      'Daily Gourmet Breakfast and Champagne Toast',
+      'VIP Airport Round-trip Transfers in Mercedes Vito',
+      'Certified Licensed English Tour Guide and Museum Entries',
+    ],
+    exclusions: [
+      'International and Domestic Flight Tickets',
+      'Personal Expenses and Gratuities',
+      'Anything not explicitly mentioned in the inclusions',
+    ],
+    termsSections: [
+      {
+        title: 'Bookings and Reservations',
+        content: 'Package reservations are confirmed upon formal quotation acceptance.',
+        sortOrder: 1,
+        enabled: true,
+      },
+      {
+        title: 'Travel Documents and Requirements',
+        content: 'All travellers must hold valid identity documents and mandatory travel insurance.',
+        sortOrder: 2,
+        enabled: true,
+      },
+    ],
     items: [
       {
         itemType: 'hotel',
@@ -217,10 +284,12 @@ async function run() {
   console.log('   - Hotel: Sultan Cave Suites (USD 450)');
   console.log('   - Transfer: Kayseri Airport VIP Transfer (USD 120)');
   console.log('   - Activity: Hot Air Balloon Flight (2 PAX @ USD 160 = USD 320)');
-  console.log('   - Expected Server Subtotal: USD 890');
+  console.log('   - Subtotal: USD 890');
+  console.log('   - Tax Rate: 5% (USD 44.50)');
+  console.log('   - Expected Server Final Total: USD 934.50');
 
   // 6. Save Draft
-  console.log('6. Saving Quotation Draft to backend API');
+  console.log('6. Saving Quotation Draft with complete document schema to backend API');
   const createDraftRes = await api('POST', `/api/v1/agency/travel-requests/${travelRequestId}/quotations`, {
     token: agencyToken,
     body: quotationInput,
@@ -231,9 +300,14 @@ async function run() {
   }
   const draftQuote = createDraftRes.data.data.quotation;
   console.log(`   Quotation #${draftQuote.id} created with status: "${draftQuote.status}"`);
+  console.log(`   Server authoritative subtotal: USD ${draftQuote.subtotal}`);
+  console.log(`   Server authoritative taxAmount: USD ${draftQuote.taxAmount}`);
   console.log(`   Server authoritative totalAmount: USD ${draftQuote.totalAmount}`);
-  if (draftQuote.totalAmount !== 890) {
-    throw new Error(`Total amount expected 890, got ${draftQuote.totalAmount}`);
+  if (draftQuote.subtotal !== 890) {
+    throw new Error(`Subtotal expected 890, got ${draftQuote.subtotal}`);
+  }
+  if (draftQuote.totalAmount !== 934.5) {
+    throw new Error(`Total amount expected 934.5, got ${draftQuote.totalAmount}`);
   }
 
   // 7. Refresh/Reopen Draft & Verify Restoration
@@ -256,6 +330,21 @@ async function run() {
   console.log(`   Verified restored hotel metadata: property="${restoredHotel.metadata?.property}", nights=${restoredHotel.metadata?.nights}`);
   console.log(`   Verified restored transfer metadata: vehicle="${restoredTransfer.metadata?.vehicleType}"`);
   console.log(`   Verified restored activity metadata: category="${restoredActivity.metadata?.category}"`);
+  console.log(`   Verified restored itinerary days count: ${restoredQuote.itineraryDays?.length || 0}`);
+  console.log(`   Verified restored inclusions count: ${restoredQuote.inclusions?.length || 0}`);
+  console.log(`   Verified restored exclusions count: ${restoredQuote.exclusions?.length || 0}`);
+  console.log(`   Verified restored terms sections count: ${restoredQuote.termsSections?.length || 0}`);
+  console.log(`   Verified restored payment details bank: ${restoredQuote.paymentDetails?.bankName}`);
+
+  if (!restoredQuote.itineraryDays || restoredQuote.itineraryDays.length !== 2) {
+    throw new Error('Restored quotation missing itinerary days');
+  }
+  if (!restoredQuote.inclusions || restoredQuote.inclusions.length !== 4) {
+    throw new Error('Restored quotation missing inclusions');
+  }
+  if (!restoredQuote.exclusions || restoredQuote.exclusions.length !== 3) {
+    throw new Error('Restored quotation missing exclusions');
+  }
 
   // 8. Submit Quotation
   console.log(`8. Submitting Quotation #${draftQuote.id}`);
@@ -298,10 +387,25 @@ async function run() {
   console.log(`   Proposal Title: ${detail.notes?.slice(0, 50)}...`);
   console.log(`   Total Services Count: ${detail.items.length}`);
   console.log(`   Agency Profile: ${detail.agency?.agencyName || 'Agency Partner'}`);
-  console.log(`   Total Price: ${detail.currency} ${detail.totalAmount}`);
+  console.log(`   Total Price: ${detail.currency} ${detail.totalAmount} (Subtotal: ${detail.subtotal}, Tax: ${detail.taxAmount})`);
+  console.log(`   Trip ID: ${detail.packageOverview?.tripId}`);
+  console.log(`   Itinerary Days: ${detail.itineraryDays?.length}`);
+  console.log(`   Inclusions / Exclusions: ${detail.inclusions?.length} / ${detail.exclusions?.length}`);
+
+  // 11. Traveller accepts quotation -> Job Creation
+  console.log(`11. Traveller accepts Quotation #${foundQuote.id}`);
+  const acceptRes = await api('POST', `/api/v1/quotations/${foundQuote.id}/accept`, {
+    token: travellerToken,
+  });
+  if (acceptRes.status !== 200) {
+    throw new Error(`Failed to accept quotation: ${JSON.stringify(acceptRes.data)}`);
+  }
+  const acceptedData = acceptRes.data.data;
+  console.log(`   Quotation status after acceptance: "${acceptedData.quotation?.status}"`);
+  console.log(`   Associated Job ID: ${acceptedData.job?.id || acceptedData.jobId || 'Created'}`);
 
   console.log('\n============================================================');
-  console.log('REAL E2E TEST: ALL 10 STEPS PASSED SUCCESSFULLY!');
+  console.log('REAL E2E TEST: ALL 11 STEPS PASSED SUCCESSFULLY!');
   console.log('============================================================\n');
 }
 

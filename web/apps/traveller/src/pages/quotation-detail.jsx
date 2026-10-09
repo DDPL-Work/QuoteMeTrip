@@ -17,6 +17,7 @@ import {
 } from 'react-icons/fi';
 import { travellerQuotationApi, agencyRatingApi, messagingApi } from '../lib/api.js';
 import { QuotationDetail } from '../components/QuotationDetail.jsx';
+import { toast } from '../components/feedback/ToastProvider.jsx';
 
 export function QuotationDetailPage() {
   const { id } = useParams();
@@ -48,7 +49,9 @@ export function QuotationDetailPage() {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to load quotation details.');
+      const msg = err.message || 'Failed to load quotation details.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -76,7 +79,9 @@ export function QuotationDetailPage() {
         navigate('/messages');
       }
     } catch (err) {
-      setMessagingError(err.message || 'Unable to open conversation.');
+      const msg = err.message || 'Unable to open conversation.';
+      setMessagingError(msg);
+      toast.error(msg);
     } finally {
       setMessaging(false);
     }
@@ -94,8 +99,11 @@ export function QuotationDetailPage() {
         ...acceptedQuotation,
         status: 'accepted',
       }));
+      toast.success('Quotation accepted successfully!');
     } catch (err) {
-      setError(err.message || 'Failed to accept quotation.');
+      const msg = err.message || 'Failed to accept quotation.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setAccepting(false);
     }

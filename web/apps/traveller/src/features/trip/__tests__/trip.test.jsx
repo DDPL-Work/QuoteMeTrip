@@ -158,6 +158,7 @@ describe('request form validation', () => {
     // empty dates are allowed by UX validation (backend optional); force bad range
     const inputs = screen.getAllByRole('textbox');
     await user.type(inputs[0], '2026-05-10');
+    await user.clear(inputs[1]);
     await user.type(inputs[1], '2026-05-01');
     await user.click(screen.getByText('Save request'));
     expect(

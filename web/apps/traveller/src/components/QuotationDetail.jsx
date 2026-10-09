@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { FiStar, FiCalendar, FiDollarSign, FiInfo, FiShield, FiTag } from 'react-icons/fi';
 import { QUOTATION_TYPE_LABELS } from '@troublefree/types';
+import { QuotationDocument } from '@troublefree/ui';
 import { QuotationItemList } from './QuotationItemList.jsx';
 import { agencyRatingApi } from '../lib/api.js';
 
 export function QuotationDetail({ quotation }) {
   const [ratingSummary, setRatingSummary] = useState(null);
+  const [showDocument, setShowDocument] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -250,6 +252,7 @@ export function QuotationDetail({ quotation }) {
           gap: '0.75rem',
           color: '#92400e',
           fontSize: '0.875rem',
+          marginBottom: '1.5rem',
         }}
       >
         <FiInfo
@@ -262,6 +265,69 @@ export function QuotationDetail({ quotation }) {
           Payment is arranged directly with the agency outside the platform upon quotation
           acceptance. The platform does not collect or process travel service payments.
         </div>
+      </div>
+
+      {/* Official Guest-Facing Quotation Document View */}
+      <div
+        style={{
+          background: '#f8fafc',
+          borderRadius: '0.75rem',
+          border: '1px solid #e2e8f0',
+          padding: '1.25rem',
+          overflowX: 'auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+          }}
+        >
+          <div>
+            <h3
+              style={{
+                margin: '0 0 0.25rem',
+                fontSize: '1.1rem',
+                fontWeight: 800,
+                color: '#0c4e28',
+              }}
+            >
+              Official Proposal Document
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+              Formal A4 guest quotation document with print and Word DOC export.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowDocument((v) => !v)}
+            style={{
+              background: '#0c4e28',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '8px 16px',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+            }}
+          >
+            {showDocument ? 'Hide Official Document' : 'View Official Document (A4)'}
+          </button>
+        </div>
+
+        {showDocument && (
+          <div style={{ marginTop: '1.25rem' }}>
+            <QuotationDocument
+              quotation={quotation}
+              showControls={true}
+              hideContactInfo={quotation.status !== 'accepted'}
+            />
+          </div>
+        )}
       </div>
     </section>
   );

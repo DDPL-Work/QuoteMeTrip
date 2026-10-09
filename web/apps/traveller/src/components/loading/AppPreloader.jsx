@@ -111,7 +111,7 @@ export function AppPreloader({
       {/* Approved GIF Visual Asset with Seamless Edge Blending */}
       <img
         src="/images/Code_Generated_Image.gif"
-        alt="Loading Troublefree Holiday"
+        alt="Loading QuoteMeTrip"
         aria-hidden="true"
         style={{
           width: 'min(100%, 860px)',

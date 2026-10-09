@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   FiAlertCircle,
   FiArrowLeft,
@@ -13,6 +13,7 @@ import {
   FiSearch,
   FiSend,
   FiShield,
+  FiSlash,
   FiSmile,
   FiTrash2,
   FiX,
@@ -60,7 +61,13 @@ function formatTime(timestamp) {
   }
 }
 
-export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
+export function ChatWorkspace({
+  currentUserId,
+  currentUserRole = 'agency',
+  travelRequestId = null,
+  initialConversationId = null,
+  onSelectConversation = null,
+}) {
   const { id: routeConvId } = useParams();
   const navigate = useNavigate();
 
@@ -89,9 +96,17 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
   const actionMenuRef = useRef(null);
   const composerInputRef = useRef(null);
 
+  const [searchParams] = useSearchParams();
+  const queryConvId = searchParams.get('conversationId') ? Number(searchParams.get('conversationId')) : null;
+  const queryReqId = (searchParams.get('requestId') || travelRequestId) ? Number(searchParams.get('requestId') || travelRequestId) : null;
+
   const activeId = useMemo(() => {
-    return routeConvId ? Number(routeConvId) : activeConv ? activeConv.id : null;
-  }, [routeConvId, activeConv]);
+    if (initialConversationId) return Number(initialConversationId);
+    if (routeConvId) return Number(routeConvId);
+    if (queryConvId) return queryConvId;
+    if (activeConv) return activeConv.id;
+    return null;
+  }, [initialConversationId, routeConvId, queryConvId, activeConv]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -109,11 +124,27 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
   const loadConversations = useCallback(async () => {
     setLoadingConvs(true);
     try {
-      const data = await messagingApi.listConversations({ page: 1, pageSize: 100 });
+      const params = { page: 1, pageSize: 100 };
+      if (travelRequestId) params.travelRequestId = travelRequestId;
+      const data = await messagingApi.listConversations(params);
       const list = data.conversations ?? [];
       setConversations(list);
 
-      if (!routeConvId && list.length > 0 && window.innerWidth >= 768) {
+      const targetId = initialConversationId
+        ? Number(initialConversationId)
+        : routeConvId
+        ? Number(routeConvId)
+        : queryConvId
+        ? queryConvId
+        : null;
+
+      if (targetId) {
+        const match = list.find((c) => c.id === targetId);
+        if (match) setActiveConv(match);
+      } else if (queryReqId) {
+        const match = list.find((c) => Number(c.travelRequestId) === queryReqId);
+        if (match) setActiveConv(match);
+      } else if (list.length > 0 && window.innerWidth >= 768) {
         setActiveConv(list[0]);
       }
     } catch (err) {
@@ -121,7 +152,7 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
     } finally {
       setLoadingConvs(false);
     }
-  }, [routeConvId]);
+  }, [routeConvId, travelRequestId, initialConversationId, queryConvId, queryReqId]);
 
   useEffect(() => {
     loadConversations();
@@ -221,8 +252,26 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
     };
 
     const onDeletedMessage = (payload) => {
-      if (Number(payload?.conversationId) !== Number(activeId)) return;
-      const { messageId, mode } = payload;
+      const { messageId, mode, conversationId } = payload || {};
+      const targetConvId = Number(conversationId);
+
+      // Always update sidebar preview if the deleted message is the lastMessage
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === targetConvId && c.lastMessage?.id === messageId
+            ? {
+                ...c,
+                lastMessage:
+                  mode === 'everyone'
+                    ? { ...c.lastMessage, body: 'This message was deleted', isDeletedForEveryone: true }
+                    : c.lastMessage,
+              }
+            : c,
+        ),
+      );
+
+      // If active conversation matches, update messages in viewport
+      if (targetConvId !== Number(activeId)) return;
       setMessages((prev) =>
         prev
           .map((m) => {
@@ -236,6 +285,18 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
       );
     };
 
+    const onConversationUpdated = (payload) => {
+      const { conversationId, lastMessage } = payload || {};
+      if (!conversationId) return;
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === Number(conversationId)
+            ? { ...c, lastMessage: lastMessage || c.lastMessage, updatedAt: lastMessage?.createdAt || new Date().toISOString() }
+            : c,
+        ),
+      );
+    };
+
     const onRead = (payload) => {
       if (Number(payload?.conversationId) !== Number(activeId)) return;
       setMessages((prev) =>
@@ -245,11 +306,15 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
 
     socket.on(SOCKET_EVENTS.MESSAGE, onNewMessage);
     socket.on(SOCKET_EVENTS.DELETED, onDeletedMessage);
+    socket.on('MESSAGE_DELETED_FOR_EVERYONE', onDeletedMessage);
+    socket.on(SOCKET_EVENTS.UPDATED, onConversationUpdated);
     socket.on(SOCKET_EVENTS.READ, onRead);
 
     return () => {
       socket.off(SOCKET_EVENTS.MESSAGE, onNewMessage);
       socket.off(SOCKET_EVENTS.DELETED, onDeletedMessage);
+      socket.off('MESSAGE_DELETED_FOR_EVERYONE', onDeletedMessage);
+      socket.off(SOCKET_EVENTS.UPDATED, onConversationUpdated);
       socket.off(SOCKET_EVENTS.READ, onRead);
     };
   }, [activeId, currentUserId]);
@@ -356,6 +421,13 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
             m.id === msgId ? { ...m, body: 'This message was deleted', isDeletedForEveryone: true } : m,
           ),
         );
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === Number(activeId) && c.lastMessage?.id === msgId
+              ? { ...c, lastMessage: { ...c.lastMessage, body: 'This message was deleted', isDeletedForEveryone: true } }
+              : c,
+          ),
+        );
       } else {
         setMessages((prev) => prev.filter((m) => m.id !== msgId));
       }
@@ -378,6 +450,9 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
 
   const partnerInfo = useMemo(() => {
     if (!activeConv) return { name: 'Conversation', avatarUrl: null, avatarInitial: 'C', subtitle: '' };
+    const reqName = activeConv.travelRequest?.displayName || activeConv.travelRequest?.title;
+    const reqRef = activeConv.travelRequestId ? `#QRY-${activeConv.travelRequestId}` : '';
+    const reqTag = reqName ? `${reqName} (${reqRef})` : (reqRef || `Request #${activeConv.travelRequestId}`);
     const traveller = activeConv.traveller ?? {};
     const name =
       traveller.displayName ||
@@ -385,8 +460,8 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
       `Traveller #${activeConv.travellerId}`;
     const rawAvatar = traveller.avatarUrl || traveller.profilePicture || traveller.picture;
     const avatarUrl = resolveMediaUrl(rawAvatar);
-    const subtitle = `Request #${activeConv.travelRequestId}`;
-    return { name, avatarUrl, avatarInitial: name.charAt(0).toUpperCase(), subtitle };
+    const subtitle = reqTag;
+    return { name, avatarUrl, avatarInitial: name.charAt(0).toUpperCase(), subtitle, requestTitle: reqName, requestRef: reqRef };
   }, [activeConv]);
 
   return (
@@ -543,19 +618,26 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.92rem', color: '#13291C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        Conversation #{conv.id}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.92rem', color: '#13291C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {partnerName}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#717D79', background: '#F0ECE4', padding: '1px 6px', borderRadius: '4px', flexShrink: 0 }}>
+                          Conversation #{conv.id}
+                        </span>
+                      </div>
                       {conv.lastMessage && (
-                        <span style={{ fontSize: '0.72rem', color: '#717D79', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.72rem', color: '#717D79', flexShrink: 0, marginLeft: '6px' }}>
                           {formatTime(conv.lastMessage.createdAt)}
                         </span>
                       )}
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#4E5754', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
-                        {partnerName} • Request #{conv.travelRequestId}
+                      <span style={{ fontSize: '0.8rem', color: conv.lastMessage?.isDeletedForEveryone ? '#8A9791' : '#4E5754', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, fontStyle: conv.lastMessage?.isDeletedForEveryone ? 'italic' : 'normal' }}>
+                        {conv.lastMessage
+                          ? (conv.lastMessage.isDeletedForEveryone ? 'This message was deleted' : conv.lastMessage.body)
+                          : (conv.travelRequest?.displayName || `Request #${conv.travelRequestId}`)}
                       </span>
 
                       {conv.unreadCount > 0 && (
@@ -891,20 +973,24 @@ export function ChatWorkspace({ currentUserId, currentUserRole = 'agency' }) {
                           style={{
                             padding: '10px 14px',
                             borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                            background: isMine
+                            background: isDeleted
+                              ? '#F1F3F2'
+                              : isMine
                               ? 'linear-gradient(135deg, #0C4E28 0%, #147D33 100%)'
                               : '#FFFFFF',
-                            color: isMine ? '#FFFFFF' : '#13291C',
-                            border: isMine ? 'none' : '1px solid #E2DCD1',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                            color: isDeleted ? '#697872' : isMine ? '#FFFFFF' : '#13291C',
+                            border: isDeleted ? '1px dashed #CDD5D1' : isMine ? 'none' : '1px solid #E2DCD1',
+                            boxShadow: isDeleted ? 'none' : '0 2px 6px rgba(0,0,0,0.04)',
                             wordBreak: 'break-word',
                             lineHeight: 1.45,
                             fontSize: '0.92rem',
                             fontStyle: isDeleted ? 'italic' : 'normal',
-                            opacity: isDeleted ? 0.8 : 1,
                           }}
                         >
-                          <p style={{ margin: 0 }}>{msg.body}</p>
+                          <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {isDeleted && <FiSlash size={13} style={{ flexShrink: 0, opacity: 0.8 }} />}
+                            <span>{msg.body}</span>
+                          </p>
                         </div>
 
                         {!isDeleted && (

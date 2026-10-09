@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { AgencyRequestDetail } from '../components/AgencyRequestDetail.jsx';
 import { agencyRequestApi } from '../lib/api.js';
@@ -43,7 +44,9 @@ export function AgencyRequestDetailPage() {
           .catch(() => {});
       }
     } catch (e) {
-      setError(e?.message ?? 'Failed to load request details.');
+      const msg = e?.message ?? 'Failed to load request details.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -61,8 +64,11 @@ export function AgencyRequestDetailPage() {
       setRequest((prev) => (prev ? { ...prev, match: updatedMatch } : prev));
       setIsViewed(true);
       setNotice('Marked as viewed.');
+      toast.success('Marked as viewed.');
     } catch (e) {
-      setError(e?.message ?? 'Failed to mark as viewed.');
+      const msg = e?.message ?? 'Failed to mark as viewed.';
+      setError(msg);
+      toast.error(msg);
     }
   }
 

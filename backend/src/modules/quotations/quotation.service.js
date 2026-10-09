@@ -94,14 +94,17 @@ async function loadQuotation(models, quotationId, { transaction = null } = {}) {
   return quotation;
 }
 
-/** Server-side totals: Σ(quantity × unit_price), rounded to cents. */
-export function calculateTotals(items) {
+/** Server-side totals: Σ(quantity × unit_price), taxes, rounded to cents. */
+export function calculateTotals(items, { taxRate = 0 } = {}) {
   const lines = items.map((item) => ({
     ...item,
     lineTotal: Math.round(Number(item.quantity) * Number(item.unitPrice) * 100) / 100,
   }));
   const subtotal = Math.round(lines.reduce((sum, line) => sum + line.lineTotal, 0) * 100) / 100;
-  return { lines, subtotal, total: subtotal };
+  const rate = Number(taxRate) || 0;
+  const taxAmount = rate > 0 ? Math.round(subtotal * (rate / 100) * 100) / 100 : 0;
+  const total = Math.round((subtotal + taxAmount) * 100) / 100;
+  return { lines, subtotal, taxRate: rate, taxAmount, total };
 }
 
 function assertTransition(from, to) {
@@ -136,32 +139,74 @@ export async function createQuotation(userId, travelRequestId, input, { role = n
     const agency = await resolveAgency(models, userId, { transaction: t });
     await assertAgencyCanQuote(models, agency, { transaction: t });
     await findMatchOrThrow(models, travelRequestId, agency.id, { transaction: t });
-    await assertRequestQuotable(models, travelRequestId, { transaction: t });
+    const request = await assertRequestQuotable(models, travelRequestId, { transaction: t });
 
-    const active = await repository.findActiveQuotation(travelRequestId, agency.id, {
+    // Multi-quotation support: Determine version and parent quotation
+    const prevQuotes = await models.Quotation.findAll({
+      where: { travelRequestId, agencyId: agency.id },
+      order: [
+        [models.sequelize.col('Quotation.version'), 'DESC'],
+        [models.sequelize.col('Quotation.id'), 'DESC'],
+      ],
       transaction: t,
     });
-    if (active) {
-      const error = new ValidationError(
-        'An active quotation already exists for this request. Edit or withdraw it first.',
-        { code: QUOTATION_ERROR_CODES.DUPLICATE },
-      );
-      error.statusCode = 409;
-      throw error;
+    const version = prevQuotes.length > 0 ? (Number(prevQuotes[0].version) || prevQuotes.length) + 1 : 1;
+    const parentQuotationId = input.parentQuotationId || (prevQuotes.length > 0 ? prevQuotes[0].id : null);
+
+    // Package-aware quotation item validation
+    if (request?.packageType === 'hotel_only') {
+      const hasHotel = (input.items || []).some((it) => it.itemType === 'hotel');
+      if (!hasHotel) {
+        throw new ValidationError('A hotel-only request quotation must include at least one hotel accommodation item.', {
+          code: QUOTATION_ERROR_CODES.VALIDATION_ERROR,
+        });
+      }
+    } else if (request?.packageType === 'vehicle_driver') {
+      const hasTransport = (input.items || []).some((it) => ['vehicle', 'driver'].includes(it.itemType));
+      if (!hasTransport) {
+        throw new ValidationError('A vehicle & driver request quotation must include at least one vehicle or driver transport item.', {
+          code: QUOTATION_ERROR_CODES.VALIDATION_ERROR,
+        });
+      }
     }
 
-    const { subtotal, total } = calculateTotals(input.items);
+    const { subtotal } = calculateTotals(input.items);
+    const taxRate = input.taxRate || 0;
+    const taxAmount = taxRate > 0 ? Math.round(subtotal * (taxRate / 100) * 100) / 100 : 0;
+    const total = Math.round((subtotal + taxAmount) * 100) / 100;
+
+    const branding = input.branding || {
+      agencyName: agency.agencyName || null,
+      logoUrl: agency.logoPath || null,
+      phone: agency.phone || null,
+      email: agency.businessEmail || null,
+      address: [agency.address, agency.city, agency.country].filter(Boolean).join(', ') || null,
+    };
+
     const quotation = await models.Quotation.create(
       {
         travelRequestId,
         agencyId: agency.id,
         status: 'draft',
+        version,
+        parentQuotationId,
         quotationType: input.quotationType,
         currency: input.currency ?? 'USD',
         subtotal,
+        taxRate,
+        taxAmount,
+        taxLabel: input.taxLabel ?? null,
         totalAmount: total,
         validUntil: input.validUntil ?? null,
         notes: input.notes ?? null,
+        greeting: input.greeting ?? null,
+        packageOverview: input.packageOverview ?? null,
+        itineraryDays: input.itineraryDays ?? [],
+        paymentDetails: input.paymentDetails ?? null,
+        inclusions: input.inclusions ?? [],
+        exclusions: input.exclusions ?? [],
+        termsSections: input.termsSections ?? [],
+        branding,
       },
       { transaction: t },
     );
@@ -240,9 +285,45 @@ export async function patchQuotation(userId, quotationId, patch, { role = null }
     if (patch.notes !== undefined) {
       updatable.notes = patch.notes;
     }
+    if (patch.taxRate !== undefined) {
+      updatable.taxRate = patch.taxRate;
+    }
+    if (patch.taxLabel !== undefined) {
+      updatable.taxLabel = patch.taxLabel;
+    }
+    if (patch.greeting !== undefined) {
+      updatable.greeting = patch.greeting;
+    }
+    if (patch.packageOverview !== undefined) {
+      updatable.packageOverview = patch.packageOverview;
+    }
+    if (patch.itineraryDays !== undefined) {
+      updatable.itineraryDays = patch.itineraryDays;
+    }
+    if (patch.paymentDetails !== undefined) {
+      updatable.paymentDetails = patch.paymentDetails;
+    }
+    if (patch.inclusions !== undefined) {
+      updatable.inclusions = patch.inclusions;
+    }
+    if (patch.exclusions !== undefined) {
+      updatable.exclusions = patch.exclusions;
+    }
+    if (patch.termsSections !== undefined) {
+      updatable.termsSections = patch.termsSections;
+    }
+    if (patch.branding !== undefined) {
+      updatable.branding = patch.branding;
+    }
+
+    const currentTaxRate = patch.taxRate !== undefined ? patch.taxRate : Number(quotation.taxRate || 0);
+
     if (patch.items !== undefined) {
-      const { subtotal, total, lines } = calculateTotals(patch.items);
+      const { subtotal, taxAmount, total, lines } = calculateTotals(patch.items, {
+        taxRate: currentTaxRate,
+      });
       updatable.subtotal = subtotal;
+      updatable.taxAmount = taxAmount;
       updatable.totalAmount = total;
       await models.QuotationItem.destroy({ where: { quotationId: quotation.id }, transaction: t });
       await models.QuotationItem.bulkCreate(
@@ -258,7 +339,19 @@ export async function patchQuotation(userId, quotationId, patch, { role = null }
         })),
         { transaction: t },
       );
+    } else if (patch.taxRate !== undefined) {
+      const existingItems = await models.QuotationItem.findAll({
+        where: { quotationId: quotation.id },
+        transaction: t,
+      });
+      const { subtotal, taxAmount, total } = calculateTotals(existingItems, {
+        taxRate: currentTaxRate,
+      });
+      updatable.subtotal = subtotal;
+      updatable.taxAmount = taxAmount;
+      updatable.totalAmount = total;
     }
+
     if (Object.keys(updatable).length > 0) {
       await quotation.update(updatable, { transaction: t });
     }
@@ -292,14 +385,31 @@ export async function submitQuotation(userId, quotationId, { role = null } = {})
         code: QUOTATION_ERROR_CODES.VALIDATION_ERROR,
       });
     }
-    const { subtotal, total } = calculateTotals(
+    const currentTaxRate = Number(quotation.taxRate || 0);
+    const { subtotal, taxAmount, total } = calculateTotals(
       lines.map((l) => ({ quantity: l.quantity, unitPrice: l.unitPrice })),
+      { taxRate: currentTaxRate },
     );
     await quotation.update(
-      { status: 'submitted', subtotal, totalAmount: total, submittedAt: new Date() },
+      {
+        status: 'submitted',
+        subtotal,
+        taxAmount,
+        totalAmount: total,
+        submittedAt: new Date(),
+      },
       { transaction: t },
     );
     await markMatchQuoted(models, quotation.travelRequestId, agency.id, { transaction: t });
+
+    // Transition request status to 'quoted' if currently 'submitted' or 'matching'
+    const request = await models.TravelRequest.findByPk(quotation.travelRequestId, {
+      transaction: t,
+    });
+    if (request && ['submitted', 'matching'].includes(request.status)) {
+      await request.update({ status: 'quoted' }, { transaction: t });
+    }
+
     submittedId = quotation.id;
   });
 
@@ -342,10 +452,29 @@ export async function listRequestQuotations(userId, travelRequestId, { role = nu
       { model: models.QuotationItem, as: 'items' },
       { model: models.AgencyProfile, as: 'agency' },
     ],
-    order: [[models.sequelize.col('Quotation.updated_at'), 'DESC']],
+    order: [[models.sequelize.col('Quotation.created_at'), 'DESC']],
   });
   const revealed = await isContactRevealedForRequest(travelRequestId, { registry: models });
-  return rows.map((q) => toPublicQuotation(q, { agency: q.agency, revealed }));
+
+  // Attach rating summaries to agency objects
+  const { ratingService } = await import('../ratings/rating.service.js');
+  const agencyRatings = {};
+  for (const q of rows) {
+    if (q.agencyId && agencyRatings[q.agencyId] === undefined) {
+      try {
+        agencyRatings[q.agencyId] = await ratingService.getAgencyRatingSummary(q.agencyId);
+      } catch {
+        agencyRatings[q.agencyId] = null;
+      }
+    }
+  }
+
+  return rows.map((q) => {
+    const ag = q.agency
+      ? { ...(q.agency.toJSON ? q.agency.toJSON() : q.agency), ratingSummary: agencyRatings[q.agencyId] || null }
+      : null;
+    return toPublicQuotation(q, { agency: ag, revealed });
+  });
 }
 
 export async function getQuotationForTraveller(userId, quotationId, { role = null } = {}) {

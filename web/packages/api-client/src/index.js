@@ -261,6 +261,7 @@ export function createTravelRequestApi(client) {
     updateDay: (id, dayId, input) =>
       unwrap(http.patch(`/api/v1/travel-requests/${id}/days/${dayId}`, input)),
     deleteDay: (id, dayId) => unwrap(http.delete(`/api/v1/travel-requests/${id}/days/${dayId}`)),
+    delete: (id) => unwrap(http.delete(`/api/v1/travel-requests/${id}`)),
     listQuotations: (id) => unwrap(http.get(`/api/v1/travel-requests/${id}/quotations`)),
   };
 }
@@ -435,6 +436,15 @@ export function createNotificationApi(client) {
     getUnreadCount: () => unwrap(http.get('/api/v1/notifications/unread-count')),
     markRead: (id) => unwrap(http.patch(`/api/v1/notifications/${id}/read`, {})),
     markAllRead: () => unwrap(http.post('/api/v1/notifications/mark-all-read', {})),
+    registerPushToken: (tokenData) =>
+      unwrap(
+        http.post(
+          '/api/v1/notifications/push-token',
+          typeof tokenData === 'string' ? { token: tokenData } : tokenData,
+        ),
+      ),
+    unregisterPushToken: (token) =>
+      unwrap(http.delete('/api/v1/notifications/push-token', { data: { token } })),
   };
 }
 

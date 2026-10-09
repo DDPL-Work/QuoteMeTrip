@@ -392,7 +392,7 @@ describe('agency quotations', () => {
     assert.strictEqual(resubmit.status, 400);
   });
 
-  test('duplicate active quotation → 409', async () => {
+  test('multiple quotations from same agency supported with version increment', async () => {
     const { agency, requestId } = await setupMatchedPair();
 
     const first = await api('POST', `/api/v1/agency/travel-requests/${requestId}/quotations`, {
@@ -400,12 +400,15 @@ describe('agency quotations', () => {
       body: { quotationType: 'hotel_only', items: items() },
     });
     assert.strictEqual(first.status, 201);
+    assert.strictEqual(first.json.data.quotation.version, 1);
 
     const second = await api('POST', `/api/v1/agency/travel-requests/${requestId}/quotations`, {
       token: agency.token,
       body: { quotationType: 'hotel_only', items: items() },
     });
-    assert.strictEqual(second.status, 409);
+    assert.strictEqual(second.status, 201);
+    assert.strictEqual(second.json.data.quotation.version, 2);
+    assert.strictEqual(second.json.data.quotation.parentQuotationId, first.json.data.quotation.id);
   });
 
   test('agency cannot modify another agency’s quotation (404)', async () => {

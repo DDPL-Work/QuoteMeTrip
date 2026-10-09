@@ -877,7 +877,12 @@ body {
   height: 40px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
+.auth-brand-header img[src*="tfh_logo.png"]:not([src*="dark"]) {
+  background: var(--admin-primary);
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 
 .auth-brand-info {

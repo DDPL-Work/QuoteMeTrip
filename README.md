@@ -1,4 +1,4 @@
-# Troublefree Holiday
+# QuoteMeTrip
 
 Travel marketplace and quotation platform connecting **Travellers**,
 **Agencies**, and **Admins**.

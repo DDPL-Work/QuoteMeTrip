@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FiBriefcase, FiAlertCircle } from 'react-icons/fi';
+import { toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { jobApi } from '../lib/api.js';
 import { JobListView } from '../components/Phase6.jsx';
@@ -17,7 +18,11 @@ export function JobsPage() {
         const data = await jobApi.list();
         if (!cancelled) setJobs(data.jobs ?? []);
       } catch (e) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load jobs.');
+        const msg = e?.message ?? 'Failed to load jobs.';
+        if (!cancelled) {
+          setError(msg);
+          toast.error(msg);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

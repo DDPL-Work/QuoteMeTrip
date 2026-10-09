@@ -78,6 +78,7 @@ export class Notification extends Model {
           { fields: ['status'] },
           { fields: ['created_at'] },
           { fields: ['user_id', 'read_at'] },
+          { fields: ['user_id', 'read_at', 'created_at'] },
         ],
       },
     );

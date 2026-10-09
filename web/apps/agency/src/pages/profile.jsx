@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n } from '@troublefree/i18n';
+import { toast } from '@troublefree/ui';
 import { agencyProfileApi } from '../lib/api.js';
 import { AGENCY_SERVICE_TYPES, AGENCY_SERVICE_LABELS } from '@troublefree/types';
 import AgencyOnboardingWizard from '../components/AgencyOnboardingWizard.jsx';
@@ -152,9 +153,12 @@ export function ProfilePage() {
       }
 
       setSaveSuccess(true);
+      toast.success('Settings saved successfully.');
       setTimeout(() => setSaveSuccess(false), 4000);
     } catch (err) {
-      setErrorMessage(err?.message || 'Failed to save settings.');
+      const msg = err?.message || 'Failed to save settings.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }

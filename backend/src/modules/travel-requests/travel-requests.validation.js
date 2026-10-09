@@ -113,11 +113,35 @@ export function validateCreateRequestInput(body = {}) {
     throw invalid('Either routeId or an inline route with stops is required.');
   }
 
+  const durationRaw = body.chosenDuration ?? body.chosen_duration;
+  let duration = undefined;
+  if (durationRaw !== undefined && durationRaw !== null && durationRaw !== '') {
+    duration = validatePositiveInt(durationRaw, { field: 'Chosen duration', min: 1, max: 365 });
+  }
+
   const start = validateDateOnly(
     body.travelStartDate ?? body.travel_start_date,
     'Travel start date',
   );
-  const end = validateDateOnly(body.travelEndDate ?? body.travel_end_date, 'Travel end date');
+  let end = validateDateOnly(body.travelEndDate ?? body.travel_end_date, 'Travel end date');
+
+  // Enforce consistent date calculation: endDate = startDate + (duration - 1 days)
+  if (start && duration) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + (duration - 1));
+    const calculatedEnd = d.toISOString().slice(0, 10);
+    end = calculatedEnd;
+    output.chosenDuration = duration;
+  } else if (start && end) {
+    const sTime = Date.parse(start);
+    const eTime = Date.parse(end);
+    if (eTime >= sTime) {
+      output.chosenDuration = Math.round((eTime - sTime) / 86400000) + 1;
+    }
+  } else if (duration) {
+    output.chosenDuration = duration;
+  }
+
   if (start !== undefined) output.travelStartDate = start;
   if (end !== undefined) output.travelEndDate = end;
   if (
@@ -149,13 +173,6 @@ export function validateCreateRequestInput(body = {}) {
     output.accommodationType = acc;
   }
 
-  const hotel = toBoolean(body.hotelRequired ?? body.hotel_required, 'hotelRequired');
-  if (hotel !== undefined) output.hotelRequired = hotel;
-  const guide = toBoolean(body.guideRequired ?? body.guide_required, 'guideRequired');
-  if (guide !== undefined) output.guideRequired = guide;
-  const driver = toBoolean(body.driverRequired ?? body.driver_required, 'driverRequired');
-  if (driver !== undefined) output.driverRequired = driver;
-
   const pkg = body.packageType ?? body.package_type;
   if (pkg !== undefined && pkg !== null && pkg !== '') {
     if (!PACKAGE_TYPES.includes(pkg)) {
@@ -164,12 +181,36 @@ export function validateCreateRequestInput(body = {}) {
     output.packageType = pkg;
   }
 
-  const duration = body.cruiseDuration ?? body.cruise_duration;
-  if (duration !== undefined && duration !== null && duration !== '') {
-    if (!CRUISE_DURATIONS.includes(duration)) {
+  let hotel = toBoolean(body.hotelRequired ?? body.hotel_required, 'hotelRequired');
+  let guide = toBoolean(body.guideRequired ?? body.guide_required, 'guideRequired');
+  let driver = toBoolean(body.driverRequired ?? body.driver_required, 'driverRequired');
+
+  // Package Type governs requested services consistency
+  if (output.packageType === 'hotel_only') {
+    hotel = true;
+    driver = false;
+    guide = false;
+  } else if (output.packageType === 'vehicle_driver') {
+    hotel = false;
+    driver = true;
+  } else if (output.packageType === 'guide_activities') {
+    guide = true;
+  } else if (output.packageType === 'full_package') {
+    if (hotel === undefined) hotel = true;
+    if (driver === undefined) driver = true;
+    if (guide === undefined) guide = true;
+  }
+
+  if (hotel !== undefined) output.hotelRequired = hotel;
+  if (guide !== undefined) output.guideRequired = guide;
+  if (driver !== undefined) output.driverRequired = driver;
+
+  const cruiseDur = body.cruiseDuration ?? body.cruise_duration;
+  if (cruiseDur !== undefined && cruiseDur !== null && cruiseDur !== '') {
+    if (!CRUISE_DURATIONS.includes(cruiseDur)) {
       throw invalid(`Cruise duration must be one of: ${CRUISE_DURATIONS.join(', ')}.`);
     }
-    output.cruiseDuration = duration;
+    output.cruiseDuration = cruiseDur;
   } else if (output.packageType === 'blue_cruise') {
     throw invalid('Cruise duration is required for Blue Cruise requests.');
   }
@@ -179,6 +220,9 @@ export function validateCreateRequestInput(body = {}) {
     field: 'Special requests',
   });
   if (special !== undefined) output.specialRequests = special || null;
+
+  const title = optionalText(body.title, { max: 255, field: 'Title' });
+  if (title !== undefined) output.title = title || null;
 
   const days = validateDaysList(body.days);
   if (days !== undefined) output.days = days;

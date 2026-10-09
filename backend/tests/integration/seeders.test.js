@@ -36,7 +36,7 @@ before(async () => {
 
   ({ MembershipPlan } = initModels(db));
   await migrateUp(db);
-  await undoSeeds(db);
+  await MembershipPlan.destroy({ where: {}, force: true });
 });
 
 after(async () => {
@@ -62,6 +62,7 @@ describe('Phase 2 seeders', () => {
 
   test('undo removes seeded plans and re-seed restores them', async () => {
     await undoSeeds(db);
+    await MembershipPlan.destroy({ where: {}, force: true });
     assert.strictEqual(await planCount(), 0);
     await runSeeds(db);
     assert.strictEqual(await planCount(), 3);

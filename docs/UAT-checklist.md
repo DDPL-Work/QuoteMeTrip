@@ -1,6 +1,6 @@
 # User Acceptance Testing (UAT) Checklist
 
-**Project:** Troublefree Holiday  
+**Project:** QuoteMeTrip  
 **Phase:** 9 — Production Hardening & UAT
 
 This checklist documents the complete end-to-end acceptance scenarios for validating application workflows before production release.

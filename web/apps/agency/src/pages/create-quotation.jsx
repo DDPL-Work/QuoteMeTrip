@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiAlertCircle } from 'react-icons/fi';
+import { toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { agencyQuotationApi, agencyRequestApi } from '../lib/api.js';
 import { QuotationForm } from '../components/QuotationForm.jsx';
@@ -31,9 +32,12 @@ export function CreateQuotationPage() {
     try {
       const data = await agencyQuotationApi.createForRequest(id, payload);
       const quotation = data.quotation ?? data;
+      toast.success('Quotation draft saved successfully.');
       navigate(`/quotations/${quotation.id}`);
     } catch (e) {
-      setError(e?.message ?? 'Failed to save quotation.');
+      const msg = e?.message ?? 'Failed to save quotation.';
+      setError(msg);
+      toast.error(msg);
       throw e;
     }
   }

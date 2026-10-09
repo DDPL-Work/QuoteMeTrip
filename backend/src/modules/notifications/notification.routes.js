@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import { authenticate } from '../../middleware/authenticate.js';
 import { notificationService } from './notification.service.js';
-import { toNotificationListDto } from './notification.mapper.js';
+import { toNotificationListDto, toNotificationDto } from './notification.mapper.js';
 
 export const notificationRoutes = Router();
 
 // All notification routes require authentication
 notificationRoutes.use(authenticate);
 
+/**
+ * GET /api/v1/notifications
+ * Lists notifications for the authenticated user, ordered by createdAt DESC.
+ * Supports pagination (limit/pageSize, page, offset) and filtering (unreadOnly).
+ */
 notificationRoutes.get('/', async (req, res, next) => {
   try {
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || req.query.pageSize, 10) || 50));
@@ -42,6 +47,10 @@ notificationRoutes.get('/', async (req, res, next) => {
   }
 });
 
+/**
+ * GET /api/v1/notifications/unread-count
+ * Lightweight unread badge count for the header bell.
+ */
 notificationRoutes.get('/unread-count', async (req, res, next) => {
   try {
     const count = await notificationService.getUnreadCount(req.user.id);
@@ -54,6 +63,10 @@ notificationRoutes.get('/unread-count', async (req, res, next) => {
   }
 });
 
+/**
+ * PATCH /api/v1/notifications/:id/read
+ * Marks a single notification as read.
+ */
 notificationRoutes.patch('/:id/read', async (req, res, next) => {
   try {
     const success = await notificationService.markAsRead(req.params.id, req.user.id);
@@ -72,30 +85,87 @@ notificationRoutes.patch('/:id/read', async (req, res, next) => {
   }
 });
 
-notificationRoutes.patch('/read-all', async (req, res, next) => {
+/**
+ * PATCH /api/v1/notifications/read-all
+ * POST  /api/v1/notifications/mark-all-read
+ * Marks all notifications for the authenticated user as read.
+ */
+const handleMarkAllRead = async (req, res, next) => {
   try {
     const count = await notificationService.markAllAsRead(req.user.id);
     res.json({
       status: 'success',
       message: `${count} notifications marked as read`,
+      data: { updatedCount: count },
     });
   } catch (err) {
     next(err);
   }
-});
+};
 
-notificationRoutes.post('/push-token', async (req, res, next) => {
+notificationRoutes.patch('/read-all', handleMarkAllRead);
+notificationRoutes.post('/mark-all-read', handleMarkAllRead);
+
+/**
+ * POST /api/v1/notifications/push-token
+ * POST /api/v1/notifications/devices
+ * Registers or refreshes a browser/device push token / FID installation.
+ */
+const handleRegisterDevice = async (req, res, next) => {
   try {
-    const { token, platform } = req.body;
+    const { token, fid, platform = 'web', browser, deviceLabel, permissionStatus } = req.body;
+    if (!token && !fid) {
+      return res.status(400).json({ status: 'error', message: 'Token or FID is required' });
+    }
+
+    const effectiveToken = token || fid;
+    const record = await notificationService.registerPushToken(req.user.id, {
+      token: effectiveToken,
+      fid: fid || null,
+      platform,
+      browser: browser || null,
+      deviceLabel: deviceLabel || null,
+      permissionStatus: permissionStatus || 'granted',
+    });
+
+    res.json({
+      status: 'success',
+      message: 'Device push registration saved',
+      data: {
+        id: record.id,
+        platform: record.platform,
+        isActive: record.isActive,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+notificationRoutes.post('/push-token', handleRegisterDevice);
+notificationRoutes.post('/devices', handleRegisterDevice);
+
+/**
+ * DELETE /api/v1/notifications/push-token
+ * DELETE /api/v1/notifications/devices
+ * Unregisters a browser/device push token when user logs out or revokes permission.
+ */
+const handleUnregisterDevice = async (req, res, next) => {
+  try {
+    const { token } = req.body;
     if (!token) {
       return res.status(400).json({ status: 'error', message: 'Token is required' });
     }
-    await notificationService.registerPushToken(req.user.id, token, platform);
+
+    await notificationService.unregisterPushToken(req.user.id, token);
     res.json({
       status: 'success',
-      message: 'Push token registered',
+      message: 'Device push registration removed',
     });
   } catch (err) {
     next(err);
   }
-});
+};
+
+notificationRoutes.delete('/push-token', handleUnregisterDevice);
+notificationRoutes.delete('/devices', handleUnregisterDevice);

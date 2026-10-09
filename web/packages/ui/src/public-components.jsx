@@ -38,7 +38,7 @@ export function PublicHeader({ user, onSignOut }) {
         <a href="/" className="tf-header-brand">
           <img
             src="/images/tfh_logo.png"
-            alt="Troublefree Holiday"
+            alt="QuoteMeTrip"
             height="38"
             style={{ display: 'block' }}
           />
@@ -47,9 +47,11 @@ export function PublicHeader({ user, onSignOut }) {
         {/* Desktop Nav */}
         <nav className="tf-pub-nav-desktop" aria-label="Main Navigation">
           <a href="/destinations">{t('header.destinations', 'Destinations')}</a>
-          <a href="/travel-guide">{t('header.travelGuide', 'Travel Guide')}</a>
+          <a href="/travel-services">{t('header.travelServices', 'Travel Services')}</a>
+          <a href="/travel-guides">{t('header.travelGuides', 'Travel Guides')}</a>
           <a href="/agencies">{t('header.agencies', 'Agencies')}</a>
-          <a href="/about">{t('header.about', 'About')}</a>
+          <a href="/how-it-works">{t('header.howItWorks', 'How It Works')}</a>
+          <a href="/about-us">{t('header.aboutUs', 'About Us')}</a>
           <a href="/contact">{t('header.contact', 'Contact')}</a>
         </nav>
 
@@ -105,14 +107,20 @@ export function PublicHeader({ user, onSignOut }) {
           <a href="/destinations" onClick={() => setMobileMenuOpen(false)}>
             {t('header.destinations', 'Destinations')}
           </a>
-          <a href="/travel-guide" onClick={() => setMobileMenuOpen(false)}>
-            {t('header.travelGuide', 'Travel Guide')}
+          <a href="/travel-services" onClick={() => setMobileMenuOpen(false)}>
+            {t('header.travelServices', 'Travel Services')}
+          </a>
+          <a href="/travel-guides" onClick={() => setMobileMenuOpen(false)}>
+            {t('header.travelGuides', 'Travel Guides')}
           </a>
           <a href="/agencies" onClick={() => setMobileMenuOpen(false)}>
             {t('header.agencies', 'Agencies')}
           </a>
-          <a href="/about" onClick={() => setMobileMenuOpen(false)}>
-            {t('header.about', 'About')}
+          <a href="/how-it-works" onClick={() => setMobileMenuOpen(false)}>
+            {t('header.howItWorks', 'How It Works')}
+          </a>
+          <a href="/about-us" onClick={() => setMobileMenuOpen(false)}>
+            {t('header.aboutUs', 'About Us')}
           </a>
           <a href="/contact" onClick={() => setMobileMenuOpen(false)}>
             {t('header.contact', 'Contact')}
@@ -161,7 +169,7 @@ export function PublicFooter() {
           <a href="/" className="tf-header-brand">
             <img
               src="/images/tfh_logo.png"
-              alt="Troublefree Holiday"
+              alt="QuoteMeTrip"
               height="34"
               style={{ display: 'block' }}
             />
@@ -182,7 +190,13 @@ export function PublicFooter() {
               <a href="/destinations">{t('header.destinations', 'Destinations')}</a>
             </li>
             <li>
-              <a href="/travel-guide">{t('header.travelGuide', 'Travel Guide')}</a>
+              <a href="/destinations/turkey">{t('footer.turkey', 'Turkey')}</a>
+            </li>
+            <li>
+              <a href="/travel-services">{t('header.travelServices', 'Travel Services')}</a>
+            </li>
+            <li>
+              <a href="/travel-guides">{t('header.travelGuides', 'Travel Guides')}</a>
             </li>
             <li>
               <a href="/agencies">{t('header.agencies', 'Agencies')}</a>
@@ -194,7 +208,10 @@ export function PublicFooter() {
           <h4>Company</h4>
           <ul>
             <li>
-              <a href="/about">{t('header.about', 'About Us')}</a>
+              <a href="/how-it-works">{t('header.howItWorks', 'How It Works')}</a>
+            </li>
+            <li>
+              <a href="/about-us">{t('header.aboutUs', 'About Us')}</a>
             </li>
             <li>
               <a href="/contact">{t('header.contact', 'Contact Us')}</a>
@@ -215,7 +232,7 @@ export function PublicFooter() {
       </div>
 
       <div className="tf-footer-bottom">
-        <p>{t('footer.copyright', '© Troublefree Holiday. All rights reserved.')}</p>
+        <p>{t('footer.copyright', '© QuoteMeTrip. All rights reserved.')}</p>
       </div>
     </footer>
   );
@@ -249,7 +266,7 @@ export function DestinationCard({ destination }) {
       <div className="tf-card-content">
         <h3>{destination.name}</h3>
         <p className="tf-card-text">{destination.tagline || destination.description}</p>
-        <a href={`/destinations/${destination.slug}`} className="tf-btn tf-btn-ghost tf-btn-sm">
+        <a href={`/destinations/${destination.countrySlug || 'turkey'}/${destination.slug}`} className="tf-btn tf-btn-ghost tf-btn-sm">
           {t('common.explore', 'Explore')} →
         </a>
       </div>
@@ -271,7 +288,7 @@ export function GuideCard({ guide }) {
         <div className="tf-card-meta">{guide.readTime}</div>
         <h3>{guide.title}</h3>
         <p className="tf-card-text">{guide.summary}</p>
-        <a href={`/travel-guide/${guide.slug}`} className="tf-btn tf-btn-ghost tf-btn-sm">
+        <a href={`/travel-guides/${guide.slug}`} className="tf-btn tf-btn-ghost tf-btn-sm">
           {t('common.readMore', 'Read Article')} →
         </a>
       </div>

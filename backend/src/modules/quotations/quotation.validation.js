@@ -94,6 +94,120 @@ function validateValidUntil(value) {
   return text;
 }
 
+function validateTaxRate(value) {
+  if (value === undefined || value === null || value === '') {
+    return 0;
+  }
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 0 || num > 100) {
+    throw invalid('taxRate must be a number between 0 and 100.');
+  }
+  return Math.round(num * 100) / 100;
+}
+
+function validateTaxLabel(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+  return String(value).slice(0, 190);
+}
+
+function validateGreeting(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return {
+    recipient: value.recipient ? String(value.recipient).slice(0, 190) : '',
+    title: value.title ? String(value.title).slice(0, 190) : '',
+    message: value.message ? String(value.message).slice(0, 3000) : '',
+  };
+}
+
+function validatePackageOverview(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return {
+    tripId: value.tripId ? String(value.tripId).slice(0, 100) : null,
+    destination: value.destination ? String(value.destination).slice(0, 255) : '',
+    startDate: value.startDate ? String(value.startDate).slice(0, 50) : null,
+    endDate: value.endDate ? String(value.endDate).slice(0, 50) : null,
+    duration: value.duration ? String(value.duration).slice(0, 100) : '',
+    adults: Number(value.adults) || 0,
+    children: Number(value.children) || 0,
+    infants: Number(value.infants) || 0,
+    luggage: value.luggage ? String(value.luggage).slice(0, 100) : '',
+  };
+}
+
+function validateItineraryDays(list) {
+  if (!list || !Array.isArray(list)) return [];
+  if (list.length > 60) {
+    throw invalid('Itinerary supports at most 60 days.');
+  }
+  return list.map((d, idx) => ({
+    dayNumber: Number(d.dayNumber ?? idx + 1),
+    weekday: d.weekday ? String(d.weekday).slice(0, 50) : '',
+    date: d.date ? String(d.date).slice(0, 50) : '',
+    title: d.title ? String(d.title).slice(0, 255) : `Day ${idx + 1}`,
+    description: d.description ? String(d.description).slice(0, 5000) : '',
+    city: d.city ? String(d.city).slice(0, 190) : '',
+    hotelNotes: d.hotelNotes ? String(d.hotelNotes).slice(0, 1000) : '',
+    activityNotes: d.activityNotes ? String(d.activityNotes).slice(0, 1000) : '',
+  }));
+}
+
+function validatePaymentDetails(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return {
+    includePaymentDetails: Boolean(value.includePaymentDetails),
+    bankName: value.bankName ? String(value.bankName).slice(0, 190) : '',
+    accountHolder: value.accountHolder ? String(value.accountHolder).slice(0, 190) : '',
+    accountNumber: value.accountNumber ? String(value.accountNumber).slice(0, 100) : '',
+    ifsc: value.ifsc ? String(value.ifsc).slice(0, 50) : '',
+    branch: value.branch ? String(value.branch).slice(0, 190) : '',
+    instructions: value.instructions ? String(value.instructions).slice(0, 2000) : '',
+  };
+}
+
+function validateStringList(list, name = 'items') {
+  if (!list || !Array.isArray(list)) return [];
+  if (list.length > 100) {
+    throw invalid(`${name} list supports at most 100 items.`);
+  }
+  return list.map((item) => String(item).slice(0, 1000)).filter(Boolean);
+}
+
+function validateTermsSections(list) {
+  if (!list || !Array.isArray(list)) return [];
+  if (list.length > 50) {
+    throw invalid('Terms supports at most 50 sections.');
+  }
+  return list.map((sec, idx) => ({
+    title: sec.title ? String(sec.title).slice(0, 190) : `Section ${idx + 1}`,
+    content: sec.content ? String(sec.content).slice(0, 10000) : '',
+    points: Array.isArray(sec.points) ? sec.points.map((p) => String(p).slice(0, 2000)) : [],
+    enabled: sec.enabled !== undefined ? Boolean(sec.enabled) : true,
+    sortOrder: Number(sec.sortOrder ?? idx + 1),
+  }));
+}
+
+function validateBranding(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return {
+    logoUrl: value.logoUrl ? String(value.logoUrl).slice(0, 500) : null,
+    agencyName: value.agencyName ? String(value.agencyName).slice(0, 190) : null,
+    address: value.address ? String(value.address).slice(0, 500) : null,
+    phone: value.phone ? String(value.phone).slice(0, 50) : null,
+    email: value.email ? String(value.email).slice(0, 190) : null,
+    footerBannerUrl: value.footerBannerUrl ? String(value.footerBannerUrl).slice(0, 500) : null,
+  };
+}
+
 export function validateCreateQuotationInput(body = {}) {
   if (!body || typeof body !== 'object') {
     throw invalid('Request body must be an object.');
@@ -118,13 +232,54 @@ export function validateCreateQuotationInput(body = {}) {
     }
     output.notes = notes;
   }
+
+  // Document builder extensions
+  const taxRateVal = body.taxRate ?? body.tax_rate;
+  if (taxRateVal !== undefined) {
+    output.taxRate = validateTaxRate(taxRateVal);
+  }
+  const taxLabelVal = body.taxLabel ?? body.tax_label;
+  if (taxLabelVal !== undefined) {
+    output.taxLabel = validateTaxLabel(taxLabelVal);
+  }
+  if (body.greeting !== undefined) {
+    output.greeting = validateGreeting(body.greeting);
+  }
+  const pkgVal = body.packageOverview ?? body.package_overview;
+  if (pkgVal !== undefined) {
+    output.packageOverview = validatePackageOverview(pkgVal);
+  }
+  const itinVal = body.itineraryDays ?? body.itinerary_days;
+  if (itinVal !== undefined) {
+    output.itineraryDays = validateItineraryDays(itinVal);
+  }
+  const paymentVal = body.paymentDetails ?? body.payment_details;
+  if (paymentVal !== undefined) {
+    output.paymentDetails = validatePaymentDetails(paymentVal);
+  }
+  if (body.inclusions !== undefined) {
+    output.inclusions = validateStringList(body.inclusions, 'inclusions');
+  }
+  if (body.exclusions !== undefined) {
+    output.exclusions = validateStringList(body.exclusions, 'exclusions');
+  }
+  const termsVal = body.termsSections ?? body.terms_sections;
+  if (termsVal !== undefined) {
+    output.termsSections = validateTermsSections(termsVal);
+  }
+  if (body.branding !== undefined) {
+    output.branding = validateBranding(body.branding);
+  }
+
   // Explicitly rejected: client-supplied totals are never trusted.
   if (
     body.subtotal !== undefined ||
     body.totalAmount !== undefined ||
-    body.total_amount !== undefined
+    body.total_amount !== undefined ||
+    body.taxAmount !== undefined ||
+    body.tax_amount !== undefined
   ) {
-    throw invalid('Totals are calculated by the server. Do not send subtotal or totalAmount.');
+    throw invalid('Totals are calculated by the server. Do not send subtotal, taxAmount, or totalAmount.');
   }
   return output;
 }
@@ -141,16 +296,32 @@ export function validatePatchQuotationInput(body = {}) {
     'valid_until',
     'notes',
     'items',
+    'taxRate',
+    'tax_rate',
+    'taxLabel',
+    'tax_label',
+    'greeting',
+    'packageOverview',
+    'package_overview',
+    'itineraryDays',
+    'itinerary_days',
+    'paymentDetails',
+    'payment_details',
+    'inclusions',
+    'exclusions',
+    'termsSections',
+    'terms_sections',
+    'branding',
   ];
   // Totals are rejected first with the specific server-totals message
-  // (otherwise they would fall through to the generic unknown-fields
-  // error below, leaving this check as dead code).
   if (
     body.subtotal !== undefined ||
     body.totalAmount !== undefined ||
-    body.total_amount !== undefined
+    body.total_amount !== undefined ||
+    body.taxAmount !== undefined ||
+    body.tax_amount !== undefined
   ) {
-    throw invalid('Totals are calculated by the server. Do not send subtotal or totalAmount.');
+    throw invalid('Totals are calculated by the server. Do not send subtotal, taxAmount, or totalAmount.');
   }
   const unknown = Object.keys(body).filter((k) => !allowed.includes(k));
   if (unknown.length > 0) {
@@ -179,6 +350,45 @@ export function validatePatchQuotationInput(body = {}) {
   if (items !== undefined) {
     output.items = items;
   }
+
+  // Document builder extensions
+  const taxRateVal = body.taxRate ?? body.tax_rate;
+  if (taxRateVal !== undefined) {
+    output.taxRate = validateTaxRate(taxRateVal);
+  }
+  const taxLabelVal = body.taxLabel ?? body.tax_label;
+  if (taxLabelVal !== undefined) {
+    output.taxLabel = validateTaxLabel(taxLabelVal);
+  }
+  if (body.greeting !== undefined) {
+    output.greeting = validateGreeting(body.greeting);
+  }
+  const pkgVal = body.packageOverview ?? body.package_overview;
+  if (pkgVal !== undefined) {
+    output.packageOverview = validatePackageOverview(pkgVal);
+  }
+  const itinVal = body.itineraryDays ?? body.itinerary_days;
+  if (itinVal !== undefined) {
+    output.itineraryDays = validateItineraryDays(itinVal);
+  }
+  const paymentVal = body.paymentDetails ?? body.payment_details;
+  if (paymentVal !== undefined) {
+    output.paymentDetails = validatePaymentDetails(paymentVal);
+  }
+  if (body.inclusions !== undefined) {
+    output.inclusions = validateStringList(body.inclusions, 'inclusions');
+  }
+  if (body.exclusions !== undefined) {
+    output.exclusions = validateStringList(body.exclusions, 'exclusions');
+  }
+  const termsVal = body.termsSections ?? body.terms_sections;
+  if (termsVal !== undefined) {
+    output.termsSections = validateTermsSections(termsVal);
+  }
+  if (body.branding !== undefined) {
+    output.branding = validateBranding(body.branding);
+  }
+
   if (Object.keys(output).length === 0) {
     throw invalid('Nothing to update.');
   }

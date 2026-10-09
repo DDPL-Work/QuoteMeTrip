@@ -1,6 +1,6 @@
 # QuoteMyTrip — Development Progress Report
 
-> **Project:** QuoteMyTrip (Internal: Troublefree Holiday)
+> **Project:** QuoteMyTrip (Internal: QuoteMeTrip)
 > **Technology:** React.js · Node.js / Express.js · MySQL · Socket.IO
 > **Date:** 3 October 2026
 > **Status:** Core Platform Complete — Production Hardening Pass Finished

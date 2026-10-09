@@ -1,5 +1,5 @@
 /**
- * Public Layout Wrapper for Troublefree Holiday Traveller Website (Track B).
+ * Public Layout Wrapper for QuoteMeTrip Traveller Website (Track B).
  *
  * Renders the responsive PublicHeader, page content, and PublicFooter.
  * Automatically wires authenticated user state to header actions.

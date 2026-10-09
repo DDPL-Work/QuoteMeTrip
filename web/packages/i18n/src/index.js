@@ -11,9 +11,13 @@ export const TRANSLATIONS = {
   en: {
     'header.home': 'Home',
     'header.destinations': 'Destinations',
+    'header.travelServices': 'Travel Services',
     'header.travelGuide': 'Travel Guide',
+    'header.travelGuides': 'Travel Guides',
     'header.agencies': 'Agencies',
-    'header.about': 'About',
+    'header.howItWorks': 'How It Works',
+    'header.about': 'About Us',
+    'header.aboutUs': 'About Us',
     'header.contact': 'Contact',
     'header.login': 'Sign In',
     'header.register': 'Register',
@@ -32,7 +36,7 @@ export const TRANSLATIONS = {
       "Handpicked travel spots across Turkey's most iconic and breathtaking regions.",
     'home.destinations.viewAll': 'Explore Destinations',
 
-    'home.howItWorks.title': 'How Troublefree Holiday Works',
+    'home.howItWorks.title': 'How QuoteMeTrip Works',
     'home.howItWorks.subtitle': '4 simple steps from route planning to booked vacation',
     'home.howItWorks.step1Title': '01. Choose Your Route',
     'home.howItWorks.step1Desc':
@@ -47,7 +51,7 @@ export const TRANSLATIONS = {
     'home.howItWorks.step4Desc':
       'Message agencies, compare prices line-by-line, accept the best deal, and track your trip.',
 
-    'home.whyUs.title': 'Why Troublefree Holiday?',
+    'home.whyUs.title': 'Why QuoteMeTrip?',
     'home.whyUs.subtitle':
       'Built specifically for route-first itinerary planning and transparent agency matching.',
     'home.whyUs.feature1Title': 'Route-First Planning',
@@ -81,7 +85,7 @@ export const TRANSLATIONS = {
     'destinations.searchPlaceholder': 'Search destinations by name or region...',
     'destinations.planCTA': 'Plan a Trip to',
 
-    'guide.title': 'Travel Guide',
+    'guide.title': 'Travel Guides',
     'guide.subtitle': 'Handcrafted itineraries, regional insights, and essential travel tips.',
     'guide.searchPlaceholder': 'Search travel articles...',
 
@@ -108,7 +112,7 @@ export const TRANSLATIONS = {
     'agency.membership.active': 'Active Membership',
     'agency.membership.inactive': 'Inactive Membership',
 
-    'about.title': 'About Troublefree Holiday',
+    'about.title': 'About QuoteMeTrip',
     'about.subtitle':
       'Empowering travellers to build custom routes and connect with trusted local agencies.',
 
@@ -131,7 +135,7 @@ export const TRANSLATIONS = {
     'common.empty': 'No results found matching your query.',
     'common.error': 'Failed to load content.',
     'common.retry': 'Try Again',
-    'footer.copyright': '© Troublefree Holiday. All rights reserved.',
+    'footer.copyright': '© QuoteMeTrip. All rights reserved.',
 
     // Dashboard Phase 3
     'dashboard.welcome': 'Good {timeOfDay}, {name} 👋',
@@ -190,9 +194,13 @@ export const TRANSLATIONS = {
   tr: {
     'header.home': 'Anasayfa',
     'header.destinations': 'Destinasyonlar',
+    'header.travelServices': 'Seyahat Hizmetleri',
     'header.travelGuide': 'Gezi Rehberi',
+    'header.travelGuides': 'Gezi Rehberleri',
     'header.agencies': 'Acenteler',
+    'header.howItWorks': 'Nasıl Çalışır',
     'header.about': 'Hakkımızda',
+    'header.aboutUs': 'Hakkımızda',
     'header.contact': 'İletişim',
     'header.login': 'Giriş Yap',
     'header.register': 'Kayıt Ol',
@@ -211,7 +219,7 @@ export const TRANSLATIONS = {
       'Türkiye’nin en gözde seyahat rotalarını ve kültürel zenginliklerini keşfedin.',
     'home.destinations.viewAll': 'Tüm Destinasyonları İncele',
 
-    'home.howItWorks.title': 'Troublefree Holiday Nasıl Çalışır?',
+    'home.howItWorks.title': 'QuoteMeTrip Nasıl Çalışır?',
     'home.howItWorks.subtitle': 'Hayalinizdeki tatile ulaşmak için 4 kolay adım',
     'home.howItWorks.step1Title': '01. Rotanı Belirle',
     'home.howItWorks.step1Desc':
@@ -225,7 +233,7 @@ export const TRANSLATIONS = {
     'home.howItWorks.step4Desc':
       'Acentelerle mesajlaş, kalem kalem fiyatları karşılaştır, teklifi kabul et.',
 
-    'home.whyUs.title': 'Neden Troublefree Holiday?',
+    'home.whyUs.title': 'Neden QuoteMeTrip?',
     'home.whyUs.subtitle':
       'Kişiselleştirilmiş rota planlaması ve şeffaf acente teklifleri için tasarlandı.',
     'home.whyUs.feature1Title': 'Rota Odaklı Planlama',
@@ -258,7 +266,7 @@ export const TRANSLATIONS = {
     'destinations.searchPlaceholder': 'Destinasyon veya bölge ara...',
     'destinations.planCTA': 'İçin Rota Planla',
 
-    'guide.title': 'Gezi Rehberi',
+    'guide.title': 'Gezi Rehberleri',
     'guide.subtitle': 'Detaylı gezi yazıları, yerel tavsiyeler ve rota fikirleri.',
     'guide.searchPlaceholder': 'Rehber yazılarında ara...',
 
@@ -266,7 +274,7 @@ export const TRANSLATIONS = {
     'agencies.subtitle': 'Size özel seyahat teklifi sunmaya hazır onaylı acenteler.',
     'agencies.searchPlaceholder': 'Acente veya şehir ara...',
 
-    'about.title': 'Troublefree Holiday Hakkında',
+    'about.title': 'QuoteMeTrip Hakkında',
     'about.subtitle':
       'Gezginlerin özgürce rota oluşturmasını ve güvenilir acentelerle buluşmasını sağlıyoruz.',
 
@@ -289,7 +297,7 @@ export const TRANSLATIONS = {
     'common.empty': 'Aramanıza uygun sonuç bulunamadı.',
     'common.error': 'İçerik yüklenirken bir sorun oluştu.',
     'common.retry': 'Tekrar Dene',
-    'footer.copyright': '© Troublefree Holiday. Tüm hakları saklıdır.',
+    'footer.copyright': '© QuoteMeTrip. Tüm hakları saklıdır.',
 
     // Dashboard Phase 3
     'dashboard.welcome': 'İyi {timeOfDay}, {name} 👋',

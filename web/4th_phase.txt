@@ -10,7 +10,7 @@ ROLE
 
 You are the Lead Frontend Architect, Senior React Engineer,
 UX Engineer, API Integration Engineer, Accessibility Engineer,
-and QA Engineer for the Troublefree Holiday platform.
+and QA Engineer for the QuoteMeTrip platform.
 
 PHASE 1:
 Traveller Portal Foundation + Design System + App Shell

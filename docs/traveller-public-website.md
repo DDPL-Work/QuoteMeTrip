@@ -2,7 +2,7 @@
 
 ## Overview
 
-The public-facing Traveller website for **Troublefree Holiday** provides a modern, consumer-focused travel discovery and route planning entry point while seamlessly preserving the existing authenticated Traveller portal.
+The public-facing Traveller website for **QuoteMeTrip** provides a modern, consumer-focused travel discovery and route planning entry point while seamlessly preserving the existing authenticated Traveller portal.
 
 ---
 

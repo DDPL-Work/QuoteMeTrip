@@ -7,14 +7,18 @@ function AgencyBrandHeader() {
   return (
     <div className="auth-brand-header">
       <img
-        src="/images/tfh_logo.png"
+        src="/images/tfh_logo_dark.png"
         alt="QuoteMeTrip"
         className="auth-brand-logo"
         onError={(e) => {
           e.target.style.display = 'none';
+          const fallback = e.target.parentElement?.querySelector('.auth-brand-name');
+          if (fallback) fallback.style.display = 'inline-block';
         }}
       />
-      <span className="auth-brand-name">QuoteMeTrip</span>
+      <span className="auth-brand-name" style={{ display: 'none' }}>
+        QuoteMeTrip
+      </span>
       <span className="auth-brand-badge">AGENCY PORTAL</span>
     </div>
   );

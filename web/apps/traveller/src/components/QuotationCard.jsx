@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusBadge } from '@troublefree/ui';
-import { FiStar, FiCalendar, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
+import { FiStar, FiCalendar, FiArrowRight, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 export function QuotationCard({ quotation }) {
   if (!quotation) return null;
@@ -42,9 +43,23 @@ export function QuotationCard({ quotation }) {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>
-              {agency.name || agency.agencyName || `Agency #${quotation.agencyId || ''}`}
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#1e293b' }}>
+                {agency.name || agency.agencyName || `Agency #${quotation.agencyId || ''}`}
+              </h3>
+              {quotation.version > 1 && (
+                <span style={{
+                  background: '#e0f2fe',
+                  color: '#0369a1',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                }}>
+                  Revision {quotation.version}
+                </span>
+              )}
+            </div>
             {agency.verified && (
               <span
                 title="Verified Agency"
@@ -128,19 +143,35 @@ export function QuotationCard({ quotation }) {
           </span>
         </div>
 
-        <a
-          href={`/quotations/${quotation.id}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: '#166534',
-            fontWeight: 600,
-            textDecoration: 'none',
-          }}
-        >
-          View quotation <FiArrowRight size={14} />
-        </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Link
+            to={`/messages?requestId=${quotation.travelRequestId}&agencyId=${quotation.agencyId}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: '#0369a1',
+              fontWeight: 600,
+              textDecoration: 'none',
+              fontSize: '0.85rem',
+            }}
+          >
+            <FiMessageSquare size={14} /> Message Agency
+          </Link>
+          <Link
+            to={`/quotations/${quotation.id}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#166534',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            View quotation <FiArrowRight size={14} />
+          </Link>
+        </div>
       </div>
     </li>
   );

@@ -71,7 +71,7 @@ describe('Phase 7 Admin Operations UI Components', () => {
       expect(screen.getByText('Quote')).toBeInTheDocument();
       expect(screen.getByText('MyTrip')).toBeInTheDocument();
       expect(screen.getAllByText('ADMIN')[0]).toBeInTheDocument();
-      expect(screen.queryByText('Troublefree Holiday ADMIN')).not.toBeInTheDocument();
+      expect(screen.queryByText('QuoteMeTrip ADMIN')).not.toBeInTheDocument();
       expect(screen.queryByText('QuoteMeTrip')).not.toBeInTheDocument();
     });
   });

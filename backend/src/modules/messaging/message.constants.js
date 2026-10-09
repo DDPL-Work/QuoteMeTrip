@@ -18,4 +18,6 @@ export const SOCKET_EVENTS = {
   READ: 'conversation:read',
   UPDATED: 'conversation:updated',
   DELETED: 'conversation:deleted',
+  DELETED_FOR_EVERYONE: 'MESSAGE_DELETED_FOR_EVERYONE',
+  TTL: 'conversation:ttl',
 };

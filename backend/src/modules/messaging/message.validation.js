@@ -56,7 +56,11 @@ export function validatePagination(query = {}) {
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
     throw invalid('pageSize must be an integer between 1 and 100.');
   }
-  return { page, pageSize };
+  const result = { page, pageSize };
+  if (query.travelRequestId !== undefined && query.travelRequestId !== null) {
+    result.travelRequestId = Number(query.travelRequestId);
+  }
+  return result;
 }
 
 export function validateMessagePagination(query = {}) {

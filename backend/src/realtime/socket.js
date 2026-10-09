@@ -99,6 +99,8 @@ export function initSocketServer(httpServer) {
     const user = socket.data.user;
     const uid = Number(user.id);
 
+    socket.join(`user:${uid}`);
+
     let presence = userPresenceMap.get(uid);
     if (!presence) {
       presence = { isOnline: true, lastSeen: null, socketIds: new Set() };
@@ -183,6 +185,17 @@ export function emitToConversation(conversationId, event, payload = {}) {
     return false;
   }
   io.to(roomForConversation(conversationId)).emit(event, payload);
+  return true;
+}
+
+/**
+ * Deliver a real-time event to a specific user's connected clients.
+ */
+export function emitToUser(userId, event, payload = {}) {
+  if (!io) {
+    return false;
+  }
+  io.to(`user:${Number(userId)}`).emit(event, payload);
   return true;
 }
 

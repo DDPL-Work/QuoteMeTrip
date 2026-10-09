@@ -48,12 +48,14 @@ export async function acceptQuotation(userId, quotationId, { role = null } = {})
     const quotation = await models.Quotation.findByPk(quotationId, {
       include: [{ model: models.QuotationItem, as: 'items' }],
       transaction: t,
+      lock: t.LOCK.UPDATE,
     });
     if (!quotation) {
       throw new NotFoundError('Quotation not found.', { code: 'QUOTATION_NOT_FOUND' });
     }
     const request = await models.TravelRequest.findByPk(quotation.travelRequestId, {
       transaction: t,
+      lock: t.LOCK.UPDATE,
     });
     if (!request || request.travellerId !== Number(userId)) {
       throw new NotFoundError('Quotation not found.', { code: 'QUOTATION_NOT_FOUND' });
@@ -71,7 +73,7 @@ export async function acceptQuotation(userId, quotationId, { role = null } = {})
         409,
       );
     }
-    if (request.status !== 'submitted') {
+    if (!['submitted', 'quoted'].includes(request.status)) {
       throw acceptError(
         'This request cannot accept quotations in its current state.',
         'QUOTATION_INVALID_TRANSITION',

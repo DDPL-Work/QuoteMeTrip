@@ -1118,7 +1118,7 @@ Traveller completes job
 
 # 46. UI DESIGN
 
-Continue the established Troublefree Holiday design system.
+Continue the established QuoteMeTrip design system.
 
 Traveller public:
 

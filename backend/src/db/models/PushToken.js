@@ -29,6 +29,31 @@ export class PushToken extends Model {
           type: DataTypes.STRING,
           allowNull: true,
         },
+        fid: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        browser: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        deviceLabel: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'device_label',
+        },
+        permissionStatus: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          defaultValue: 'granted',
+          field: 'permission_status',
+        },
+        isActive: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: true,
+          field: 'is_active',
+        },
         lastUsedAt: {
           type: DataTypes.DATE,
           allowNull: true,
@@ -40,7 +65,7 @@ export class PushToken extends Model {
         tableName: 'push_tokens',
         modelName: 'PushToken',
         underscored: true,
-        indexes: [{ fields: ['user_id'] }],
+        indexes: [{ fields: ['user_id'] }, { fields: ['user_id', 'is_active'] }],
       },
     );
 

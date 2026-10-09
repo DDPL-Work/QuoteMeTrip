@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { AgencyRequestCard } from '../components/AgencyRequestCard.jsx';
+import { toast } from '@troublefree/ui';
 import { agencyRequestApi } from '../lib/api.js';
 import { TRAVEL_REQUEST_AGENCY_STATUSES } from '@troublefree/types';
 import { useI18n } from '@troublefree/i18n';
@@ -67,7 +68,9 @@ export function IncomingRequestsPage() {
           });
         }
       } catch (e) {
-        setError(e?.message ?? 'Failed to load travel requests.');
+        const msg = e?.message ?? 'Failed to load travel requests.';
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }

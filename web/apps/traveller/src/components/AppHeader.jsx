@@ -1,10 +1,21 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiGlobe } from 'react-icons/fi';
 import { LanguageSwitcher } from '@troublefree/ui';
 import { NotificationButton } from './NotificationButton.jsx';
+import { NotificationPanel } from './NotificationPanel.jsx';
 import { UserMenu } from './UserMenu.jsx';
 
-export function AppHeader({ notificationCount = 0, onNotificationClick }) {
+export function AppHeader({ notificationCount = 0, onNotificationClick, onNotificationCountChange }) {
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  const handleToggle = () => {
+    if (onNotificationClick) {
+      onNotificationClick();
+    }
+    setPanelOpen((prev) => !prev);
+  };
+
   return (
     <header className="tf-portal-top-header">
       <Link
@@ -19,7 +30,7 @@ export function AppHeader({ notificationCount = 0, onNotificationClick }) {
           style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
         />
         <span style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>
-          Troublefree Holiday
+          QuoteMeTrip
         </span>
       </Link>
 
@@ -42,7 +53,20 @@ export function AppHeader({ notificationCount = 0, onNotificationClick }) {
         >
           <FiGlobe size={14} /> Public Portal
         </Link>
-        <NotificationButton count={notificationCount} onClick={onNotificationClick} />
+
+        {/* Notifications Bell & Dropdown Panel */}
+        <div style={{ position: 'relative' }}>
+          <NotificationButton
+            count={notificationCount}
+            onClick={handleToggle}
+          />
+          <NotificationPanel
+            isOpen={panelOpen}
+            onClose={() => setPanelOpen(false)}
+            onUnreadCountChange={onNotificationCountChange}
+          />
+        </div>
+
         <LanguageSwitcher />
         <UserMenu />
       </div>

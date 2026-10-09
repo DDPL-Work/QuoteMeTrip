@@ -1,26 +1,28 @@
 /**
- * Travel Guide Detail Page (/travel-guide/:slug) — Track B.
+ * Travel Guide Detail Page (/travel-guides/:guideSlug) — QuoteMeTrip.
  *
  * Article reading layout with cover image, category badge, typography,
- * related guides, and a "Plan My Trip" CTA.
+ * destination backlink, related guides, and a "Plan My Trip" CTA.
  */
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useI18n } from '@troublefree/i18n';
 import { GuideCard, CTASection } from '@troublefree/ui';
 import { getTravelGuideBySlug } from '../../services/public-api.js';
 import { useAuth } from '../../features/auth/auth-context.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
 export function TravelGuideDetailPage() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = params.guideSlug || params.slug;
+
   const { t } = useI18n();
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
 
   useEffect(() => {
     let active = true;
@@ -41,6 +43,14 @@ export function TravelGuideDetailPage() {
     };
   }, [slug]);
 
+  const articleTitle = data?.guide?.title || 'Travel Guide';
+  usePageMetadata(
+    articleTitle,
+    data?.guide?.summary || 'Read travel guide tips and itinerary suggestions from QuoteMeTrip.',
+  );
+
+  const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
+
   if (loading) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 0' }}>
@@ -54,9 +64,9 @@ export function TravelGuideDetailPage() {
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
         <h2>Article Not Found</h2>
         <p className="tf-card-text">{error || 'The requested article does not exist.'}</p>
-        <a href="/travel-guide" className="tf-btn tf-btn-primary">
-          Back to Travel Guide
-        </a>
+        <Link to="/travel-guides" className="tf-btn tf-btn-primary">
+          Back to Travel Guides
+        </Link>
       </div>
     );
   }
@@ -65,20 +75,41 @@ export function TravelGuideDetailPage() {
 
   return (
     <div className="tf-public-container">
+      <PublicBreadcrumbs
+        items={[
+          { label: 'Travel Guides', to: '/travel-guides' },
+          { label: guide.title },
+        ]}
+      />
+
       <article style={{ maxWidth: '48rem', margin: '0 auto 4rem' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
           <span
             className="tf-card-badge tf-badge-sec"
             style={{ position: 'static', display: 'inline-block' }}
           >
             {guide.category}
           </span>
-          <span style={{ fontSize: '0.85rem', color: 'var(--tf-text-muted)', marginLeft: '1rem' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--tf-text-muted)' }}>
             {guide.readTime} • Published {guide.publishedAt}
           </span>
+          {guide.destinationSlug && (
+            <Link
+              to={`/destinations/turkey/${guide.destinationSlug}`}
+              style={{
+                fontSize: '0.85rem',
+                color: 'var(--tf-primary)',
+                marginLeft: 'auto',
+                textDecoration: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Explore Destination →
+            </Link>
+          )}
         </div>
 
-        <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: 800, lineHeight: 1.2 }}>
+        <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: 800, lineHeight: 1.25 }}>
           {guide.title}
         </h1>
 
@@ -86,7 +117,7 @@ export function TravelGuideDetailPage() {
           style={{
             fontSize: '1.2rem',
             color: 'var(--tf-text-muted)',
-            lineHeight: 1.5,
+            lineHeight: 1.6,
             marginBottom: '2rem',
           }}
         >
@@ -95,10 +126,10 @@ export function TravelGuideDetailPage() {
 
         <div
           style={{
-            borderRadius: 'var(--tf-radius-md)',
+            borderRadius: 'var(--tf-radius-md, 12px)',
             overflow: 'hidden',
             marginBottom: '2.5rem',
-            height: '22rem',
+            height: '24rem',
           }}
         >
           <img
@@ -110,8 +141,8 @@ export function TravelGuideDetailPage() {
 
         <div
           style={{
-            fontSize: '1.05rem',
-            lineHeight: 1.8,
+            fontSize: '1.08rem',
+            lineHeight: 1.85,
             color: 'var(--tf-text)',
             whiteSpace: 'pre-line',
           }}
@@ -122,8 +153,8 @@ export function TravelGuideDetailPage() {
 
       {/* Related Guides */}
       {relatedGuides && relatedGuides.length > 0 && (
-        <section style={{ marginBottom: '3rem' }}>
-          <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem' }}>More Travel Articles</h2>
+        <section style={{ marginBottom: '3.5rem' }}>
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem' }}>More Travel Guides</h2>
           <div className="tf-grid-3">
             {relatedGuides.map((g) => (
               <GuideCard key={g.id} guide={g} />
@@ -136,3 +167,5 @@ export function TravelGuideDetailPage() {
     </div>
   );
 }
+
+export default TravelGuideDetailPage;

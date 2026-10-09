@@ -30,6 +30,17 @@ vi.mock('../../../lib/api.js', () => ({
     googleLogin: vi.fn(),
   },
   setUnauthorizedListener: vi.fn(),
+  messagingApi: {
+    listConversations: vi.fn(() => Promise.resolve({ conversations: [] })),
+  },
+  notificationApi: {
+    list: vi.fn(() => Promise.resolve({ data: [], unreadCount: 0 })),
+    getUnreadCount: vi.fn(() => Promise.resolve({ count: 0 })),
+    markAsRead: vi.fn(() => Promise.resolve({})),
+    markAllAsRead: vi.fn(() => Promise.resolve({})),
+    registerPushToken: vi.fn(() => Promise.resolve({})),
+    unregisterPushToken: vi.fn(() => Promise.resolve({})),
+  },
 }));
 
 const agencyUser = { id: 2, email: 'shop@example.com', role: 'agency', status: 'active' };

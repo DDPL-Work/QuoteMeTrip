@@ -24,7 +24,9 @@ export function PopularRoutesSection({
     if (onSelectRoute) {
       onSelectRoute(route);
     } else {
-      navigate(`/plan-trip?destination=${encodeURIComponent(route.name)}`);
+      const country = route.countrySlug || 'turkey';
+      const destSlug = route.slug || route.name.toLowerCase();
+      navigate(`/destinations/${country}/${destSlug}`);
     }
   };
 

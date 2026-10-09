@@ -1,22 +1,57 @@
 /**
- * Agencies List Page (/agencies) — Track B.
+ * Agencies List Page (/agencies, /agencies/:locationSlug) — QuoteMeTrip.
  *
  * Searchable public agency directory exposing public-safe profiles only.
+ * Supports filtering by country/location:
+ * - /agencies
+ * - /agencies/turkey
+ * - /agencies/istanbul
+ * - /agencies/cappadocia
  * Private contact details (email/phone/WhatsApp) are safely omitted.
  */
 
 import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useI18n } from '@troublefree/i18n';
 import { SectionHeading, AgencyCard } from '@troublefree/ui';
 import { getAgencies } from '../../services/public-api.js';
+import { usePageMetadata } from '../../hooks/usePageMetadata.js';
+import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
-export function AgenciesPage() {
+const LOCATION_TITLES = {
+  turkey: 'Turkey (Türkiye)',
+  istanbul: 'Istanbul',
+  cappadocia: 'Cappadocia',
+  antalya: 'Antalya',
+  izmir: 'Izmir',
+};
+
+export function AgenciesPage({ locationFilter }) {
+  const params = useParams();
+  const locationSlug = (params.locationSlug || locationFilter || '').toLowerCase();
+
   const { t } = useI18n();
   const [agencies, setAgencies] = useState([]);
   const [search, setSearch] = useState('');
-  const [city, setCity] = useState('all');
+  const [activeLocation, setActiveLocation] = useState(locationSlug || 'all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (locationSlug) {
+      setActiveLocation(locationSlug);
+    }
+  }, [locationSlug]);
+
+  const locationDisplay = LOCATION_TITLES[activeLocation] || (activeLocation !== 'all' ? activeLocation : null);
+  const pageTitle = locationDisplay
+    ? `Verified Travel Agencies in ${locationDisplay}`
+    : 'Verified Travel Agencies in Turkey';
+
+  usePageMetadata(
+    pageTitle,
+    `Browse licensed, verified travel agencies in ${locationDisplay || 'Turkey'}. Receive competitive itemized quotes for custom holiday routes.`,
+  );
 
   useEffect(() => {
     let active = true;
@@ -24,7 +59,10 @@ export function AgenciesPage() {
     setError(null);
     (async () => {
       try {
-        const list = await getAgencies({ search, city });
+        const list = await getAgencies({
+          search,
+          location: activeLocation !== 'all' ? activeLocation : '',
+        });
         if (active) setAgencies(list);
       } catch (err) {
         if (active) setError(err?.message || t('common.error', 'Failed to load content.'));
@@ -35,23 +73,71 @@ export function AgenciesPage() {
     return () => {
       active = false;
     };
-  }, [search, city, t]);
+  }, [search, activeLocation, t]);
+
+  const breadcrumbs = [{ label: 'Agencies', to: locationDisplay ? '/agencies' : undefined }];
+  if (locationDisplay) {
+    breadcrumbs.push({ label: locationDisplay });
+  }
 
   return (
     <div className="tf-public-container">
+      <PublicBreadcrumbs items={breadcrumbs} />
+
       <SectionHeading
-        title={t('agencies.title', 'Verified Travel Agencies')}
-        subtitle={t(
-          'agencies.subtitle',
-          'Browse verified local operators ready to provide custom trip quotations.',
-        )}
+        title={locationDisplay ? `Verified Travel Agencies in ${locationDisplay}` : t('agencies.title', 'Verified Travel Agencies')}
+        subtitle={
+          locationDisplay
+            ? `Licensed local travel operators based in ${locationDisplay} ready to plan and execute your trip.`
+            : t('agencies.subtitle', 'Browse verified local operators ready to provide custom trip quotations.')
+        }
       />
+
+      {/* Quick Location Filter Tabs */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+          marginBottom: '1.75rem',
+        }}
+      >
+        <Link
+          to="/agencies"
+          onClick={() => setActiveLocation('all')}
+          className={`tf-btn ${activeLocation === 'all' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
+        >
+          All Locations
+        </Link>
+        <Link
+          to="/agencies/turkey"
+          onClick={() => setActiveLocation('turkey')}
+          className={`tf-btn ${activeLocation === 'turkey' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
+        >
+          Turkey (All)
+        </Link>
+        <Link
+          to="/agencies/istanbul"
+          onClick={() => setActiveLocation('istanbul')}
+          className={`tf-btn ${activeLocation === 'istanbul' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
+        >
+          Istanbul
+        </Link>
+        <Link
+          to="/agencies/cappadocia"
+          onClick={() => setActiveLocation('cappadocia')}
+          className={`tf-btn ${activeLocation === 'cappadocia' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
+        >
+          Cappadocia
+        </Link>
+      </div>
 
       <div className="tf-filter-bar">
         <input
           type="text"
           className="tf-input tf-search-input"
-          placeholder={t('agencies.searchPlaceholder', 'Search agencies by name or city...')}
+          placeholder={t('agencies.searchPlaceholder', 'Search agencies by name or specialty...')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search travel agencies"
@@ -59,15 +145,16 @@ export function AgenciesPage() {
         <select
           className="tf-input"
           style={{ width: 'auto' }}
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
+          value={activeLocation}
+          onChange={(e) => setActiveLocation(e.target.value)}
           aria-label="Filter by city"
         >
-          <option value="all">{t('common.all', 'All Cities')}</option>
+          <option value="all">{t('common.all', 'All Locations')}</option>
+          <option value="turkey">Turkey (Nationwide)</option>
           <option value="istanbul">Istanbul</option>
           <option value="antalya">Antalya</option>
-          <option value="nevsehir">Nevsehir (Cappadocia)</option>
-          <option value="izmir">Izmir</option>
+          <option value="cappadocia">Nevsehir (Cappadocia)</option>
+          <option value="izmir">Izmir (Aegean)</option>
         </select>
       </div>
 
@@ -95,7 +182,7 @@ export function AgenciesPage() {
             className="tf-btn tf-btn-ghost"
             onClick={() => {
               setSearch('');
-              setCity('all');
+              setActiveLocation('all');
             }}
           >
             Clear Filters
@@ -113,3 +200,5 @@ export function AgenciesPage() {
     </div>
   );
 }
+
+export default AgenciesPage;

@@ -17,6 +17,7 @@ import { AgencyDashboardSkeleton } from '../components/AgencyDashboardSkeleton.j
 import { AgencyRequestCard } from '../components/AgencyRequestCard.jsx';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n } from '@troublefree/i18n';
+import { toast } from '@troublefree/ui';
 import { agencyRequestApi, agencyQuotationApi, jobApi, messagingApi } from '../lib/api.js';
 
 export function DashboardPage() {
@@ -125,7 +126,9 @@ export function DashboardPage() {
       }));
       setRecentActivity(activityStream.slice(0, 4));
     } catch (e) {
-      setError(e?.message ?? 'Unable to load agency dashboard.');
+      const msg = e?.message ?? 'Unable to load agency dashboard.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

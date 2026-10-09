@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiAlertCircle } from 'react-icons/fi';
+import { toast } from '@troublefree/ui';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
 import { agencyQuotationApi, agencyRequestApi } from '../lib/api.js';
 import { QuotationForm } from '../components/QuotationForm.jsx';
@@ -31,7 +32,11 @@ export function QuotationEditPage() {
           }
         }
       } catch (e) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load quotation.');
+        const msg = e?.message ?? 'Failed to load quotation.';
+        if (!cancelled) {
+          setError(msg);
+          toast.error(msg);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -46,9 +51,12 @@ export function QuotationEditPage() {
     try {
       const data = await agencyQuotationApi.update(id, payload);
       const quotation = data.quotation ?? data;
+      toast.success('Quotation updated successfully.');
       navigate(`/quotations/${quotation.id ?? id}`);
     } catch (e) {
-      setError(e?.message ?? 'Failed to save quotation.');
+      const msg = e?.message ?? 'Failed to save quotation.';
+      setError(msg);
+      toast.error(msg);
       throw e;
     }
   }
