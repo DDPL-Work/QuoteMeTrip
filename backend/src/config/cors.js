@@ -32,6 +32,10 @@ export function isAllowedOrigin(origin) {
 
   // 2. Known production and staging domains
   const knownOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:5176',
     'https://quote-me-trip-omega.vercel.app',
     'https://quotemetrip-traveller.vercel.app',
     'https://quotemetrip-agency.vercel.app',
