@@ -9,39 +9,12 @@
  * rejected. All sends go through REST; there is no socket send path.
  */
 import { Server } from 'socket.io';
-import { corsOptions } from '../config/cors.js';
+import { isAllowedOrigin } from '../config/cors.js';
 import { verifyAccessToken } from '../utils/jwt.js';
 import { assertConversationMember } from '../modules/messaging/message.service.js';
 import { SOCKET_EVENTS } from '../modules/messaging/message.constants.js';
 
 let io = null;
-
-function allowedOrigins() {
-  const origins = [
-    process.env.WEB_TRAVELLER_URL,
-    process.env.WEB_AGENCY_URL,
-    process.env.WEB_ADMIN_URL,
-  ].filter(Boolean);
-
-  if (process.env.NODE_ENV !== 'production') {
-    const devDefaults = [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-      'http://localhost:5000',
-      'http://localhost:5001',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-      'http://127.0.0.1:5175',
-      'http://127.0.0.1:5000',
-      'http://127.0.0.1:5001',
-    ];
-    for (const o of devDefaults) {
-      if (!origins.includes(o)) origins.push(o);
-    }
-  }
-  return origins;
-}
 
 function credentialsFrom(handshake) {
   const auth = handshake?.auth || {};
@@ -75,7 +48,12 @@ export function initSocketServer(httpServer) {
   }
   io = new Server(httpServer, {
     cors: {
-      origin: allowedOrigins().length > 0 ? allowedOrigins() : corsOptions.origin,
+      origin: (origin, callback) => {
+        if (isAllowedOrigin(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Not allowed by CORS: ${origin}`));
+      },
       credentials: true,
     },
     path: '/socket.io',

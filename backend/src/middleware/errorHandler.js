@@ -1,6 +1,7 @@
 import { errorResponse } from '../utils/apiResponse.js';
 import { AppError } from '../utils/errors.js';
 import { logError } from '../utils/logger.js';
+import { isAllowedOrigin } from '../config/cors.js';
 
 /**
  * Centralized Express error-handling middleware (Phase 9 hardened).
@@ -18,6 +19,14 @@ export function errorHandler(err, req, res, next) {
     userId: req.user?.id,
   });
 
+  // Preserve CORS headers on error responses for allowed origins so that
+  // browsers do not mask server/database errors as generic CORS errors.
+  const origin = req.headers?.origin;
+  if (origin && isAllowedOrigin(origin) && !res.getHeader('access-control-allow-origin')) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   if (err instanceof AppError) {
     return errorResponse(res, {
       statusCode: err.statusCode,
@@ -28,7 +37,7 @@ export function errorHandler(err, req, res, next) {
   }
 
   // Handle CORS rejection
-  if (err.message === 'Not allowed by CORS') {
+  if (err.message && err.message.startsWith('Not allowed by CORS')) {
     return errorResponse(res, {
       statusCode: 403,
       code: 'CORS_FORBIDDEN',
