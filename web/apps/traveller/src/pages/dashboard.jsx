@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n } from '@troublefree/i18n';
 import { Icons } from '../components/icons.jsx';
 import { useTravellerDashboard } from '../features/dashboard/useTravellerDashboard.js';
+import { travellerApi, getMediaUrl } from '../lib/api.js';
 import {
   Button,
   StatusBadge,
@@ -38,6 +39,38 @@ export function DashboardPage() {
   const { t } = useI18n();
   const { data, loading, error, actions } = useTravellerDashboard();
 
+  const [profile, setProfile] = useState(user?.profile || null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadProfile() {
+      try {
+        const res = await travellerApi.getMe();
+        const prof = res?.profile || res?.data?.profile || res?.data || res;
+        if (active && prof) {
+          setProfile(prof);
+        }
+      } catch {
+        // Fall back gracefully to user?.profile
+      }
+    }
+    loadProfile();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleRefresh = async () => {
+    actions.refreshAll();
+    try {
+      const res = await travellerApi.getMe();
+      const prof = res?.profile || res?.data?.profile || res?.data || res;
+      if (prof) setProfile(prof);
+    } catch {
+      // Ignore
+    }
+  };
+
   const { requests, jobs, conversations, quotations, unreadNotifications, draftRequest } = data;
 
   // Combine loading state
@@ -68,12 +101,35 @@ export function DashboardPage() {
     actionLink = `/travel-requests`; // or specific quote
   }
 
+  const rawAvatar =
+    profile?.profilePicture ||
+    profile?.avatarUrl ||
+    user?.profile?.profilePicture ||
+    user?.profile?.avatarUrl ||
+    user?.profilePicture ||
+    user?.avatarUrl;
+
+  const rawCover =
+    profile?.coverImage ||
+    profile?.coverImageUrl ||
+    user?.profile?.coverImage ||
+    user?.profile?.coverImageUrl ||
+    user?.coverImage;
+
+  const avatarUrl = getMediaUrl(rawAvatar);
+  const coverImageUrl = getMediaUrl(rawCover);
+
   const welcomeTime = getTimeOfDay(t);
   const firstName =
-    user?.firstName || user?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Traveller';
+    profile?.firstName ||
+    user?.firstName ||
+    user?.name?.split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    'Traveller';
   const welcomeText = t('dashboard.welcome', { timeOfDay: welcomeTime, name: firstName })
     .replace('{timeOfDay}', welcomeTime)
     .replace('{name}', firstName);
+  const initials = (firstName[0] || 'T').toUpperCase();
 
   if (isInitialLoading) {
     return (
@@ -144,47 +200,121 @@ export function DashboardPage() {
           style={{
             position: 'relative',
             marginBottom: '24px',
-            borderRadius: '12px',
+            borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#F3DCC2',
+            minHeight: '180px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+            border: '1px solid #E2DCD1',
           }}
         >
-          <HeroIllustration style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+          {coverImageUrl ? (
+            <img
+              src={coverImageUrl}
+              alt="Cover"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : (
+            <HeroIllustration style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+          )}
           <div
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background:
-                'linear-gradient(90deg, rgba(243,220,194,0.95) 0%, rgba(243,220,194,0.6) 50%, transparent 100%)',
+              position: 'relative',
+              background: coverImageUrl
+                ? 'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.3) 100%)'
+                : 'linear-gradient(90deg, rgba(243,220,194,0.95) 0%, rgba(243,220,194,0.6) 50%, transparent 100%)',
+              backdropFilter: coverImageUrl ? 'blur(2px)' : 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '24px',
+              padding: '24px 28px',
+              minHeight: '180px',
+              gap: '16px',
+              flexWrap: 'wrap',
             }}
           >
-            <div>
-              <h1
-                className="tf-portal-page-title"
-                style={{ color: '#13291C', margin: 0, fontSize: '2rem' }}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <Link
+                to="/profile"
+                title="View / Edit Profile"
+                style={{
+                  textDecoration: 'none',
+                  display: 'block',
+                  position: 'relative',
+                  flexShrink: 0,
+                }}
               >
-                {welcomeText}
-              </h1>
-              <p
-                className="tf-portal-page-subtitle"
-                style={{ color: '#13291C', margin: '8px 0 0', opacity: 0.8 }}
-              >
-                {t('dashboard.planNextTrip')}
-              </p>
+                <div
+                  style={{
+                    width: '68px',
+                    height: '68px',
+                    borderRadius: '50%',
+                    border: '3px solid #FFFFFF',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
+                    overflow: 'hidden',
+                    backgroundColor: '#E5F2EA',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.14)';
+                  }}
+                >
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={firstName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '26px', fontWeight: '800', color: '#0C4E28' }}>
+                      {initials}
+                    </span>
+                  )}
+                </div>
+              </Link>
+              <div>
+                <h1
+                  className="tf-portal-page-title"
+                  style={{ color: '#13291C', margin: 0, fontSize: '2rem', fontWeight: 800 }}
+                >
+                  {welcomeText}
+                </h1>
+                <p
+                  className="tf-portal-page-subtitle"
+                  style={{ color: '#2C3A33', margin: '6px 0 0', opacity: 0.9, fontWeight: 500 }}
+                >
+                  {t('dashboard.planNextTrip')}
+                </p>
+              </div>
             </div>
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Button
                 variant="line"
-                onClick={actions.refreshAll}
+                onClick={handleRefresh}
                 aria-label={t('dashboard.refresh')}
-                style={{ backgroundColor: 'rgba(255,255,255,0.8)', border: 'none' }}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.85)',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  color: '#13291C',
+                }}
               >
                 <Icons.Refresh aria-hidden="true" style={{ marginRight: '8px' }} />
                 {t('dashboard.refresh')}

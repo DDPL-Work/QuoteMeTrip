@@ -14,50 +14,61 @@
  * - terms_sections: JSON (array of { title, content, points, sortOrder, enabled })
  * - branding: JSON (logoUrl, agencyName, address, phone, email, footerBannerUrl)
  */
+async function safeAddColumn(queryInterface, tableName, columnName, spec) {
+  try {
+    await queryInterface.addColumn(tableName, columnName, spec);
+  } catch (err) {
+    if (err.original?.code === 'ER_DUP_FIELDNAME' || err.code === 'ER_DUP_FIELDNAME') {
+      return;
+    }
+    throw err;
+  }
+}
+
 export async function up(queryInterface, Sequelize) {
-  await queryInterface.addColumn('quotations', 'greeting', {
+  await safeAddColumn(queryInterface, 'quotations', 'greeting', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'package_overview', {
+  await safeAddColumn(queryInterface, 'quotations', 'package_overview', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'itinerary_days', {
+  await safeAddColumn(queryInterface, 'quotations', 'itinerary_days', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'tax_rate', {
+  await safeAddColumn(queryInterface, 'quotations', 'tax_rate', {
     type: Sequelize.DECIMAL(5, 2),
     allowNull: false,
     defaultValue: 0,
   });
-  await queryInterface.addColumn('quotations', 'tax_amount', {
+  await safeAddColumn(queryInterface, 'quotations', 'tax_amount', {
     type: Sequelize.DECIMAL(12, 2),
     allowNull: false,
     defaultValue: 0,
   });
-  await queryInterface.addColumn('quotations', 'tax_label', {
+  await safeAddColumn(queryInterface, 'quotations', 'tax_label', {
     type: Sequelize.STRING(190),
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'payment_details', {
+  await safeAddColumn(queryInterface, 'quotations', 'payment_details', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'inclusions', {
+  await safeAddColumn(queryInterface, 'quotations', 'inclusions', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'exclusions', {
+  await safeAddColumn(queryInterface, 'quotations', 'exclusions', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'terms_sections', {
+  await safeAddColumn(queryInterface, 'quotations', 'terms_sections', {
     type: Sequelize.JSON,
     allowNull: true,
   });
-  await queryInterface.addColumn('quotations', 'branding', {
+  await safeAddColumn(queryInterface, 'quotations', 'branding', {
     type: Sequelize.JSON,
     allowNull: true,
   });

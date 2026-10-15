@@ -10,6 +10,8 @@
  * test operations can never touch the development database.
  */
 
+import { readFileSync } from 'node:fs';
+
 function toInteger(value, fallback) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -19,8 +21,38 @@ function isTestEnv() {
   return process.env.NODE_ENV === 'test';
 }
 
+export function getSslConfig() {
+  const rawCaPath = process.env.DB_SSL_CA_PATH;
+  const caPath = rawCaPath ? rawCaPath.trim() : '';
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (!caPath) {
+    if (isProduction) {
+      throw new Error('Production database requires verified TLS: DB_SSL_CA_PATH must be configured.');
+    }
+    return null;
+  }
+
+  let ca;
+  try {
+    ca = readFileSync(caPath, 'utf8');
+  } catch (err) {
+    throw new Error(`Failed to read SSL CA certificate at "${caPath}": ${err.message}`);
+  }
+
+  if (!ca || ca.trim() === '') {
+    throw new Error(`SSL CA certificate file at "${caPath}" is empty.`);
+  }
+
+  return {
+    ca,
+    rejectUnauthorized: true,
+  };
+}
+
 export function getDatabaseConfig() {
   const test = isTestEnv();
+  const ssl = getSslConfig();
 
   return {
     // Which physical database to connect to. Tests always use the
@@ -51,6 +83,7 @@ export function getDatabaseConfig() {
     dialectOptions: {
       // Fail fast on unreachable hosts instead of hanging.
       connectTimeout: toInteger(process.env.DB_CONNECT_TIMEOUT_MS, 10000),
+      ...(ssl ? { ssl } : {}),
     },
     // `true` in production: refuse to boot without a live database.
     // `false` locally: boot degraded and report via /health.

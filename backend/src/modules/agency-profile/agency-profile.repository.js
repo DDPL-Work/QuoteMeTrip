@@ -97,7 +97,7 @@ export async function findAgencyDocuments(agencyId, { transaction = null } = {})
   const models = initModels();
   return models.AgencyDocument.findAll({
     where: { agencyId },
-    order: [['createdAt', 'DESC']],
+    order: [['created_at', 'DESC']],
     transaction,
   });
 }

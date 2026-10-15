@@ -303,9 +303,12 @@ export function PlanTripPage() {
               onRemoveStop={trip.removeStop}
               onReorderStops={trip.reorderStops}
               onCalculate={handleCalculateRoute}
+              onClearRoute={trip.clearRoute}
               calculationStatus={trip.calculationStatus}
+              isStale={trip.isStale}
               apiError={trip.apiError}
               currentRoute={trip.currentRoute}
+              recommendedDays={trip.recommendedDays}
             />
             {trip.stops && trip.stops.length > 0 && (
               <WeatherCard

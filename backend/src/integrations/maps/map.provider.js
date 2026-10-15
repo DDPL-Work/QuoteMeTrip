@@ -14,43 +14,12 @@
  * }
  */
 import { AppError } from '../../utils/errors.js';
+import { MapProvider, MAP_ERROR_CODES, haversineKm } from './base.provider.js';
+import { GoogleRoutesMapProvider } from './google-routes.provider.js';
 
-export const MAP_ERROR_CODES = {
-  NOT_CONFIGURED: 'MAP_PROVIDER_NOT_CONFIGURED',
-  CALCULATION_FAILED: 'MAP_CALCULATION_FAILED',
-};
+export { MapProvider, MAP_ERROR_CODES, haversineKm };
 
-const EARTH_RADIUS_KM = 6371;
 const AVERAGE_SPEED_KMH = 60;
-
-function toRadians(degrees) {
-  return (Number(degrees) * Math.PI) / 180;
-}
-
-export function haversineKm(a, b) {
-  const dLat = toRadians(b.latitude - a.latitude);
-  const dLon = toRadians(b.longitude - a.longitude);
-  const lat1 = toRadians(a.latitude);
-  const lat2 = toRadians(b.latitude);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h));
-}
-
-export class MapProvider {
-  get name() {
-    return 'base';
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  async calculateRoute({ stops } = {}) {
-    throw new Error('MapProvider.calculateRoute() is not implemented.');
-  }
-
-  // Backwards-compatible alias used by early placeholders.
-  async getRoute(input) {
-    return this.calculateRoute(input);
-  }
-}
 
 /**
  * Credential-free great-circle fallback. Works without any external
@@ -155,13 +124,13 @@ export class OsrmMapProvider extends MapProvider {
 
 /**
  * Provider factory. `MAP_PROVIDER` selects the adapter:
- *   haversine (default, no credentials) | osrm | google | mapbox
- * google/mapbox have no adapter in Phase 4 — selecting them returns
- * a clear configuration error at call time (not import time) so the
- * rest of the app keeps working.
+ *   google | haversine (credential-free great-circle fallback) | osrm
  */
-export function getMapProvider(name = process.env.MAP_PROVIDER || 'haversine') {
+export function getMapProvider(name = process.env.MAP_PROVIDER || (process.env.GOOGLE_ROUTES_API_KEY ? 'google' : 'haversine')) {
   const selected = String(name || 'haversine').toLowerCase();
+  if (selected === 'google' || selected === 'google_routes') {
+    return new GoogleRoutesMapProvider({ apiKey: process.env.GOOGLE_ROUTES_API_KEY });
+  }
   if (selected === 'haversine' || selected === '') {
     return new HaversineMapProvider();
   }
@@ -172,7 +141,7 @@ export function getMapProvider(name = process.env.MAP_PROVIDER || 'haversine') {
     return new HaversineMapProvider();
   }
   const err = new AppError(
-    `Map provider "${selected}" is not configured. Set MAP_PROVIDER=haversine (no credentials) or configure the selected provider.`,
+    `Map provider "${selected}" is not configured. Set MAP_PROVIDER=google (with GOOGLE_ROUTES_API_KEY) or MAP_PROVIDER=haversine (no credentials).`,
     { statusCode: 503, code: MAP_ERROR_CODES.NOT_CONFIGURED },
   );
   return {

@@ -5,14 +5,18 @@
  * Supports graceful degraded mode for optional third-party providers.
  */
 import dotenv from 'dotenv';
+import { existsSync } from 'node:fs';
 dotenv.config();
 
 const REQUIRED_IN_PRODUCTION = [
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
   'DB_HOST',
-  'DB_USER',
+  'DB_PORT',
   'DB_NAME',
+  'DB_USER',
+  'DB_PASSWORD',
+  'DB_SSL_CA_PATH',
 ];
 
 export function validateEnvironment() {
@@ -28,6 +32,20 @@ export function validateEnvironment() {
 
     if (missing.length > 0) {
       const errorMsg = `[CRITICAL] Server startup failed. Missing required production environment variables: ${missing.join(', ')}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    const dbPort = Number(process.env.DB_PORT);
+    if (!Number.isInteger(dbPort) || dbPort < 1 || dbPort > 65535) {
+      const errorMsg = `[CRITICAL] Server startup failed. DB_PORT must be a valid integer between 1 and 65535, received: ${process.env.DB_PORT}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    const caPath = process.env.DB_SSL_CA_PATH.trim();
+    if (!existsSync(caPath)) {
+      const errorMsg = `[CRITICAL] Server startup failed. DB_SSL_CA_PATH file does not exist: ${caPath}`;
       console.error(errorMsg);
       throw new Error(errorMsg);
     }

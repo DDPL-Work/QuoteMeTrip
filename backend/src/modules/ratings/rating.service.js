@@ -58,7 +58,7 @@ export class RatingService {
         { model: User, as: 'traveller', attributes: ['id', 'name'] },
         { model: Job, as: 'job', attributes: ['id', 'status', 'completedAt'] },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['created_at', 'DESC']],
     });
   }
 

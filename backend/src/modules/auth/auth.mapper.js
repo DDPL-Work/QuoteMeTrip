@@ -20,6 +20,12 @@ export function toPublicUser(user, { profile = null } = {}) {
   if (profile !== null && profile !== undefined) {
     const plain = profile.get ? profile.get({ plain: true }) : { ...profile };
     delete plain.userId;
+    if (plain.profilePicture && !plain.avatarUrl) {
+      plain.avatarUrl = plain.profilePicture;
+    }
+    if (plain.coverImage && !plain.coverImageUrl) {
+      plain.coverImageUrl = plain.coverImage;
+    }
     publicUser.profile = plain;
   }
   return publicUser;

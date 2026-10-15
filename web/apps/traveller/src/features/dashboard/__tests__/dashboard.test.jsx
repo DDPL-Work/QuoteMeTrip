@@ -49,6 +49,10 @@ vi.mock('../../../lib/api.js', () => ({
       },
     }),
   },
+  travellerApi: {
+    getMe: vi.fn().mockResolvedValue({ profile: null }),
+  },
+  getMediaUrl: vi.fn((url) => url || null),
   setUnauthorizedListener: vi.fn(),
 }));
 

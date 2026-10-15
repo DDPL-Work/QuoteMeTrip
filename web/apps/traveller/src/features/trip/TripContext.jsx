@@ -17,12 +17,23 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
   const [submissionState, setSubmissionState] = useState('idle');
   const [apiError, setApiError] = useState(null);
 
+  const [isStale, setIsStale] = useState(false);
+
   const addStop = useCallback((stop) => {
-    setStops((prev) => [...prev, { ...stop, id: stop.id ?? `stop-${stopSeq++}` }]);
+    setStops((prev) => {
+      // Auto-assign start/final type if needed
+      let nextType = stop.type;
+      if (prev.length === 0) {
+        nextType = 'start';
+      }
+      return [...prev, { ...stop, type: nextType, id: stop.id ?? `stop-${stopSeq++}` }];
+    });
+    setIsStale(true);
   }, []);
 
   const removeStop = useCallback((id) => {
     setStops((prev) => prev.filter((s) => s.id !== id));
+    setIsStale(true);
   }, []);
 
   const reorderStops = useCallback((fromIndex, toIndex) => {
@@ -34,6 +45,7 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
       next.splice(toIndex, 0, moved);
       return next;
     });
+    setIsStale(true);
   }, []);
 
   const calculateRoute = useCallback(async () => {
@@ -41,17 +53,19 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
     setApiError(null);
     try {
       const payload = {
-        stops: stops.map(({ name, latitude, longitude, type }) => ({
+        stops: stops.map(({ name, latitude, longitude, type, placeId }) => ({
           name,
           latitude,
           longitude,
           type,
+          placeId: placeId || null,
         })),
       };
       const result = await routeClient.calculate(payload);
       setCurrentRoute(result.route ?? result);
       setRecommendedDays(result.recommendedDays ?? result.route?.recommendedDays ?? null);
       setCalculationStatus('calculated');
+      setIsStale(false);
       return result;
     } catch (error) {
       setApiError(error?.message ?? 'Route calculation failed.');
@@ -63,15 +77,17 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
   const saveRoute = useCallback(
     async (input = {}) => {
       const saved = await routeClient.create({
-        stops: stops.map(({ name, latitude, longitude, type }) => ({
+        stops: stops.map(({ name, latitude, longitude, type, placeId }) => ({
           name,
           latitude,
           longitude,
           type,
+          placeId: placeId || null,
         })),
         ...input,
       });
       setCurrentRoute(saved.route ?? saved);
+      setIsStale(false);
       return saved;
     },
     [stops, routeClient],
@@ -81,6 +97,7 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
     setStops([]);
     setCurrentRoute(null);
     setCalculationStatus('idle');
+    setIsStale(false);
     setRecommendedDays(null);
     setOverriddenDays(null);
     setApiError(null);
@@ -97,12 +114,14 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
       requestLoading,
       submissionState,
       apiError,
+      isStale,
       addStop,
       removeStop,
       reorderStops,
       calculateRoute,
       saveRoute,
       clearRoute,
+      setIsStale,
       setOverriddenDays,
       setRequestDraft,
       setRequestLoading,
@@ -119,6 +138,7 @@ export function TripProvider({ children, routeClient = routeApi } = {}) {
       requestLoading,
       submissionState,
       apiError,
+      isStale,
       addStop,
       removeStop,
       reorderStops,

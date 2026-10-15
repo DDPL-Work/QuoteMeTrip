@@ -53,14 +53,18 @@ export async function calculateRouteForTraveller({ stops }, { provider = null } 
     distanceKm: result.distanceKm,
     durationMinutes: result.durationMinutes,
     geometry: result.geometry,
+    encodedPolyline: result.encodedPolyline ?? result.geometry?.encodedPolyline ?? null,
+    legs: result.legs ?? [],
     recommendedDays,
     calculationProvider: result.provider,
     calculationVersion: RECOMMENDED_DAYS_VERSION,
+    warnings: result.warnings ?? [],
     rawResponse: result.rawResponse,
   };
 }
 
 export function toPublicRoute(route) {
+  const rawData = route.rawRouteData || {};
   return {
     id: route.id,
     travellerId: route.travellerId,
@@ -71,6 +75,9 @@ export function toPublicRoute(route) {
     recommendedDays: route.recommendedDays,
     calculationProvider: route.calculationProvider,
     calculationVersion: route.calculationVersion,
+    geometry: rawData.geometry ?? (rawData.encodedPolyline ? { type: 'LineString', encodedPolyline: rawData.encodedPolyline } : null),
+    encodedPolyline: rawData.encodedPolyline ?? null,
+    legs: rawData.legs ?? [],
     rawRouteData: route.rawRouteData ?? null,
     stops: (route.stops || []).map((s) => ({
       id: s.id,
@@ -98,7 +105,12 @@ export async function saveCalculatedRoute(travellerId, calculated, { role = null
     recommendedDays: calculated.recommendedDays,
     calculationProvider: calculated.calculationProvider,
     calculationVersion: calculated.calculationVersion,
-    rawRouteData: calculated.rawResponse ?? null,
+    rawRouteData: {
+      ...(calculated.rawResponse || {}),
+      geometry: calculated.geometry,
+      encodedPolyline: calculated.encodedPolyline,
+      legs: calculated.legs,
+    },
   });
   const stopRows = calculated.stops.map((s, index) => ({
     routeId: route.id,

@@ -7,8 +7,11 @@ import * as repository from './agency-profile.repository.js';
 import { validateCoverageInput } from './agency-profile.validation.js';
 import { AGENCY_PROFILE_ERROR_CODES } from './agency-profile.constants.js';
 
+import { validateFileMetadata } from '../../middleware/upload.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const UPLOADS_DIR = path.resolve(__dirname, '../../../uploads');
 
 export async function getAgencyProfile(userId, { role = null } = {}) {
   if (role && role !== 'agency') {
@@ -146,18 +149,65 @@ export async function uploadAgencyDocument(userId, body = {}, meta = {}) {
     throw new ValidationError(`Invalid document type: ${documentType}`);
   }
 
-  const filePath = meta.filePath || body.filePath || body.url;
-  if (!filePath) {
+  const rawFilePath = meta.filePath || body.filePath || body.url || body.file || body.data;
+  if (!rawFilePath) {
     throw new ValidationError('File path is required for document upload.');
+  }
+
+  let finalFilePath = rawFilePath;
+  let originalName = meta.originalName || body.originalName || 'document';
+  let mimeType = meta.mimeType || body.mimeType || 'application/pdf';
+  let fileSize = meta.size || body.size || 0;
+
+  // Handle base64 / data URL uploads
+  if (typeof rawFilePath === 'string') {
+    const isDataUrl = rawFilePath.startsWith('data:') || rawFilePath.includes(';base64,');
+    const isBase64String =
+      !rawFilePath.startsWith('/') &&
+      !rawFilePath.startsWith('http://') &&
+      !rawFilePath.startsWith('https://') &&
+      rawFilePath.length > 255;
+
+    if (isDataUrl || isBase64String) {
+      try {
+        let base64Data = rawFilePath;
+        if (rawFilePath.includes(';base64,')) {
+          const parts = rawFilePath.split(';base64,');
+          if (parts[0].startsWith('data:')) {
+            mimeType = parts[0].replace('data:', '') || mimeType;
+          }
+          base64Data = parts[1] || '';
+        }
+        const buffer = Buffer.from(base64Data, 'base64');
+        fileSize = buffer.length;
+
+        const fileMeta = validateFileMetadata({
+          name: originalName,
+          type: mimeType,
+          size: buffer.length,
+        });
+
+        await fs.mkdir(UPLOADS_DIR, { recursive: true });
+        await fs.writeFile(fileMeta.destinationPath, buffer);
+
+        finalFilePath = `/uploads/${path.basename(fileMeta.destinationPath)}`;
+        originalName = fileMeta.originalName;
+        mimeType = fileMeta.mimeType;
+      } catch (err) {
+        throw new ValidationError(err.message || 'Failed to process document upload.', {
+          code: 'INVALID_FILE_UPLOAD',
+        });
+      }
+    }
   }
 
   return repository.createAgencyDocument({
     agencyId: profile.id,
     documentType,
-    filePath,
-    originalName: meta.originalName || body.originalName || 'document',
-    mimeType: meta.mimeType || body.mimeType || 'application/pdf',
-    fileSize: meta.size || body.size || 0,
+    filePath: finalFilePath,
+    originalName,
+    mimeType,
+    fileSize,
     status: 'pending',
   });
 }

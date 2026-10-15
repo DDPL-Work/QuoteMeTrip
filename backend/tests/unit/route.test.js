@@ -33,6 +33,11 @@ import {
 } from '../../src/modules/travel-requests/travel-requests.validation.js';
 import { TRAVEL_REQUEST_TRANSITIONS } from '../../src/db/models/TravelRequest.js';
 import { findOwnedRoute } from '../../src/modules/routes/routes.service.js';
+import {
+  GoogleRoutesMapProvider,
+  decodeEncodedPolyline,
+  parseDurationSeconds,
+} from '../../src/integrations/maps/google-routes.provider.js';
 
 const start = (overrides = {}) => ({
   name: 'Istanbul',
@@ -312,3 +317,142 @@ describe('route ownership helper', () => {
     );
   });
 });
+
+describe('GoogleRoutesMapProvider unit tests', () => {
+  test('decodeEncodedPolyline decodes Google encoded polyline correctly', () => {
+    // Encoded polyline for points (38.5, -120.2), (40.7, -120.95), (43.252, -126.453)
+    const encoded = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
+    const decoded = decodeEncodedPolyline(encoded);
+    assert.strictEqual(decoded.length, 3);
+    assert.strictEqual(Math.round(decoded[0][0] * 10) / 10, 38.5);
+    assert.strictEqual(Math.round(decoded[0][1] * 10) / 10, -120.2);
+    assert.strictEqual(Math.round(decoded[1][0] * 10) / 10, 40.7);
+    assert.strictEqual(Math.round(decoded[1][1] * 100) / 100, -120.95);
+  });
+
+  test('parseDurationSeconds converts seconds string to minutes', () => {
+    assert.strictEqual(parseDurationSeconds('3600s'), 60);
+    assert.strictEqual(parseDurationSeconds('90s'), 2);
+    assert.strictEqual(parseDurationSeconds('0s'), 0);
+    assert.strictEqual(parseDurationSeconds(null), 0);
+  });
+
+  test('throws NOT_CONFIGURED when GOOGLE_ROUTES_API_KEY is missing', async () => {
+    const provider = new GoogleRoutesMapProvider({ apiKey: '' });
+    await assert.rejects(
+      provider.calculateRoute({ stops: [start(), final()] }),
+      (err) => err.statusCode === 503 && /GOOGLE_ROUTES_API_KEY is not configured/i.test(err.message),
+    );
+  });
+
+  test('throws 400 when intermediate stops exceed Google limit (25)', async () => {
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'test-key' });
+    const stops = [start()];
+    for (let i = 0; i < 26; i += 1) {
+      stops.push(intermediate({ name: `Stop ${i}` }));
+    }
+    stops.push(final());
+    await assert.rejects(
+      provider.calculateRoute({ stops }),
+      (err) => err.statusCode === 400 && /maximum of 25 intermediate stops/i.test(err.message),
+    );
+  });
+
+  test('successfully computes route and normalizes Google Routes response', async () => {
+    const mockRouteResponse = {
+      routes: [
+        {
+          distanceMeters: 550000,
+          duration: '21600s', // 6 hours = 360 mins
+          polyline: {
+            encodedPolyline: '_p~iF~ps|U_ulLnnqC_mqNvxq`@',
+          },
+          legs: [
+            {
+              distanceMeters: 250000,
+              duration: '9000s',
+            },
+            {
+              distanceMeters: 300000,
+              duration: '12600s',
+            },
+          ],
+        },
+      ],
+    };
+
+    let capturedUrl = null;
+    let capturedHeaders = null;
+    let capturedBody = null;
+
+    const mockFetch = async (url, options) => {
+      capturedUrl = url;
+      capturedHeaders = options.headers;
+      capturedBody = JSON.parse(options.body);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => mockRouteResponse,
+      };
+    };
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'test-api-key', fetchFn: mockFetch });
+    const result = await provider.calculateRoute({ stops: [start(), intermediate(), final()] });
+
+    assert.strictEqual(capturedUrl, 'https://routes.googleapis.com/directions/v2:computeRoutes');
+    assert.strictEqual(capturedHeaders['X-Goog-Api-Key'], 'test-api-key');
+    assert.ok(capturedHeaders['X-Goog-FieldMask'].includes('routes.duration'));
+    assert.strictEqual(capturedBody.travelMode, 'DRIVE');
+    assert.strictEqual(capturedBody.origin.location.latLng.latitude, 41.0082);
+    assert.strictEqual(capturedBody.intermediates.length, 1);
+    assert.strictEqual(capturedBody.destination.location.latLng.latitude, 39.9334);
+
+    assert.strictEqual(result.provider, 'google');
+    assert.strictEqual(result.distanceKm, 550);
+    assert.strictEqual(result.durationMinutes, 360);
+    assert.strictEqual(result.geometry.type, 'LineString');
+    assert.strictEqual(result.geometry.coordinates.length, 3);
+    assert.strictEqual(result.legs.length, 2);
+    assert.strictEqual(result.legs[0].distanceKm, 250);
+    assert.strictEqual(result.legs[0].durationMinutes, 150);
+    assert.strictEqual(result.legs[0].startStopName, 'Istanbul');
+    assert.strictEqual(result.legs[0].endStopName, 'Bolu');
+  });
+
+  test('handles Google API 403 / SERVICE_DISABLED gracefully with clear diagnostics', async () => {
+    const mockDisabledResponse = {
+      error: {
+        code: 403,
+        message: 'Routes API has not been used in project 996229920703 before or it is disabled.',
+        status: 'PERMISSION_DENIED',
+      },
+    };
+
+    const mockFetch = async () => ({
+      ok: false,
+      status: 403,
+      json: async () => mockDisabledResponse,
+    });
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'test-key', fetchFn: mockFetch });
+    await assert.rejects(
+      provider.calculateRoute({ stops: [start(), final()] }),
+      (err) => err.statusCode === 503 && /Google Routes API is not enabled/i.test(err.message),
+    );
+  });
+
+  test('throws 422 when Google returns no routes', async () => {
+    const mockFetch = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ routes: [] }),
+    });
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'test-key', fetchFn: mockFetch });
+    await assert.rejects(
+      provider.calculateRoute({ stops: [start(), final()] }),
+      (err) => err.statusCode === 422 && /No driving route could be found/i.test(err.message),
+    );
+  });
+});
+
