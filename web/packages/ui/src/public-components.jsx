@@ -3,7 +3,7 @@
 // Reusable components for the public Traveller website built with the
 // Light Green (#2E9E5B) + Yellow (#F5C518) visual identity.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useI18n, SUPPORTED_LOCALES } from '@troublefree/i18n';
 
 export function LanguageSwitcher() {
@@ -30,6 +30,18 @@ export function PublicHeader({ user, onSignOut }) {
   const { t } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    }
+    if (mobileMenuOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
 
   return (
@@ -40,7 +52,7 @@ export function PublicHeader({ user, onSignOut }) {
             src="/images/tfh_logo.png"
             alt="QuoteMeTrip"
             height="38"
-            style={{ display: 'block' }}
+            style={{ display: 'block', maxWidth: '100%', height: 'auto', maxHeight: '38px' }}
           />
         </a>
 

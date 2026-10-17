@@ -27,7 +27,7 @@ export function AppHeader({ notificationCount = 0, onNotificationClick, onNotifi
         <img
           src="/images/tfh_logo.png"
           alt="QuoteMeTrip"
-          style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+          style={{ height: 'clamp(28px, 4vw, 36px)', width: 'auto', objectFit: 'contain' }}
         />
         <span style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>
           QuoteMeTrip
@@ -37,6 +37,8 @@ export function AppHeader({ notificationCount = 0, onNotificationClick, onNotifi
       <div className="tf-portal-header-actions">
         <Link
           to="/"
+          className="tf-portal-public-link"
+          title="Go to Public Portal"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -51,7 +53,7 @@ export function AppHeader({ notificationCount = 0, onNotificationClick, onNotifi
             transition: 'background 0.2s ease',
           }}
         >
-          <FiGlobe size={14} /> Public Portal
+          <FiGlobe size={14} /> <span className="tf-portal-public-label">Public Portal</span>
         </Link>
 
         {/* Notifications Bell & Dropdown Panel */}

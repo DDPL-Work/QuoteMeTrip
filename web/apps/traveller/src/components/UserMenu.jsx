@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiUser, FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiChevronDown, FiGlobe } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { getMediaUrl } from '../lib/api.js';
 
@@ -95,6 +95,15 @@ export function UserMenu() {
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <FiUser size={16} /> My Profile
+          </Link>
+          <Link
+            to="/"
+            className="tf-portal-dropdown-item"
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <FiGlobe size={16} /> Public Portal
           </Link>
           <button
             type="button"

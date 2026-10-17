@@ -80,29 +80,22 @@ export function DestinationDetailPage() {
     <div>
       {/* Destination Hero */}
       <section
+        className="tf-detail-hero"
         style={{
-          position: 'relative',
-          height: '24rem',
           backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.72)), url(${destination.image})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'flex-end',
-          padding: '3rem 1.5rem',
         }}
       >
-        <div style={{ maxWidth: '75rem', width: '100%', margin: '0 auto' }}>
+        <div className="tf-detail-hero-content">
           <span
             className="tf-card-badge"
             style={{ position: 'static', marginBottom: '0.75rem', display: 'inline-block' }}
           >
             {destination.region}, {destination.country}
           </span>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 0.5rem', fontWeight: 800 }}>
+          <h1 className="tf-detail-hero-title">
             {destination.name}
           </h1>
-          <p style={{ fontSize: '1.2rem', color: '#e2e8f0', margin: 0, maxWidth: '38rem' }}>
+          <p className="tf-detail-hero-tagline">
             {destination.tagline}
           </p>
         </div>
@@ -117,14 +110,7 @@ export function DestinationDetailPage() {
           ]}
         />
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr',
-            gap: '3rem',
-            marginBottom: '4rem',
-          }}
-        >
+        <div className="tf-detail-grid">
           <div>
             <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>Overview</h2>
             <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--tf-text)' }}>
@@ -152,7 +138,7 @@ export function DestinationDetailPage() {
           </div>
 
           <div>
-            <div className="tf-card" style={{ position: 'sticky', top: '5.5rem' }}>
+            <div className="tf-card tf-sticky-sidebar">
               <h3 style={{ marginTop: 0 }}>Travel Information</h3>
               <div style={{ margin: '1rem 0', fontSize: '0.95rem' }}>
                 <p>

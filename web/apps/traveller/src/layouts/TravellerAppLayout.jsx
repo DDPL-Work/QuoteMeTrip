@@ -134,7 +134,6 @@ export function TravellerAppLayout({ children }) {
             notificationCount={unreadCount}
             onNotificationCountChange={setUnreadCount}
           />
-          <MobileHeader notificationCount={unreadCount} />
 
           <div className="tf-portal-shell">
             <AppSidebar badges={{ messages: unreadMessages > 0 ? unreadMessages : null }} />

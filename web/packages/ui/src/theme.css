@@ -273,11 +273,13 @@
 
 .tf-pub-header-container {
   max-width: 75rem;
+  width: 100%;
   margin: 0 auto;
   padding: 0.9rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .tf-pub-nav-desktop {
@@ -322,17 +324,28 @@
 .tf-mobile-toggle {
   display: none;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0.4rem;
+  padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+}
+
+.tf-mobile-toggle:hover,
+.tf-mobile-toggle:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  outline: 2px solid var(--tf-secondary);
 }
 
 .tf-hamburger-line {
-  width: 22px;
+  width: 24px;
   height: 2px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 2px;
 }
 
@@ -499,20 +512,86 @@
 /* Layout Grids */
 .tf-grid-3 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: 1.75rem;
 }
 
 .tf-grid-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
   gap: 1.5rem;
 }
 
 .tf-grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   gap: 1.75rem;
+}
+
+/* Detail layout: Primary content (2fr) + Sticky Information/Booking panel (1fr) */
+.tf-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+  align-items: start;
+}
+
+.tf-sticky-sidebar {
+  position: sticky;
+  top: 5.5rem;
+}
+
+/* Fluid Hero Banner for Detail Pages */
+.tf-detail-hero {
+  position: relative;
+  min-height: 20rem;
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+  display: flex;
+  align-items: flex-end;
+  padding: 3rem 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.tf-detail-hero-content {
+  max-width: 75rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tf-detail-hero-title {
+  font-size: clamp(1.85rem, 5vw, 3rem);
+  margin: 0 0 0.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.tf-detail-hero-tagline {
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+  color: #e2e8f0;
+  margin: 0;
+  max-width: 40rem;
+  line-height: 1.5;
+}
+
+/* Responsive Form Rows & Table wrappers */
+.tf-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.tf-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1.5rem;
 }
 
 /* Hero Section */
@@ -823,9 +902,11 @@
 /* Page Layout Wrappers */
 .tf-public-container {
   max-width: 75rem;
+  width: 100%;
   margin: 0 auto;
   padding: 2.5rem 1.5rem;
   min-height: calc(100vh - 20rem);
+  box-sizing: border-box;
 }
 
 .tf-filter-bar {
@@ -841,7 +922,7 @@
 }
 
 /* Media Queries */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .tf-pub-nav-desktop,
   .tf-pub-actions-desktop {
     display: none;
@@ -850,7 +931,9 @@
   .tf-mobile-toggle {
     display: flex;
   }
+}
 
+@media (max-width: 960px) {
   .tf-hero-container {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -870,18 +953,57 @@
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
   }
+
+  .tf-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .tf-sticky-sidebar {
+    position: static !important;
+  }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
+  .tf-pub-header-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .tf-public-container {
+    padding: 1.5rem 1rem;
+  }
+
   .tf-pub-footer-container {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
   .tf-hero-title {
-    font-size: 2.2rem;
+    font-size: clamp(1.85rem, 6vw, 2.4rem);
   }
 
   .tf-cta-content h2 {
-    font-size: 1.75rem;
+    font-size: clamp(1.5rem, 5vw, 1.85rem);
+  }
+
+  .tf-grid-2,
+  .tf-grid-3,
+  .tf-grid-4 {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .tf-form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .tf-search-input {
+    min-width: 100%;
+  }
+
+  .tf-detail-hero {
+    min-height: 16rem;
+    padding: 2rem 1rem 1.5rem;
   }
 }

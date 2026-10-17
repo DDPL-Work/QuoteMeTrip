@@ -209,7 +209,7 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '560px',
+        maxHeight: 'clamp(320px, 75dvh, 560px)',
       }}
     >
       {/* Header */}
@@ -325,7 +325,9 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
       <div
         style={{
           overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           flex: 1,
+          minHeight: 0,
           padding: '6px 0',
         }}
       >

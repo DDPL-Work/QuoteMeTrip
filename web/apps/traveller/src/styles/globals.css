@@ -347,6 +347,7 @@ body {
 }
 
 /* Mobile Layout Controls */
+/* Mobile Layout Controls */
 .tf-portal-mobile-header {
   display: none;
 }
@@ -356,17 +357,48 @@ body {
 }
 
 @media (max-width: 820px) {
+  .tf-portal-root {
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+  }
+
   .tf-portal-shell {
-    grid-template-columns: 1fr;
-    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    height: calc(100dvh - 58px);
+    overflow: hidden;
+    width: 100%;
   }
 
   .tf-portal-sidebar {
-    display: none;
+    display: none !important;
   }
 
   .tf-portal-main {
-    padding: 20px 16px 80px;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding: 16px 14px calc(76px + env(safe-area-inset-bottom, 0px));
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .tf-portal-top-header {
+    padding: 10px 16px;
+    height: 58px;
+    gap: 12px;
+  }
+
+  .tf-portal-header-actions {
+    gap: 8px;
   }
 
   .tf-portal-mobile-nav {
@@ -379,7 +411,7 @@ body {
     z-index: 40;
     border-top: 1px solid var(--tf-portal-border);
     background: #ffffff;
-    padding: 6px 6px 12px;
+    padding: 6px 6px calc(10px + env(safe-area-inset-bottom, 0px));
     box-shadow: 0 -4px 12px rgba(19, 41, 28, 0.08);
   }
 
@@ -403,6 +435,51 @@ body {
   .tf-portal-mobile-nav-item[aria-current='page'] {
     color: var(--tf-portal-green);
     font-weight: 700;
+  }
+}
+
+@media (max-width: 640px) {
+  .tf-portal-top-header {
+    padding: 8px 10px;
+    height: 54px;
+    gap: 8px;
+  }
+
+  .tf-portal-header-actions {
+    gap: 6px;
+  }
+
+  .tf-portal-public-label {
+    display: none;
+  }
+
+  .tf-portal-public-link {
+    padding: 6px 8px !important;
+  }
+
+  .tf-portal-user-label {
+    display: none;
+  }
+
+  .tf-portal-user-trigger {
+    padding: 4px 6px;
+    min-height: 32px;
+    gap: 4px;
+  }
+
+  .tf-portal-bell-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .tf-portal-dashboard-wrap {
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .tf-portal-public-link {
+    display: none !important;
   }
 }
 

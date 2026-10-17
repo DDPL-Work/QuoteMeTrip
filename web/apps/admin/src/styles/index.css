@@ -1110,3 +1110,33 @@ body {
   color: var(--admin-primary);
   flex-shrink: 0;
 }
+
+/* Responsive Table & Header Rules */
+.admin-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .admin-header {
+    padding: 0 0.75rem;
+  }
+
+  .admin-header-actions {
+    gap: 0.5rem;
+  }
+
+  .admin-profile-trigger span {
+    display: none;
+  }
+
+  .admin-page-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .admin-filter-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}

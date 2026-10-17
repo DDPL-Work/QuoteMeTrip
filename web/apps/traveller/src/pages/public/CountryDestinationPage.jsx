@@ -77,29 +77,22 @@ export function CountryDestinationPage() {
     <div>
       {/* Country Hero */}
       <section
+        className="tf-detail-hero"
         style={{
-          position: 'relative',
-          height: '24rem',
           backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)), url(${country.heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'flex-end',
-          padding: '3rem 1.5rem',
         }}
       >
-        <div style={{ maxWidth: '75rem', width: '100%', margin: '0 auto' }}>
+        <div className="tf-detail-hero-content">
           <span
             className="tf-card-badge"
             style={{ position: 'static', marginBottom: '0.75rem', display: 'inline-block' }}
           >
             Country Landing
           </span>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 0.5rem', fontWeight: 800 }}>
+          <h1 className="tf-detail-hero-title">
             {country.name}
           </h1>
-          <p style={{ fontSize: '1.2rem', color: '#e2e8f0', margin: 0, maxWidth: '42rem' }}>
+          <p className="tf-detail-hero-tagline">
             {country.tagline}
           </p>
         </div>
@@ -114,14 +107,7 @@ export function CountryDestinationPage() {
         />
 
         {/* Overview & Travel Essentials */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr',
-            gap: '3rem',
-            marginBottom: '4rem',
-          }}
-        >
+        <div className="tf-detail-grid">
           <div>
             <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>About {country.name}</h2>
             <p style={{ fontSize: '1.05rem', lineHeight: 1.8, color: 'var(--tf-text)' }}>
@@ -131,7 +117,7 @@ export function CountryDestinationPage() {
             <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem', marginBottom: '1rem' }}>
               Why Travel with QuoteMeTrip in {country.name}
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1rem' }}>
               <div className="tf-card" style={{ padding: '1.25rem' }}>
                 <h4 style={{ margin: '0 0 0.35rem', color: 'var(--tf-primary)' }}>Route-First Planning</h4>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--tf-text-muted)' }}>
@@ -148,7 +134,7 @@ export function CountryDestinationPage() {
           </div>
 
           <div>
-            <div className="tf-card" style={{ position: 'sticky', top: '5.5rem' }}>
+            <div className="tf-card tf-sticky-sidebar">
               <h3 style={{ marginTop: 0 }}>Travel Essentials</h3>
               <div style={{ margin: '1rem 0', fontSize: '0.92rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <p style={{ margin: 0 }}>

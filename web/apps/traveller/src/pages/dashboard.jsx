@@ -133,7 +133,7 @@ export function DashboardPage() {
 
   if (isInitialLoading) {
     return (
-      <main className="tf-portal-main">
+      <div className="tf-portal-dashboard-wrap" style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         <header className="tf-portal-page-header">
           <Skeleton height="36px" width="300px" />
           <Skeleton height="20px" width="200px" style={{ marginTop: '8px' }} />
@@ -152,15 +152,15 @@ export function DashboardPage() {
           <Skeleton height="100px" />
           <Skeleton height="100px" />
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
     <MotionPage>
-      <main
-        className="tf-portal-main"
-        style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}
+      <div
+        className="tf-portal-dashboard-wrap"
+        style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}
       >
         {/* Top Breadcrumb Navigation */}
         <div
@@ -171,6 +171,8 @@ export function DashboardPage() {
             marginBottom: '16px',
             fontSize: '13.5px',
             color: '#56625B',
+            flexWrap: 'wrap',
+            gap: '8px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -203,7 +205,7 @@ export function DashboardPage() {
             borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#F3DCC2',
-            minHeight: '180px',
+            minHeight: '160px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
             border: '1px solid #E2DCD1',
           }}
@@ -223,25 +225,25 @@ export function DashboardPage() {
               }}
             />
           ) : (
-            <HeroIllustration style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+            <HeroIllustration style={{ width: '100%', height: '100%', minHeight: '160px', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
           )}
           <div
             style={{
               position: 'relative',
               background: coverImageUrl
-                ? 'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.3) 100%)'
-                : 'linear-gradient(90deg, rgba(243,220,194,0.95) 0%, rgba(243,220,194,0.6) 50%, transparent 100%)',
-              backdropFilter: coverImageUrl ? 'blur(2px)' : 'none',
+                ? 'linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0.65) 100%)'
+                : 'linear-gradient(135deg, rgba(243,220,194,0.96) 0%, rgba(243,220,194,0.85) 60%, rgba(243,220,194,0.6) 100%)',
+              backdropFilter: coverImageUrl ? 'blur(3px)' : 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '24px 28px',
-              minHeight: '180px',
+              padding: 'clamp(14px, 3.5vw, 24px) clamp(14px, 3.5vw, 28px)',
+              minHeight: '160px',
               gap: '16px',
               flexWrap: 'wrap',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 3vw, 20px)', flexWrap: 'wrap', minWidth: 0, flex: '1 1 240px' }}>
               <Link
                 to="/profile"
                 title="View / Edit Profile"
@@ -254,8 +256,8 @@ export function DashboardPage() {
               >
                 <div
                   style={{
-                    width: '68px',
-                    height: '68px',
+                    width: 'clamp(48px, 11vw, 68px)',
+                    height: 'clamp(48px, 11vw, 68px)',
                     borderRadius: '50%',
                     border: '3px solid #FFFFFF',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
@@ -282,22 +284,37 @@ export function DashboardPage() {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
-                    <span style={{ fontSize: '26px', fontWeight: '800', color: '#0C4E28' }}>
+                    <span style={{ fontSize: 'clamp(18px, 4vw, 26px)', fontWeight: '800', color: '#0C4E28' }}>
                       {initials}
                     </span>
                   )}
                 </div>
               </Link>
-              <div>
+              <div style={{ minWidth: 0, flex: '1 1 180px' }}>
                 <h1
                   className="tf-portal-page-title"
-                  style={{ color: '#13291C', margin: 0, fontSize: '2rem', fontWeight: 800 }}
+                  style={{
+                    color: '#13291C',
+                    margin: 0,
+                    fontSize: 'clamp(1.25rem, 4.5vw, 2rem)',
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
                 >
                   {welcomeText}
                 </h1>
                 <p
                   className="tf-portal-page-subtitle"
-                  style={{ color: '#2C3A33', margin: '6px 0 0', opacity: 0.9, fontWeight: 500 }}
+                  style={{
+                    color: '#2C3A33',
+                    margin: '6px 0 0',
+                    opacity: 0.9,
+                    fontWeight: 500,
+                    fontSize: 'clamp(13px, 3vw, 15px)',
+                    lineHeight: 1.4,
+                  }}
                 >
                   {t('dashboard.planNextTrip')}
                 </p>
@@ -333,11 +350,14 @@ export function DashboardPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px',
+            padding: 'clamp(16px, 3vw, 24px)',
           }}
         >
-          <div>
-            <h2>{actionTitle}</h2>
-            <p style={{ color: 'var(--tf-portal-text-muted)', marginBottom: '16px' }}>
+          <div style={{ flex: '1 1 240px', minWidth: 0 }}>
+            <h2 style={{ fontSize: 'clamp(1.15rem, 3vw, 1.4rem)', margin: '0 0 8px' }}>{actionTitle}</h2>
+            <p style={{ color: 'var(--tf-portal-text-muted)', marginBottom: '16px', fontSize: '14px' }}>
               {actionDesc}
             </p>
             <Link to={actionLink} className="tf-btn tf-btn-primary tf-btn-md">
@@ -346,14 +366,14 @@ export function DashboardPage() {
           </div>
           <div
             style={{
-              width: '200px',
+              width: 'clamp(110px, 20vw, 150px)',
               flexShrink: 0,
               display: 'flex',
               justifyContent: 'flex-end',
               opacity: 0.9,
             }}
           >
-            <RouteIllustration kind="balloons" style={{ width: '150px' }} />
+            <RouteIllustration kind="balloons" style={{ width: '100%', height: 'auto' }} />
           </div>
         </section>
 
@@ -361,7 +381,7 @@ export function DashboardPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
             gap: '16px',
             marginBottom: '32px',
           }}
@@ -395,7 +415,7 @@ export function DashboardPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '24px',
           }}
         >
@@ -550,7 +570,7 @@ export function DashboardPage() {
             )}
           </DashboardSection>
         </div>
-      </main>
+      </div>
     </MotionPage>
   );
 }

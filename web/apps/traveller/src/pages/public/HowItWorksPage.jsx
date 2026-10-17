@@ -35,7 +35,7 @@ export function HowItWorksPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
           gap: '2rem',
           margin: '2rem 0 4rem',
         }}
@@ -172,10 +172,10 @@ export function HowItWorksPage() {
         className="tf-card"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
           gap: '2rem',
           alignItems: 'center',
-          padding: '2.5rem',
+          padding: 'clamp(1.25rem, 4vw, 2.5rem)',
           marginBottom: '4rem',
           background: 'linear-gradient(135deg, rgba(20, 125, 51, 0.05), rgba(252, 124, 0, 0.05))',
         }}

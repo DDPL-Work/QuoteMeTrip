@@ -169,15 +169,7 @@ export function RoutePlanner({
       </div>
 
       {/* Main Split Layout: 42% Controls | 58% Map & Journey Overview */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(340px, 42fr) minmax(380px, 58fr)',
-          gap: '24px',
-          alignItems: 'start',
-        }}
-        className="qmt-route-split-container"
-      >
+      <div className="qmt-route-split-container">
         {/* LEFT COLUMN: Destination Controls & Stop List (42%) */}
         <div
           style={{
@@ -645,7 +637,7 @@ export function RoutePlanner({
               </span>
             </div>
 
-            <div style={{ height: '540px', width: '100%' }}>
+            <div className="qmt-map-canvas-wrap">
               <RouteMap
                 stops={stops}
                 geometry={currentRoute?.geometry}
@@ -662,9 +654,25 @@ export function RoutePlanner({
 
       {/* Responsive Style Overrides */}
       <style>{`
+        .qmt-route-split-container {
+          display: grid;
+          grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+          gap: 24px;
+          align-items: start;
+        }
+        .qmt-map-canvas-wrap {
+          height: 540px;
+          width: 100%;
+        }
         @media (max-width: 1024px) {
           .qmt-route-split-container {
             grid-template-columns: 1fr !important;
+            gap: 20px;
+          }
+        }
+        @media (max-width: 640px) {
+          .qmt-map-canvas-wrap {
+            height: 380px;
           }
         }
       `}</style>

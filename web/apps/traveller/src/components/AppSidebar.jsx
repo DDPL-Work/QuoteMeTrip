@@ -84,8 +84,6 @@ export function AppSidebar({ badges = {}, onItemClick }) {
       style={{
         width: collapsed ? '68px' : '240px',
         transition: 'width 0.2s ease',
-        display: 'flex',
-        flexDirection: 'column',
         position: 'relative',
       }}
     >

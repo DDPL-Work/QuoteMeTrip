@@ -2304,7 +2304,7 @@ export function QuotationBuilder({
               Package Inclusions &amp; Exclusions
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="qmt-inclusions-grid" style={{ display: 'grid', gap: '1.5rem' }}>
               {/* Inclusions Column */}
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

@@ -176,11 +176,13 @@ export function MembershipsPage() {
         </div>
       ) : (
         <div
+          className="admin-table-container"
           style={{
             background: '#FFFFFF',
             borderRadius: '8px',
-            overflow: 'hidden',
+            overflowX: 'auto',
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            maxWidth: '100%',
           }}
         >
           <table

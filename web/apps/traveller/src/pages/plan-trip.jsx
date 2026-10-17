@@ -220,18 +220,19 @@ export function PlanTripPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '8px',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              gap: '6px',
               background: '#F7F4EE',
-              padding: '8px',
+              padding: '6px',
               borderRadius: '12px',
+              overflowX: 'auto',
             }}
           >
             {[
-              { num: 1, title: '1. Route' },
-              { num: 2, title: '2. Details' },
-              { num: 3, title: '3. Day Plan' },
-              { num: 4, title: '4. Review' },
+              { num: 1, title: 'Route', fullTitle: '1. Route' },
+              { num: 2, title: 'Details', fullTitle: '2. Details' },
+              { num: 3, title: 'Day Plan', fullTitle: '3. Day Plan' },
+              { num: 4, title: 'Review', fullTitle: '4. Review' },
             ].map((s) => {
               const isActive = activeStep === s.num;
               const isCompleted = activeStep > s.num;
@@ -242,18 +243,23 @@ export function PlanTripPage() {
                   onClick={() => isCompleted && setActiveStep(s.num)}
                   disabled={!isCompleted && !isActive}
                   style={{
-                    padding: '10px 4px',
+                    padding: '8px 4px',
                     borderRadius: '8px',
                     border: 0,
                     background: isActive ? '#0C4E28' : isCompleted ? '#E5F2EA' : 'transparent',
                     color: isActive ? '#FFFFFF' : isCompleted ? '#0C4E28' : '#66716B',
                     fontWeight: isActive || isCompleted ? '700' : '500',
-                    fontSize: '13.5px',
+                    fontSize: 'clamp(11px, 2.8vw, 13.5px)',
                     cursor: isCompleted ? 'pointer' : 'default',
                     textAlign: 'center',
+                    minWidth: 0,
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
                   }}
+                  title={s.fullTitle}
                 >
-                  {s.title}
+                  <span className="tf-hide-under-400">{s.num}. </span>{s.title}
                 </button>
               );
             })}

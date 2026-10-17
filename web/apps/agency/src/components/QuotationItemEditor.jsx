@@ -98,7 +98,7 @@ export function QuotationItemEditor({ items, onChange }) {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
                   gap: '0.85rem',
                   marginBottom: '0.85rem',
                 }}
@@ -136,6 +136,7 @@ export function QuotationItemEditor({ items, onChange }) {
                 </label>
 
                 <label
+                  className="qmt-span-2-desktop"
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -143,7 +144,7 @@ export function QuotationItemEditor({ items, onChange }) {
                     fontSize: '0.85rem',
                     fontWeight: 600,
                     color: 'var(--agency-text)',
-                    gridColumn: 'span 2',
+                    minWidth: 0,
                   }}
                 >
                   Title / Service Name

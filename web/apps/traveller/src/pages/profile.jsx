@@ -439,7 +439,7 @@ export function ProfilePage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '24px',
             alignItems: 'start',
           }}
@@ -448,7 +448,7 @@ export function ProfilePage() {
           <Card title="Personal Information">
             {isEditing ? (
               <form onSubmit={handleSave} noValidate aria-label="Edit Profile Form">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="tf-form-row">
                   <TextInput
                     id="firstName"
                     label="First Name"
@@ -478,7 +478,7 @@ export function ProfilePage() {
                   disabled={submitting}
                 />
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="tf-form-row">
                   <TextInput
                     id="dateOfBirth"
                     label="Date of Birth"
@@ -499,7 +499,7 @@ export function ProfilePage() {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="tf-form-row">
                   <TextInput
                     id="country"
                     label="Country"
@@ -558,10 +558,9 @@ export function ProfilePage() {
               <div>
                 <TravellerDetails profile={profile} />
                 <div
+                  className="tf-form-row"
                   style={{
                     marginTop: '20px',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
                     gap: '12px',
                     fontSize: '0.9rem',
                   }}

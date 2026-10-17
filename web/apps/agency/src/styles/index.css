@@ -1538,3 +1538,43 @@ body {
     margin-top: 1.5rem;
   }
 }
+
+.qmt-inclusions-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (min-width: 640px) {
+  .qmt-span-2-desktop {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .qmt-inclusions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .agency-header {
+    padding: 0 0.75rem;
+  }
+
+  .agency-header-actions {
+    gap: 0.5rem;
+  }
+
+  .agency-profile-trigger span {
+    display: none;
+  }
+
+  .agency-page-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .agency-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+}

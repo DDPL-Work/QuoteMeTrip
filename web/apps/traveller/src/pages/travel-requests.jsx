@@ -235,7 +235,7 @@ export function TravelRequestsPage() {
             ))}
           </div>
 
-          <div style={{ position: 'relative', minWidth: '240px' }}>
+          <div style={{ position: 'relative', minWidth: 'min(100%, 240px)', flex: '1 1 240px' }}>
             <FiSearch
               size={15}
               style={{
@@ -253,6 +253,7 @@ export function TravelRequestsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
+                boxSizing: 'border-box',
                 padding: '8px 12px 8px 36px',
                 borderRadius: '8px',
                 border: '1px solid var(--tf-portal-border, #E2DCD1)',
@@ -305,18 +306,18 @@ export function TravelRequestsPage() {
                     background: '#fff',
                     borderRadius: '12px',
                     border: '1px solid var(--tf-portal-border, #E2DCD1)',
-                    padding: '22px 26px',
+                    padding: 'clamp(14px, 3vw, 22px) clamp(14px, 3vw, 26px)',
                     display: 'flex',
                     flexWrap: 'wrap',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '20px',
+                    gap: '16px',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                     transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
                   }}
                 >
-                  <div style={{ flex: '1 1 380px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <div style={{ flex: '1 1 min(100%, 320px)', minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
                       <span
                         style={{
                           fontSize: '0.8rem',
@@ -415,14 +416,14 @@ export function TravelRequestsPage() {
                   <div
                     style={{
                       display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-end',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
                       gap: '12px',
-                      minWidth: '200px',
                     }}
                   >
                     {r.latestQuotePrice && (
-                      <div style={{ textAlign: 'right', fontSize: '0.85rem' }}>
+                      <div style={{ textAlign: 'left', fontSize: '0.85rem', width: '100%' }}>
                         <span style={{ color: '#717D79', display: 'block', fontSize: '0.75rem' }}>Latest Quote</span>
                         <strong style={{ fontSize: '1.15rem', color: '#147D33' }}>
                           {r.latestQuoteCurrency || '$'} {Number(r.latestQuotePrice).toLocaleString()}
