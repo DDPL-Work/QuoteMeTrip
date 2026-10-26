@@ -1,6 +1,6 @@
 import { initModels } from '../../../db/models/index.js';
 import { withTransaction } from '../../../db/transaction.js';
-import { NotFoundError } from '../../../utils/errors.js';
+import { NotFoundError, ConflictError } from '../../../utils/errors.js';
 import * as repository from './membership-admin.repository.js';
 import { MEMBERSHIP_ADMIN_ERROR_CODES } from './membership-admin.constants.js';
 import { logAudit } from '../../audit/audit.service.js';
@@ -85,12 +85,10 @@ export async function deleteMembershipPlan(id, actorUserId, context = {}) {
       transaction: t,
     });
     if (assignedCount > 0) {
-      const error = new Error(
+      throw new ConflictError(
         'Cannot delete membership plan because agencies are currently assigned to it. Deactivate the plan instead.',
+        { code: MEMBERSHIP_ADMIN_ERROR_CODES.PLAN_IN_USE },
       );
-      error.status = 409;
-      error.code = 'PLAN_IN_USE';
-      throw error;
     }
 
     const beforeState = plan.toJSON();

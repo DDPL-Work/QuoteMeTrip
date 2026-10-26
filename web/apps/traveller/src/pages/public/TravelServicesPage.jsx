@@ -14,6 +14,30 @@ import { usePageMetadata } from '../../hooks/usePageMetadata.js';
 import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 import { useAuth } from '../../features/auth/auth-context.js';
 
+function getServiceName(svc, t) {
+  const map = {
+    'private-tours': 'services.service.privateTours.name',
+    'private-transfer': 'services.service.privateTransfer.name',
+    'minibus-with-driver': 'services.service.minibusWithDriver.name',
+    guide: 'services.service.guide.name',
+    'hot-air-balloon': 'services.service.hotAirBalloon.name',
+  };
+  const key = map[svc.slug];
+  return key ? t(key, svc.name) : svc.name;
+}
+
+function getServiceSummary(svc, t) {
+  const map = {
+    'private-tours': 'services.service.privateTours.tagline',
+    'private-transfer': 'services.service.privateTransfer.tagline',
+    'minibus-with-driver': 'services.service.minibusWithDriver.tagline',
+    guide: 'services.service.guide.tagline',
+    'hot-air-balloon': 'services.service.hotAirBalloon.tagline',
+  };
+  const key = map[svc.slug];
+  return key ? t(key, svc.summary || svc.tagline) : svc.summary || svc.tagline;
+}
+
 export function TravelServicesPage() {
   const { t } = useI18n();
   const { user } = useAuth();
@@ -22,8 +46,11 @@ export function TravelServicesPage() {
   const [loading, setLoading] = useState(true);
 
   usePageMetadata(
-    'Travel Services in Turkey',
-    'Explore verified travel services in Turkey: private tours, airport transfers, minibus with driver, licensed tour guides, and Cappadocia hot air balloon flights.',
+    t('services.title', 'Travel Services in Turkey'),
+    t(
+      'services.subtitle',
+      'Explore verified travel services in Turkey: private tours, airport transfers, minibus with driver, licensed tour guides, and Cappadocia hot air balloon flights.',
+    ),
   );
 
   const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
@@ -45,18 +72,24 @@ export function TravelServicesPage() {
 
   return (
     <div className="tf-public-container">
-      <PublicBreadcrumbs items={[{ label: 'Travel Services' }]} />
+      <PublicBreadcrumbs items={[{ label: t('header.travelServices', 'Travel Services') }]} />
 
       <SectionHeading
-        title="Travel Services in Turkey"
-        subtitle="Customizable services delivered by licensed, verified local travel agencies."
+        title={t('services.title', 'Travel Services in Turkey')}
+        subtitle={t(
+          'services.subtitle',
+          'Customizable services delivered by licensed, verified local travel agencies.',
+        )}
       />
 
       <div className="tf-filter-bar" style={{ maxWidth: '36rem', margin: '0 auto 2.5rem' }}>
         <input
           type="text"
           className="tf-input tf-search-input"
-          placeholder="Search travel services (tours, transfer, guide, balloon)..."
+          placeholder={t(
+            'services.searchPlaceholder',
+            'Search travel services (tours, transfer, guide, balloon)...',
+          )}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search travel services"
@@ -69,14 +102,14 @@ export function TravelServicesPage() {
         </p>
       ) : services.length === 0 ? (
         <div className="tf-card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-          <h3>No travel services matched your search.</h3>
+          <h3>{t('services.noMatch', 'No travel services matched your search.')}</h3>
           <button
             type="button"
             className="tf-btn tf-btn-ghost"
             onClick={() => setSearch('')}
             style={{ marginTop: '1rem' }}
           >
-            Reset Search
+            {t('services.resetSearch', 'Reset Search')}
           </button>
         </div>
       ) : (
@@ -96,7 +129,7 @@ export function TravelServicesPage() {
               <div style={{ height: '12rem', position: 'relative', overflow: 'hidden' }}>
                 <img
                   src={svc.image}
-                  alt={svc.title}
+                  alt={getServiceName(svc, t)}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   loading="lazy"
                 />
@@ -110,18 +143,18 @@ export function TravelServicesPage() {
                     color: '#fff',
                   }}
                 >
-                  Verified Service
+                  {t('services.verifiedService', 'Verified Service')}
                 </span>
               </div>
               <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.25rem' }}>{svc.name}</h3>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.25rem' }}>{getServiceName(svc, t)}</h3>
                 <p style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: 'var(--tf-text-muted)', lineHeight: 1.6, flex: 1 }}>
-                  {svc.summary}
+                  {getServiceSummary(svc, t)}
                 </p>
 
                 <div style={{ margin: '0 0 1.25rem' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--tf-text-muted)', textTransform: 'uppercase' }}>
-                    Popular Locations:
+                    {t('services.popularLocations', 'Popular Locations:')}
                   </span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.35rem' }}>
                     {svc.destinations.slice(0, 3).map((d) => (
@@ -147,13 +180,13 @@ export function TravelServicesPage() {
                     className="tf-btn tf-btn-primary tf-btn-sm"
                     style={{ flex: 1, textAlign: 'center' }}
                   >
-                    View Details →
+                    {t('services.viewDetails', 'View Details →')}
                   </Link>
                   <Link
                     to={`/plan-trip?service=${svc.slug}`}
                     className="tf-btn tf-btn-ghost tf-btn-sm"
                   >
-                    Plan Trip
+                    {t('header.planTrip', 'Plan Trip')}
                   </Link>
                 </div>
               </div>
@@ -163,8 +196,11 @@ export function TravelServicesPage() {
       )}
 
       <CTASection
-        title="Need Multiple Services for Your Route?"
-        subtitle="Build your multi-day itinerary and select the services you need for each day. Matched agencies handle all bookings."
+        title={t('home.cta.title', 'Ready to Plan Your Trip?')}
+        subtitle={t(
+          'home.cta.subtitle',
+          'Build your route now and start receiving competitive agency quotations.',
+        )}
         ctaHref={planTripHref}
       />
     </div>

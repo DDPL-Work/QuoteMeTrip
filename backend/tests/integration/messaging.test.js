@@ -12,13 +12,13 @@
  * unmasked bodies), and admin read-only (GET 200, POST/PATCH 403).
  */
 process.env.NODE_ENV = 'test';
-import 'dotenv/config';
-process.env.DB_TEST_NAME = process.env.DB_NAME || 'troublefree_holiday';
+process.env.MAP_PROVIDER ||= 'haversine';
 process.env.JWT_ACCESS_SECRET ||= 'test-access-secret-not-for-production';
 process.env.JWT_REFRESH_SECRET ||= 'test-refresh-secret-not-for-production';
 process.env.JWT_ACCESS_EXPIRES_IN ||= '15m';
 process.env.JWT_REFRESH_EXPIRES_IN ||= '7d';
 
+import 'dotenv/config';
 import assert from 'node:assert';
 import { before, describe, test, after } from 'node:test';
 
@@ -195,6 +195,7 @@ async function setupThread() {
 before(async () => {
   resetSequelizeInstance();
   db = getSequelize();
+  models = initModels(db);
 
   try {
     await db.authenticate();

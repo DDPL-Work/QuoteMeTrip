@@ -1,18 +1,25 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiAlertTriangle, FiTrash2, FiInfo, FiX } from 'react-icons/fi';
+import { useI18n } from '@troublefree/i18n';
 
 export function ConfirmModal({
   isOpen,
-  title = 'Confirm Action',
-  message = 'Are you sure you want to proceed?',
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  title,
+  message,
+  confirmText,
+  cancelText,
   variant = 'danger', // 'danger' | 'warning' | 'primary'
   loading = false,
   onConfirm,
   onCancel,
 }) {
+  const { t } = useI18n();
+  const displayTitle = title || t('admin.common.confirm');
+  const displayMessage = message || '';
+  const displayConfirmText = confirmText || t('admin.common.confirm');
+  const displayCancelText = cancelText || t('admin.common.cancel');
+
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === 'Escape' && isOpen && !loading) {
@@ -131,7 +138,7 @@ export function ConfirmModal({
                   color: '#0F172A',
                 }}
               >
-                {title}
+                {displayTitle}
               </h3>
               <p
                 style={{
@@ -141,7 +148,7 @@ export function ConfirmModal({
                   lineHeight: 1.5,
                 }}
               >
-                {message}
+                {displayMessage}
               </p>
             </div>
 
@@ -172,7 +179,7 @@ export function ConfirmModal({
                   transition: 'background 0.15s ease',
                 }}
               >
-                {cancelText}
+                {displayCancelText}
               </button>
               <button
                 type="button"
@@ -207,7 +214,7 @@ export function ConfirmModal({
                     }}
                   />
                 )}
-                {confirmText}
+                {displayConfirmText}
               </button>
             </div>
           </motion.div>

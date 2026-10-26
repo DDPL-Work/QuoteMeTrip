@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 
 import assert from 'node:assert';
 import { before, describe, test, after } from 'node:test';
-import { getSequelize, resetSequelizeInstance } from '../../src/db/sequelize.js';
+import { getSequelize, closeDatabase, resetSequelizeInstance } from '../../src/db/sequelize.js';
 import { initModels } from '../../src/db/models/index.js';
 import { migrateUp } from '../../src/db/runner.js';
 import {
@@ -191,6 +191,41 @@ describe('Phase 7 — Admin Operations, Agency Approval & Memberships', () => {
     assert.strictEqual(confirmed.confirmedBy, adminUser.id);
     assert.ok(confirmed.confirmedAt);
   });
+
+  test('Cannot delete membership plan assigned to active agency (returns ConflictError 409)', async () => {
+    await assert.rejects(
+      async () => {
+        await membershipAdminService.deleteMembershipPlan(defaultPlan.id, adminUser.id, {
+          ip: '127.0.0.1',
+        });
+      },
+      (err) => {
+        assert.strictEqual(err.statusCode, 409);
+        assert.strictEqual(err.code, 'PLAN_IN_USE');
+        assert.match(err.message, /Cannot delete membership plan because agencies are currently assigned/);
+        return true;
+      },
+    );
+  });
+
+  test('Admin can delete unassigned membership plan successfully', async () => {
+    const tempPlan = await membershipAdminService.createMembershipPlan(
+      {
+        name: `Temp Plan ${Date.now()}`,
+        slug: `temp-plan-${Date.now()}`,
+        price: 49.0,
+        currency: 'USD',
+        durationDays: 14,
+        status: 'inactive',
+      },
+      adminUser.id,
+    );
+
+    const result = await membershipAdminService.deleteMembershipPlan(tempPlan.id, adminUser.id, {
+      ip: '127.0.0.1',
+    });
+    assert.deepStrictEqual(result, { success: true });
+  });
 });
 
 describe('Phase 7 — Matching Eligibility Verification (Requirement 31)', () => {
@@ -337,12 +372,17 @@ describe('Phase 7 — Commission Calculation & Management', () => {
 });
 
 after(async () => {
-  const models = initModels();
-  await models.AgencyMembership.destroy({ where: { agencyId: agencyProfile.id } });
-  const allPlans = await models.MembershipPlan.findAll();
-  for (const p of allPlans) {
-    if (p.slug.startsWith('annual-deluxe-')) {
-      await p.destroy();
+  try {
+    const models = initModels();
+    await models.AgencyMembership.destroy({ where: { agencyId: agencyProfile.id } });
+    const allPlans = await models.MembershipPlan.findAll();
+    for (const p of allPlans) {
+      if (p.slug.startsWith('annual-deluxe-')) {
+        await p.destroy();
+      }
     }
+  } finally {
+    await closeDatabase();
+    resetSequelizeInstance();
   }
 });

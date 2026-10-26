@@ -36,3 +36,21 @@ export function authenticate(req, _res, next) {
     return next(unauthorized(AUTH_ERROR_CODES.TOKEN_INVALID, 'Invalid access token.'));
   }
 }
+
+export function optionalAuthenticate(req, _res, next) {
+  const header = req.get('authorization') || '';
+  const [scheme, token] = header.split(' ');
+
+  if (!token || scheme.toLowerCase() !== 'bearer') {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const decoded = verifyAccessToken(token);
+    req.user = { id: decoded.sub, role: decoded.role, tokenId: decoded.jti };
+  } catch {
+    req.user = null;
+  }
+  return next();
+}

@@ -36,7 +36,15 @@ import {
 } from '../../src/modules/auth/auth.validation.js';
 import { AUTH_ROLES } from '../../src/modules/auth/auth.constants.js';
 import { authorize } from '../../src/middleware/authorize.js';
-import { createAuthRateLimiter } from '../../src/middleware/rateLimiter.js';
+import { authenticate, optionalAuthenticate } from '../../src/middleware/authenticate.js';
+import {
+  createAuthRateLimiter,
+  createQuotationRateLimiter,
+  createMessageRateLimiter,
+  createAdminRateLimiter,
+  createTranslationRateLimiter,
+  createTransientTranslationRateLimiter,
+} from '../../src/middleware/rateLimiter.js';
 
 describe('password hashing', () => {
   test('hashes differ per password and verify correctly', async () => {
@@ -252,5 +260,196 @@ describe('auth rate limiter', () => {
   test('factory returns an Express middleware function', () => {
     const limiter = createAuthRateLimiter();
     assert.strictEqual(typeof limiter, 'function');
+  });
+
+  test('all rate limiter factories produce valid middleware', () => {
+    assert.strictEqual(typeof createQuotationRateLimiter(), 'function');
+    assert.strictEqual(typeof createMessageRateLimiter(), 'function');
+    assert.strictEqual(typeof createAdminRateLimiter(), 'function');
+    assert.strictEqual(typeof createTranslationRateLimiter(), 'function');
+    assert.strictEqual(typeof createTransientTranslationRateLimiter(), 'function');
+  });
+
+  test('rate limiter permits requests under threshold and enforces 429 upon exceeding', async () => {
+    const { rateLimit } = await import('express-rate-limit');
+    const limiter = rateLimit({
+      windowMs: 60 * 1000,
+      max: 2,
+      standardHeaders: 'draft-7',
+      legacyHeaders: false,
+    });
+
+    const mockReq = {
+      ip: '127.0.0.1',
+      headers: {},
+      app: { get: () => false },
+    };
+
+    let statusCalled = null;
+    let jsonCalled = null;
+    const mockRes = {
+      setHeader: () => {},
+      getHeader: () => undefined,
+      status: (code) => {
+        statusCalled = code;
+        return mockRes;
+      },
+      json: (payload) => {
+        jsonCalled = payload;
+      },
+      send: (payload) => {
+        jsonCalled = payload;
+      },
+    };
+
+    // First request
+    let nextCalled = 0;
+    await new Promise((resolve) => limiter(mockReq, mockRes, () => { nextCalled += 1; resolve(); }));
+    assert.strictEqual(nextCalled, 1);
+
+    // Second request
+    await new Promise((resolve) => limiter(mockReq, mockRes, () => { nextCalled += 1; resolve(); }));
+    assert.strictEqual(nextCalled, 2);
+
+    // Third request (exceeds max: 2)
+    await new Promise((resolve) => {
+      mockRes.send = (payload) => {
+        jsonCalled = payload;
+        resolve();
+      };
+      mockRes.json = (payload) => {
+        jsonCalled = payload;
+        resolve();
+      };
+      mockRes.end = () => {
+        resolve();
+      };
+      limiter(mockReq, mockRes, () => {
+        nextCalled += 1;
+        resolve();
+      });
+    });
+    assert.strictEqual(statusCalled, 429);
+    assert.ok(jsonCalled !== null);
+  });
+});
+
+describe('authenticate middleware', () => {
+  const validToken = signAccessToken({ id: 42, role: 'traveller' });
+
+  test('allows request with valid bearer access token and maps exact claims', () => {
+    const req = {
+      get: (header) => (header.toLowerCase() === 'authorization' ? `Bearer ${validToken}` : null),
+    };
+    let nextErr = null;
+    authenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.strictEqual(nextErr, undefined);
+    assert.ok(req.user);
+    assert.strictEqual(req.user.id, 42);
+    assert.strictEqual(req.user.role, 'traveller');
+    assert.ok(req.user.tokenId);
+  });
+
+  test('rejects missing authorization header with 401 UNAUTHORIZED', () => {
+    const req = { get: () => null };
+    let nextErr = null;
+    authenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.ok(nextErr);
+    assert.strictEqual(nextErr.statusCode, 401);
+    assert.strictEqual(nextErr.code, 'AUTH_UNAUTHORIZED');
+  });
+
+  test('rejects non-bearer scheme with 401 UNAUTHORIZED', () => {
+    const req = { get: () => `Basic ${validToken}` };
+    let nextErr = null;
+    authenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.ok(nextErr);
+    assert.strictEqual(nextErr.statusCode, 401);
+    assert.strictEqual(nextErr.code, 'AUTH_UNAUTHORIZED');
+  });
+
+  test('rejects malformed token with 401 TOKEN_INVALID', () => {
+    const req = { get: () => 'Bearer invalid.tampered.token' };
+    let nextErr = null;
+    authenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.ok(nextErr);
+    assert.strictEqual(nextErr.statusCode, 401);
+    assert.strictEqual(nextErr.code, 'AUTH_TOKEN_INVALID');
+  });
+
+  test('rejects expired token with 401 TOKEN_EXPIRED', () => {
+    const expiredToken = jwt.sign(
+      { sub: 42, role: 'traveller', type: 'access' },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: '-1s' },
+    );
+    const req = { get: () => `Bearer ${expiredToken}` };
+    let nextErr = null;
+    authenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.ok(nextErr);
+    assert.strictEqual(nextErr.statusCode, 401);
+    assert.strictEqual(nextErr.code, 'AUTH_TOKEN_EXPIRED');
+  });
+});
+
+describe('optionalAuthenticate middleware', () => {
+  const validToken = signAccessToken({ id: 10, role: 'agency' });
+
+  test('allows anonymous access when authorization header is absent, sets req.user = null', () => {
+    const req = { get: () => null };
+    let nextErr = null;
+    optionalAuthenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.strictEqual(nextErr, undefined);
+    assert.strictEqual(req.user, null);
+  });
+
+  test('allows anonymous access when scheme is not Bearer, sets req.user = null', () => {
+    const req = { get: () => 'Basic dXNlcjpwYXNz' };
+    let nextErr = null;
+    optionalAuthenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.strictEqual(nextErr, undefined);
+    assert.strictEqual(req.user, null);
+  });
+
+  test('authenticates valid token and maps claims into req.user', () => {
+    const req = { get: () => `Bearer ${validToken}` };
+    let nextErr = null;
+    optionalAuthenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.strictEqual(nextErr, undefined);
+    assert.ok(req.user);
+    assert.strictEqual(req.user.id, 10);
+    assert.strictEqual(req.user.role, 'agency');
+    assert.ok(req.user.tokenId);
+  });
+
+  test('handles invalid token by falling back to anonymous (req.user = null) without error or fabrication', () => {
+    const req = { get: () => 'Bearer bogus.token.value' };
+    let nextErr = null;
+    optionalAuthenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.strictEqual(nextErr, undefined);
+    assert.strictEqual(req.user, null);
+  });
+
+  test('handles expired token by falling back to anonymous (req.user = null) without error', () => {
+    const expiredToken = jwt.sign(
+      { sub: 10, role: 'agency', type: 'access' },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: '-1s' },
+    );
+    const req = { get: () => `Bearer ${expiredToken}` };
+    let nextErr = null;
+    optionalAuthenticate(req, {}, (err) => { nextErr = err; });
+
+    assert.strictEqual(nextErr, undefined);
+    assert.strictEqual(req.user, null);
   });
 });

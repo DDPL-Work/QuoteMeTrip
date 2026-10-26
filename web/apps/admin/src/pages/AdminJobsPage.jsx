@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useI18n, formatDate } from '@troublefree/i18n';
 import { adminApi } from '../services/api.js';
 import { StatusBadge } from '@troublefree/ui';
 
 export function AdminJobsPage() {
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,10 +43,10 @@ export function AdminJobsPage() {
     >
       <div>
         <h1 style={{ fontSize: '1.75rem', color: '#23272B', margin: 0 }}>
-          Marketplace Jobs (Operational Visibility)
+          {t('admin.jobs.title')}
         </h1>
         <p style={{ color: '#718096', marginTop: '0.25rem' }}>
-          Read-only operational monitoring of accepted marketplace bookings.
+          {t('admin.jobs.subtitle')}
         </p>
       </div>
 
@@ -61,18 +63,18 @@ export function AdminJobsPage() {
           onChange={(e) => setSearchParams({ status: e.target.value, page: '1' })}
           style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
         >
-          <option value="">All Job Statuses</option>
-          <option value="accepted">Accepted</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="">{t('admin.jobs.allStatuses')}</option>
+          <option value="accepted">{t('status.accepted', 'Accepted')}</option>
+          <option value="in_progress">{t('status.in_progress', 'In Progress')}</option>
+          <option value="completed">{t('status.completed', 'Completed')}</option>
+          <option value="cancelled">{t('status.cancelled', 'Cancelled')}</option>
         </select>
       </div>
 
       {loading ? (
-        <div>Loading jobs...</div>
+        <div>{t('admin.jobs.loadingJobs')}</div>
       ) : error ? (
-        <div style={{ color: '#E53E3E' }}>Error: {error}</div>
+        <div style={{ color: '#E53E3E' }}>{t('admin.common.error')}: {error}</div>
       ) : jobs.length === 0 ? (
         <div
           style={{
@@ -83,7 +85,7 @@ export function AdminJobsPage() {
             borderRadius: '8px',
           }}
         >
-          No jobs found matching the selected filter.
+          {t('admin.jobs.noJobs')}
         </div>
       ) : (
         <div
@@ -104,12 +106,12 @@ export function AdminJobsPage() {
           >
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>Job ID</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Agency</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Traveller</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Quotation Total</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Accepted Date</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colJobId')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colAgency')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colTraveller')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colQuotationTotal')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colDate')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colStatus')}</th>
               </tr>
             </thead>
             <tbody>
@@ -123,7 +125,7 @@ export function AdminJobsPage() {
                     </div>
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <div>{j.traveller?.name || 'Traveller'}</div>
+                    <div>{j.traveller?.name || t('admin.jobs.colTraveller')}</div>
                     <div style={{ fontSize: '0.75rem', color: '#718096' }}>
                       {j.traveller?.email}
                     </div>
@@ -133,10 +135,10 @@ export function AdminJobsPage() {
                     {j.quotation?.currency || 'USD'}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    {j.acceptedAt ? new Date(j.acceptedAt).toLocaleDateString() : '—'}
+                    {j.acceptedAt ? formatDate(j.acceptedAt) : '—'}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <StatusBadge status={j.status} />
+                    <StatusBadge status={j.status} label={t(`status.${j.status}`, j.status)} />
                   </td>
                 </tr>
               ))}

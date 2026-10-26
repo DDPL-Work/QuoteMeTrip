@@ -68,6 +68,8 @@ import { TravelGuideArticle } from './TravelGuideArticle.js';
 import { AgencyCoverage } from './AgencyCoverage.js';
 import { AgencyCapability } from './AgencyCapability.js';
 import { Rating } from './Rating.js';
+import { TranslationCache } from './TranslationCache.js';
+import { Announcement } from './Announcement.js';
 
 let registry = null;
 
@@ -105,6 +107,8 @@ export function initModels(sequelize = getSequelize()) {
   Rating.initModel(sequelize);
   AgencyCoverage.initModel(sequelize);
   AgencyCapability.initModel(sequelize);
+  TranslationCache.initModel(sequelize);
+  Announcement.initModel(sequelize);
 
   // User 1:1 TravellerProfile
   User.hasOne(TravellerProfile, {
@@ -533,6 +537,15 @@ export function initModels(sequelize = getSequelize()) {
   });
   Rating.belongsTo(AgencyProfile, { foreignKey: 'agencyId', as: 'agency' });
 
+  // User 1:N Announcement (created by admin)
+  User.hasMany(Announcement, {
+    foreignKey: 'createdBy',
+    as: 'createdAnnouncements',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  });
+  Announcement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
   registry = {
     sequelize,
     User,
@@ -564,6 +577,8 @@ export function initModels(sequelize = getSequelize()) {
     Rating,
     AgencyCoverage,
     AgencyCapability,
+    TranslationCache,
+    Announcement,
   };
 
   return registry;
@@ -599,4 +614,6 @@ export {
   Rating,
   AgencyCoverage,
   AgencyCapability,
+  TranslationCache,
+  Announcement,
 };

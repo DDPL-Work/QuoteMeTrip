@@ -12,6 +12,7 @@
 import 'dotenv/config';
 
 process.env.NODE_ENV = 'test';
+process.env.MAP_PROVIDER = 'haversine';
 process.env.JWT_ACCESS_SECRET ||= 'test-access-secret-not-for-production';
 process.env.JWT_REFRESH_SECRET ||= 'test-refresh-secret-not-for-production';
 process.env.JWT_ACCESS_EXPIRES_IN ||= '15m';
@@ -24,6 +25,7 @@ import app from '../../src/app.js';
 import { getSequelize, closeDatabase, resetSequelizeInstance } from '../../src/db/sequelize.js';
 import { initModels } from '../../src/db/models/index.js';
 import { migrateUp } from '../../src/db/runner.js';
+import { resetMapService } from '../../src/integrations/maps/map.service.js';
 
 const suffix = Date.now().toString(36);
 let emailCounter = 0;
@@ -73,6 +75,7 @@ async function registerTraveller(overrides = {}) {
 }
 
 before(async () => {
+  resetMapService();
   resetSequelizeInstance();
   db = getSequelize();
 

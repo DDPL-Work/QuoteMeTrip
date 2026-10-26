@@ -10,6 +10,7 @@ import {
   FiRefreshCw,
   FiInfo,
 } from 'react-icons/fi';
+import { useI18n } from '@troublefree/i18n';
 
 /**
  * RouteOverviewSummary
@@ -30,23 +31,106 @@ export function RouteOverviewSummary({
   isStale = false,
   onRecalculate = null,
   isCalculating = false,
+  travelMode = null,
+  apiError = null,
+  calculationStatus = null,
 }) {
+  const { t, locale } = useI18n();
   const [legsExpanded, setLegsExpanded] = useState(false);
 
   if (!route && stops.length < 2) {
     return null;
   }
 
-  const distanceKm = route?.distanceKm ?? route?.totalDistanceKm ?? 0;
-  const durationMins = route?.durationMinutes ?? route?.estimatedDurationMinutes ?? 0;
-  const hours = Math.floor(durationMins / 60);
-  const mins = durationMins % 60;
-  const formattedDuration =
-    hours > 0 ? `${hours} hr${hours > 1 ? 's' : ''} ${mins} min${mins !== 1 ? 's' : ''}` : `${mins} mins`;
+  // Authoritative active mode: prefer explicitly selected travelMode prop, fallback to route.travelMode
+  const activeMode = String(travelMode || route?.travelMode || 'DRIVE').toUpperCase();
+  const isAir = activeMode === 'AIR' || route?.isAir;
+
+  // Detect mode mismatch: route in memory was calculated for a different mode than currently selected
+  const isModeMismatch = Boolean(route && route.travelMode && route.travelMode.toUpperCase() !== activeMode);
+  const effectiveStale = isStale || isModeMismatch;
+  const hasError = Boolean(calculationStatus === 'error' || apiError);
+
+  // Never display driving duration or distance under another mode's label
+  const hasValidRouteMetrics = Boolean(route && !isModeMismatch);
+  const distanceKm = hasValidRouteMetrics ? (route?.distanceKm ?? route?.totalDistanceKm ?? 0) : 0;
+  const durationMins = hasValidRouteMetrics ? (route?.durationMinutes ?? route?.estimatedDurationMinutes ?? null) : null;
+
+  let distanceLabel = t('route.roadDistance', 'Road Distance');
+  let durationLabel = t('route.drivingTime', 'Driving Time');
+  let summaryTitle = t('route.journeySummary', 'Road Journey Summary');
+
+  if (isAir) {
+    distanceLabel = t('route.airDistance', 'Straight-Line Air Distance');
+    durationLabel = t('route.airDuration', 'Flight Duration');
+    summaryTitle = t('route.airJourneySummary', 'Air Journey Summary (Great-Circle)');
+  } else if (activeMode === 'WALK') {
+    distanceLabel = t('route.walkDistance', 'Walking Distance');
+    durationLabel = t('route.walkDuration', 'Walking Time');
+    summaryTitle = t('route.walkJourneySummary', 'Walking Journey Summary');
+  } else if (activeMode === 'BICYCLE') {
+    distanceLabel = t('route.cycleDistance', 'Cycling Distance');
+    durationLabel = t('route.cycleDuration', 'Cycling Time');
+    summaryTitle = t('route.cycleJourneySummary', 'Cycling Journey Summary');
+  } else if (activeMode === 'TWO_WHEELER') {
+    distanceLabel = t('route.motoDistance', 'Motorcycle Distance');
+    durationLabel = t('route.motoDuration', 'Riding Time');
+    summaryTitle = t('route.motoJourneySummary', 'Motorcycle Journey Summary');
+  } else if (activeMode === 'TRANSIT') {
+    distanceLabel = t('route.transitDistance', 'Transit Distance');
+    durationLabel = t('route.transitDuration', 'Transit Duration');
+    summaryTitle = t('route.transitJourneySummary', 'Transit Journey Summary');
+  }
+
+  let formattedDuration = '—';
+  if (isAir) {
+    formattedDuration = t('route.notApplicable', 'N/A (Great-Circle)');
+  } else if (isCalculating && isModeMismatch) {
+    formattedDuration = locale === 'tr' ? 'Hesaplanıyor...' : 'Calculating...';
+  } else if (durationMins !== null && durationMins !== undefined && durationMins > 0) {
+    const hours = Math.floor(durationMins / 60);
+    const mins = durationMins % 60;
+    formattedDuration =
+      hours > 0
+        ? locale === 'tr'
+          ? `${hours} sa ${mins} dk`
+          : `${hours} hr${hours > 1 ? 's' : ''} ${mins} min${mins !== 1 ? 's' : ''}`
+        : locale === 'tr'
+        ? `${mins} dk`
+        : `${mins} mins`;
+  }
 
   const recDays = recommendedDays ?? route?.recommendedDays ?? Math.max(1, Math.ceil(distanceKm / 300) + Math.ceil(Math.max(0, stops.length - 2) / 2));
-  const legs = route?.legs || [];
+  const legs = hasValidRouteMetrics ? (route?.legs || []) : [];
   const warnings = route?.warnings || [];
+
+  let badgeText;
+  if (isCalculating) {
+    badgeText = locale === 'tr' ? `${activeMode} Hesaplanıyor...` : `Calculating ${activeMode}...`;
+  } else if (hasError && !route) {
+    badgeText = locale === 'tr' ? `${activeMode} Rota Bulunamadı` : `${activeMode} Unavailable`;
+  } else if (effectiveStale) {
+    badgeText = t('route.updateNeeded', 'Update Needed');
+  } else if (route) {
+    badgeText = `${activeMode} Route Calculated`;
+  } else {
+    badgeText = t('route.stopsConfigured', 'Stops Configured');
+  }
+
+  let headerGradient = 'linear-gradient(135deg, #0C4E28 0%, #147D33 100%)';
+  if (hasError && !route) {
+    headerGradient = 'linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)';
+  } else if (isAir) {
+    headerGradient = 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)';
+  } else if (activeMode === 'WALK') {
+    headerGradient = 'linear-gradient(135deg, #92400E 0%, #B45309 100%)';
+  } else if (activeMode === 'BICYCLE') {
+    headerGradient = 'linear-gradient(135deg, #065F46 0%, #059669 100%)';
+  } else if (activeMode === 'TRANSIT') {
+    headerGradient = 'linear-gradient(135deg, #5B21B6 0%, #6D28D9 100%)';
+  } else if (activeMode === 'TWO_WHEELER') {
+    headerGradient = 'linear-gradient(135deg, #064E3B 0%, #047857 100%)';
+  }
 
   return (
     <div
@@ -62,7 +146,7 @@ export function RouteOverviewSummary({
       {/* Top Banner / Route Sequence */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #0C4E28 0%, #147D33 100%)',
+          background: headerGradient,
           color: '#FFFFFF',
           padding: '16px 20px',
         }}
@@ -81,25 +165,26 @@ export function RouteOverviewSummary({
               fontWeight: '800',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: '#FC7C00',
+              color: isAir ? '#E0F2FE' : '#FC7C00',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
             }}
           >
-            <FiNavigation size={13} /> Road Journey Summary
+            <FiNavigation size={13} />{' '}
+            {summaryTitle}
           </span>
           <span
             style={{
               fontSize: '11.5px',
-              background: isStale ? 'rgba(252, 124, 0, 0.25)' : 'rgba(255, 255, 255, 0.2)',
-              color: isStale ? '#FFE0B2' : '#FFFFFF',
+              background: effectiveStale ? 'rgba(252, 124, 0, 0.25)' : 'rgba(255, 255, 255, 0.2)',
+              color: effectiveStale ? '#FFE0B2' : '#FFFFFF',
               padding: '3px 9px',
               borderRadius: '999px',
               fontWeight: '700',
             }}
           >
-            {isStale ? 'Update Needed' : route ? 'Google Routes Calculated' : 'Stops Configured'}
+            {badgeText}
           </span>
         </div>
 
@@ -135,8 +220,122 @@ export function RouteOverviewSummary({
         </div>
       </div>
 
+      {/* Error / Unavailable Mode Notice Banner */}
+      {hasError && !route && apiError && (
+        <div
+          style={{
+            background: '#FEF2F2',
+            borderBottom: '1px solid #FECACA',
+            padding: '10px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#B91C1C',
+            fontSize: '13px',
+            fontWeight: '600',
+          }}
+        >
+          <FiAlertTriangle size={16} style={{ flexShrink: 0 }} />
+          <span>{apiError}</span>
+        </div>
+      )}
+
+      {/* Mode-Specific Guidance Banner */}
+      {isAir && (
+        <div
+          style={{
+            background: '#F0F9FF',
+            borderBottom: '1px solid #BAE6FD',
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#0369A1',
+            fontSize: '12.5px',
+            fontWeight: '500',
+          }}
+        >
+          <FiInfo size={15} style={{ flexShrink: 0 }} />
+          <span>
+            {t(
+              'route.airNotice',
+              'Air mode shows straight-line great-circle distance between destinations. Actual flight paths, airlines, and schedules vary.',
+            )}
+          </span>
+        </div>
+      )}
+      {activeMode === 'BICYCLE' && (
+        <div
+          style={{
+            background: '#ECFDF5',
+            borderBottom: '1px solid #A7F3D0',
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#065F46',
+            fontSize: '12.5px',
+            fontWeight: '500',
+          }}
+        >
+          <FiInfo size={15} style={{ flexShrink: 0 }} />
+          <span>
+            {t(
+              'route.bicycleNotice',
+              'Bicycle routes: Google Maps cycling coverage may be incomplete or caution advised on shared roads.',
+            )}
+          </span>
+        </div>
+      )}
+      {activeMode === 'WALK' && (
+        <div
+          style={{
+            background: '#FFFBEB',
+            borderBottom: '1px solid #FDE68A',
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#92400E',
+            fontSize: '12.5px',
+            fontWeight: '500',
+          }}
+        >
+          <FiInfo size={15} style={{ flexShrink: 0 }} />
+          <span>
+            {t(
+              'route.walkNotice',
+              'Pedestrian walking routes: walkway availability may be limited on long connecting stretches.',
+            )}
+          </span>
+        </div>
+      )}
+      {activeMode === 'TRANSIT' && (
+        <div
+          style={{
+            background: '#F5F3FF',
+            borderBottom: '1px solid #DDD6FE',
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#5B21B6',
+            fontSize: '12.5px',
+            fontWeight: '500',
+          }}
+        >
+          <FiInfo size={15} style={{ flexShrink: 0 }} />
+          <span>
+            {t(
+              'route.transitNotice',
+              'Public transit routing connects start and final destination via regional transit schedules where supported.',
+            )}
+          </span>
+        </div>
+      )}
+
       {/* Stale Warning Banner */}
-      {isStale && onRecalculate && (
+      {effectiveStale && onRecalculate && (
         <div
           style={{
             background: '#FFF3E0',
@@ -159,7 +358,7 @@ export function RouteOverviewSummary({
             }}
           >
             <FiAlertTriangle size={16} />
-            Stops changed — recalculate to refresh road route and metrics.
+            {t('route.staleWarning', 'Stops or travel mode changed — recalculate to refresh route and metrics.')}
           </div>
           <button
             type="button"
@@ -181,7 +380,7 @@ export function RouteOverviewSummary({
             }}
           >
             <FiRefreshCw size={13} className={isCalculating ? 'animate-spin' : ''} />
-            Recalculate
+            {t('route.recalculateBtn', 'Recalculate')}
           </button>
         </div>
       )}
@@ -197,7 +396,7 @@ export function RouteOverviewSummary({
           borderBottom: legs.length > 0 ? '1px solid #E2DCD1' : 'none',
         }}
       >
-        {/* Total Road Distance */}
+        {/* Total Distance */}
         <div
           style={{
             background: '#FFFFFF',
@@ -217,14 +416,14 @@ export function RouteOverviewSummary({
               marginBottom: '4px',
             }}
           >
-            <FiNavigation size={13} style={{ color: '#147D33' }} /> Road Distance
+            <FiNavigation size={13} style={{ color: isAir ? '#0284C7' : '#147D33' }} /> {distanceLabel}
           </div>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#13291C' }}>
             {distanceKm > 0 ? `${distanceKm.toLocaleString()} km` : '—'}
           </div>
         </div>
 
-        {/* Driving Duration */}
+        {/* Travel Duration */}
         <div
           style={{
             background: '#FFFFFF',
@@ -244,10 +443,10 @@ export function RouteOverviewSummary({
               marginBottom: '4px',
             }}
           >
-            <FiClock size={13} style={{ color: '#147D33' }} /> Driving Time
+            <FiClock size={13} style={{ color: isAir ? '#0284C7' : '#147D33' }} /> {durationLabel}
           </div>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#13291C' }}>
-            {durationMins > 0 ? formattedDuration : '—'}
+            {formattedDuration}
           </div>
         </div>
 
@@ -271,10 +470,10 @@ export function RouteOverviewSummary({
               marginBottom: '4px',
             }}
           >
-            <FiMapPin size={13} style={{ color: '#147D33' }} /> Destinations
+            <FiMapPin size={13} style={{ color: '#147D33' }} /> {t('route.destinations', 'Destinations')}
           </div>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#13291C' }}>
-            {stops.length} Stops
+            {locale === 'tr' ? `${stops.length} Durak` : `${stops.length} Stop${stops.length !== 1 ? 's' : ''}`}
           </div>
         </div>
 
@@ -298,10 +497,10 @@ export function RouteOverviewSummary({
               marginBottom: '4px',
             }}
           >
-            <FiCalendar size={13} style={{ color: '#FC7C00' }} /> Recommended
+            <FiCalendar size={13} style={{ color: '#FC7C00' }} /> {t('route.recommended', 'Recommended')}
           </div>
           <div style={{ fontSize: '18px', fontWeight: '800', color: '#0C4E28' }}>
-            {recDays} Day{recDays > 1 ? 's' : ''}
+            {locale === 'tr' ? `${recDays} Gün` : `${recDays} Day${recDays !== 1 ? 's' : ''}`}
           </div>
         </div>
       </div>
@@ -327,7 +526,7 @@ export function RouteOverviewSummary({
             }}
           >
             <span>
-              Detailed Leg Breakdown ({legs.length} segment{legs.length > 1 ? 's' : ''})
+              {t('route.legBreakdown', { count: legs.length }, `Detailed Leg Breakdown (${legs.length} segments)`)}
             </span>
             {legsExpanded ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
           </button>

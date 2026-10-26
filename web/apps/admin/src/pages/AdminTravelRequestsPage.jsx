@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useI18n, formatDate } from '@troublefree/i18n';
 import { adminApi } from '../services/api.js';
 import { StatusBadge } from '@troublefree/ui';
 
 export function AdminTravelRequestsPage() {
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,10 +43,10 @@ export function AdminTravelRequestsPage() {
     >
       <div>
         <h1 style={{ fontSize: '1.75rem', color: '#23272B', margin: 0 }}>
-          Travel Requests (Operational Visibility)
+          {t('admin.travelRequests.title')}
         </h1>
         <p style={{ color: '#718096', marginTop: '0.25rem' }}>
-          Read-only operational inspection of traveller itineraries and submitted requests.
+          {t('admin.travelRequests.subtitle')}
         </p>
       </div>
 
@@ -61,20 +63,20 @@ export function AdminTravelRequestsPage() {
           onChange={(e) => setSearchParams({ status: e.target.value, page: '1' })}
           style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
         >
-          <option value="">All Request Statuses</option>
-          <option value="submitted">Submitted</option>
-          <option value="matching">Matching</option>
-          <option value="quoted">Quoted</option>
-          <option value="accepted">Accepted</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="completed">Completed</option>
+          <option value="">{t('admin.travelRequests.allStatuses')}</option>
+          <option value="submitted">{t('status.submitted', 'Submitted')}</option>
+          <option value="matching">{t('status.matching', 'Matching')}</option>
+          <option value="quoted">{t('status.quoted', 'Quoted')}</option>
+          <option value="accepted">{t('status.accepted', 'Accepted')}</option>
+          <option value="cancelled">{t('status.cancelled', 'Cancelled')}</option>
+          <option value="completed">{t('status.completed', 'Completed')}</option>
         </select>
       </div>
 
       {loading ? (
-        <div>Loading travel requests...</div>
+        <div>{t('admin.travelRequests.loadingRequests')}</div>
       ) : error ? (
-        <div style={{ color: '#E53E3E' }}>Error: {error}</div>
+        <div style={{ color: '#E53E3E' }}>{t('admin.common.error')}: {error}</div>
       ) : requests.length === 0 ? (
         <div
           style={{
@@ -85,7 +87,7 @@ export function AdminTravelRequestsPage() {
             borderRadius: '8px',
           }}
         >
-          No travel requests found.
+          {t('admin.travelRequests.noRequests')}
         </div>
       ) : (
         <div
@@ -106,13 +108,13 @@ export function AdminTravelRequestsPage() {
           >
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>Request ID</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Traveller</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Dates</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Party Size</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Package</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Quotations</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colRequestId')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colTraveller')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colDates')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colPartySize')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colPackage')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colQuotes')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.travelRequests.colStatus')}</th>
               </tr>
             </thead>
             <tbody>
@@ -120,21 +122,23 @@ export function AdminTravelRequestsPage() {
                 <tr key={req.id} style={{ borderBottom: '1px solid #E2E8F0' }}>
                   <td style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>#{req.id}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <div>{req.traveller?.name || 'Traveller'}</div>
+                    <div>{req.traveller?.name || t('admin.travelRequests.colTraveller')}</div>
                     <div style={{ fontSize: '0.75rem', color: '#718096' }}>
                       {req.traveller?.email}
                     </div>
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    {req.travelStartDate ? new Date(req.travelStartDate).toLocaleDateString() : '—'}
+                    {req.travelStartDate ? formatDate(req.travelStartDate) : '—'}
                   </td>
-                  <td style={{ padding: '0.75rem 1rem' }}>{req.numberOfTravellers} traveller(s)</td>
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    {t('admin.travelRequests.travellerCount', { count: req.numberOfTravellers })}
+                  </td>
                   <td style={{ padding: '0.75rem 1rem' }}>{req.packageType}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    {req.quotations?.length || 0} quote(s)
+                    {t('admin.travelRequests.quotesCount', { count: req.quotations?.length || 0 })}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <StatusBadge status={req.status} />
+                    <StatusBadge status={req.status} label={t(`status.${req.status}`, req.status)} />
                   </td>
                 </tr>
               ))}

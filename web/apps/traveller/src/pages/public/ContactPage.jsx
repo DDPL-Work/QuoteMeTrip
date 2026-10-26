@@ -27,7 +27,7 @@ export function ContactPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      setError('Please fill in all required fields (Name, Email, Message).');
+      setError(t('contact.requiredFields', 'Please fill in all required fields (Name, Email, Message).'));
       return;
     }
     setSubmitting(true);
@@ -39,7 +39,7 @@ export function ContactPage() {
       setSuccess(true);
       setForm({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setError(err?.message || 'Failed to submit form. Please try again.');
+      setError(err?.message || t('contact.submitError', 'Failed to submit form. Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -47,7 +47,7 @@ export function ContactPage() {
 
   return (
     <div className="tf-public-container">
-      <PublicBreadcrumbs items={[{ label: 'Contact Us' }]} />
+      <PublicBreadcrumbs items={[{ label: t('header.contact', 'Contact Us') }]} />
 
       <SectionHeading
         title={t('contact.title', 'Contact Us')}
@@ -58,7 +58,7 @@ export function ContactPage() {
         <div className="tf-card" style={{ padding: '2rem' }}>
           {success ? (
             <div className="tf-notice" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-              <h3 style={{ marginTop: 0 }}>Message Sent</h3>
+              <h3 style={{ marginTop: 0 }}>{t('contact.messageSent', 'Message Sent')}</h3>
               <p>{t('contact.success', 'Thank you! Your message has been sent successfully.')}</p>
               <button
                 type="button"
@@ -66,7 +66,7 @@ export function ContactPage() {
                 onClick={() => setSuccess(false)}
                 style={{ marginTop: '1rem' }}
               >
-                Send Another Message
+                {t('contact.sendAnother', 'Send Another Message')}
               </button>
             </div>
           ) : (
@@ -131,7 +131,7 @@ export function ContactPage() {
                 disabled={submitting}
                 style={{ width: '100%' }}
               >
-                {submitting ? 'Sending...' : t('contact.send', 'Send Message')}
+                {submitting ? t('contact.sending', 'Sending...') : t('contact.send', 'Send Message')}
               </Button>
             </form>
           )}

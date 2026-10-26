@@ -2,49 +2,51 @@ import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { FiMessageCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '@troublefree/i18n';
 import { HomeSectionHeader } from './HomeSectionHeader.jsx';
 import { FaqItem } from './FaqItem.jsx';
 
-const FAQ_COL1 = [
-  {
-    id: 'col1-1',
-    q: 'Is sending a request free?',
-    a: 'Yes. Creating an itinerary, receiving quotes and comparing them is free for travellers.',
-  },
-  {
-    id: 'col1-2',
-    q: 'Which agencies receive my itinerary?',
-    a: 'Only verified agencies operating in the country you choose.',
-  },
-  {
-    id: 'col1-3',
-    q: 'Can I edit my itinerary after sending?',
-    a: 'Yes, until you agree to a quote. The new version is sent to all agencies again.',
-  },
-];
-
-const FAQ_COL2 = [
-  {
-    id: 'col2-1',
-    q: 'How do I pay for my holiday?',
-    a: 'Directly to the agency — through their payment link, bank transfer or cash.',
-  },
-  {
-    id: 'col2-2',
-    q: 'When are contact details shared?',
-    a: 'After you agree to a quote and confirm the deposit is paid.',
-  },
-  {
-    id: 'col2-3',
-    q: 'Can I print my itinerary?',
-    a: 'Yes. Every itinerary and confirmation can be printed or saved as PDF.',
-  },
-];
-
 export function FaqSection({ onContactClick }) {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
   const [openId, setOpenId] = useState(null);
+
+  const FAQ_COL1 = [
+    {
+      id: 'col1-1',
+      q: t('faq.q1', 'Is sending a request free?'),
+      a: t('faq.a1', 'Yes. Creating an itinerary, receiving quotes and comparing them is free for travellers.'),
+    },
+    {
+      id: 'col1-2',
+      q: t('faq.q2', 'Which agencies receive my itinerary?'),
+      a: t('faq.a2', 'Only verified agencies operating in the country you choose.'),
+    },
+    {
+      id: 'col1-3',
+      q: t('faq.q3', 'Can I edit my itinerary after sending?'),
+      a: t('faq.a3', 'Yes, until you agree to a quote. The new version is sent to all agencies again.'),
+    },
+  ];
+
+  const FAQ_COL2 = [
+    {
+      id: 'col2-1',
+      q: t('faq.q4', 'How do I pay for my holiday?'),
+      a: t('faq.a4', 'Directly to the agency — through their payment link, bank transfer or cash.'),
+    },
+    {
+      id: 'col2-2',
+      q: t('faq.q5', 'When are contact details shared?'),
+      a: t('faq.a5', 'After you agree to a quote and confirm the deposit is paid.'),
+    },
+    {
+      id: 'col2-3',
+      q: t('faq.q6', 'Can I print my itinerary?'),
+      a: t('faq.a6', 'Yes. Every itinerary and confirmation can be printed or saved as PDF.'),
+    },
+  ];
 
   const toggleItem = (id) => {
     setOpenId((prev) => (prev === id ? null : id));
@@ -62,8 +64,8 @@ export function FaqSection({ onContactClick }) {
     <section className="g-sec" id="g-faq">
       <div className="g-wrap">
         <HomeSectionHeader
-          title="Frequently asked questions"
-          subtitle="Everything you need to know before you start."
+          title={t('home.faq.title', 'Frequently asked questions')}
+          subtitle={t('home.faq.subtitle', 'Everything you need to know before you start.')}
         />
         <div className="g-faq">
           <div>

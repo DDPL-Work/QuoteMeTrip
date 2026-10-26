@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useI18n, formatDate } from '@troublefree/i18n';
 import { adminApi } from '../services/api.js';
 import { StatusBadge } from '@troublefree/ui';
 import { ConfirmModal } from '../components/ConfirmModal.jsx';
 import { AlertBanner } from '../components/AlertBanner.jsx';
 
 export function MembershipsPage() {
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [memberships, setMemberships] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,29 +58,29 @@ export function MembershipsPage() {
         paymentReference: paymentModal.paymentReference,
         notes: paymentModal.notes,
       });
-      setFeedback({ type: 'success', message: 'Payment confirmed successfully.' });
+      setFeedback({ type: 'success', message: t('admin.memberships.paymentSuccess') });
       setPaymentModal(null);
       loadMemberships();
     } catch (err) {
-      setFeedback({ type: 'error', message: `Payment confirmation failed: ${err.message}` });
+      setFeedback({ type: 'error', message: err.message });
     }
   };
 
   const promptSuspend = (memId) => {
     setConfirmDialog({
-      title: 'Suspend Agency Membership',
-      message: 'Are you sure you want to suspend this agency membership? The agency will lose matching eligibility while suspended.',
-      confirmText: 'Suspend Membership',
+      title: t('admin.memberships.suspendTitle'),
+      message: t('admin.memberships.suspendMessage'),
+      confirmText: t('admin.memberships.suspendConfirmText'),
       variant: 'warning',
       action: async () => {
         setActionLoading(true);
         try {
           await adminApi.suspendMembership(memId);
-          setFeedback({ type: 'success', message: 'Membership suspended successfully.' });
+          setFeedback({ type: 'success', message: t('admin.memberships.suspendSuccess') });
           setConfirmDialog(null);
           loadMemberships();
         } catch (err) {
-          setFeedback({ type: 'error', message: `Suspension failed: ${err.message}` });
+          setFeedback({ type: 'error', message: err.message });
           setConfirmDialog(null);
         } finally {
           setActionLoading(false);
@@ -89,19 +91,19 @@ export function MembershipsPage() {
 
   const promptReactivate = (memId) => {
     setConfirmDialog({
-      title: 'Reactivate Agency Membership',
-      message: 'Reactivate this agency membership? The agency will regain active matching eligibility.',
-      confirmText: 'Reactivate Membership',
+      title: t('admin.memberships.reactivateTitle'),
+      message: t('admin.memberships.reactivateMessage'),
+      confirmText: t('admin.memberships.reactivateConfirmText'),
       variant: 'primary',
       action: async () => {
         setActionLoading(true);
         try {
           await adminApi.reactivateMembership(memId);
-          setFeedback({ type: 'success', message: 'Membership reactivated successfully.' });
+          setFeedback({ type: 'success', message: t('admin.memberships.reactivateSuccess') });
           setConfirmDialog(null);
           loadMemberships();
         } catch (err) {
-          setFeedback({ type: 'error', message: `Reactivation failed: ${err.message}` });
+          setFeedback({ type: 'error', message: err.message });
           setConfirmDialog(null);
         } finally {
           setActionLoading(false);
@@ -117,10 +119,10 @@ export function MembershipsPage() {
     >
       <div>
         <h1 style={{ fontSize: '1.75rem', color: '#23272B', margin: 0 }}>
-          Agency Membership Lifecycle & Payments
+          {t('admin.memberships.title')}
         </h1>
         <p style={{ color: '#718096', marginTop: '0.25rem' }}>
-          Manage agency subscriptions, manual payment verification, and active windows.
+          {t('admin.memberships.subtitle')}
         </p>
       </div>
 
@@ -148,20 +150,20 @@ export function MembershipsPage() {
           onChange={(e) => handleStatusFilter(e.target.value)}
           style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
         >
-          <option value="">All Statuses</option>
-          <option value="pending">Pending Payment</option>
-          <option value="active">Active</option>
-          <option value="expired">Expired</option>
-          <option value="suspended">Suspended</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="">{t('admin.common.allStatuses')}</option>
+          <option value="pending">{t('status.pending')}</option>
+          <option value="active">{t('status.active')}</option>
+          <option value="expired">{t('status.expired')}</option>
+          <option value="suspended">{t('status.suspended')}</option>
+          <option value="cancelled">{t('status.cancelled')}</option>
         </select>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div>Loading memberships...</div>
+        <div>{t('admin.memberships.loading')}</div>
       ) : error ? (
-        <div style={{ color: '#E53E3E' }}>Error: {error}</div>
+        <div style={{ color: '#E53E3E' }}>{t('admin.common.error')}: {error}</div>
       ) : memberships.length === 0 ? (
         <div
           style={{
@@ -172,7 +174,7 @@ export function MembershipsPage() {
             borderRadius: '8px',
           }}
         >
-          No membership records found.
+          {t('admin.memberships.empty')}
         </div>
       ) : (
         <div
@@ -195,13 +197,13 @@ export function MembershipsPage() {
           >
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>Agency</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Plan</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Period</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Payment Ref</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Confirmed By</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.memberships.colAgency')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.memberships.colPlan')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.memberships.colDates')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.memberships.colStatus')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.memberships.colPaymentRef')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.memberships.colConfirmedBy', 'Confirmed By')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>{t('admin.common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -220,11 +222,11 @@ export function MembershipsPage() {
                     <div style={{ fontSize: '0.75rem', color: '#718096' }}>${mem.plan?.price}</div>
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    {new Date(mem.startsAt).toLocaleDateString()} —{' '}
-                    {mem.endsAt ? new Date(mem.endsAt).toLocaleDateString() : 'Indefinite'}
+                    {formatDate(mem.startsAt)} —{' '}
+                    {mem.endsAt ? formatDate(mem.endsAt) : 'Indefinite'}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <StatusBadge status={mem.status} />
+                    <StatusBadge status={mem.status} label={t(`status.${mem.status}`, mem.status)} />
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>{mem.paymentReference || '—'}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>{mem.confirmer?.email || '—'}</td>
@@ -246,7 +248,7 @@ export function MembershipsPage() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          Confirm Payment
+                          {t('admin.memberships.confirmPaymentBtn')}
                         </button>
                       )}
                       {mem.status === 'active' && (
@@ -263,7 +265,7 @@ export function MembershipsPage() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          Suspend
+                          {t('admin.memberships.suspendBtn')}
                         </button>
                       )}
                       {mem.status === 'suspended' && (
@@ -280,7 +282,7 @@ export function MembershipsPage() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          Reactivate
+                          {t('admin.memberships.reactivateBtn')}
                         </button>
                       )}
                     </div>
@@ -318,20 +320,21 @@ export function MembershipsPage() {
               gap: '1rem',
             }}
           >
-            <h3 style={{ marginTop: 0, marginBottom: 0 }}>Confirm Membership Payment</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 0 }}>{t('admin.memberships.confirmPaymentTitle')}</h3>
             <p style={{ margin: 0, fontSize: '0.875rem', color: '#4A5568' }}>
-              Confirm payment for agency{' '}
-              <strong>{paymentModal.membership.agency?.agencyName}</strong> (
-              {paymentModal.membership.plan?.name}).
+              {t('admin.memberships.confirmPaymentDesc', {
+                agency: paymentModal.membership.agency?.agencyName || `Agency #${paymentModal.membership.agencyId}`,
+                plan: paymentModal.membership.plan?.name || '',
+              })}
             </p>
             <div>
               <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                Payment Reference / Txn ID:
+                {t('admin.memberships.paymentRefLabel')}
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Bank Wire Ref #998877"
+                placeholder={t('admin.memberships.paymentRefPlaceholder')}
                 value={paymentModal.paymentReference}
                 onChange={(e) =>
                   setPaymentModal({ ...paymentModal, paymentReference: e.target.value })
@@ -346,10 +349,10 @@ export function MembershipsPage() {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                Verification Notes:
+                {t('admin.memberships.adminNotesLabel')}
               </label>
               <textarea
-                placeholder="Optional notes for audit log..."
+                placeholder={t('admin.memberships.adminNotesPlaceholder')}
                 value={paymentModal.notes}
                 onChange={(e) => setPaymentModal({ ...paymentModal, notes: e.target.value })}
                 style={{
@@ -378,7 +381,7 @@ export function MembershipsPage() {
                   background: '#FFF',
                 }}
               >
-                Cancel
+                {t('admin.common.cancel')}
               </button>
               <button
                 type="submit"
@@ -391,7 +394,7 @@ export function MembershipsPage() {
                   cursor: 'pointer',
                 }}
               >
-                Confirm Payment & Activate
+                {t('admin.memberships.confirmPaymentBtn')}
               </button>
             </div>
           </form>
@@ -404,7 +407,7 @@ export function MembershipsPage() {
           title={confirmDialog.title}
           message={confirmDialog.message}
           confirmText={confirmDialog.confirmText}
-          cancelText="Cancel"
+          cancelText={t('admin.common.cancel')}
           variant={confirmDialog.variant || 'warning'}
           loading={actionLoading}
           onConfirm={confirmDialog.action}

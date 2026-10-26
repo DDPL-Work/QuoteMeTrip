@@ -23,6 +23,7 @@ export function PopularRouteCard({ route, index = 0, onSelectRoute }) {
       maxRotateX={5}
       maxRotateY={7}
       depth={14}
+      showShine={true}
       aria-label={`Plan a trip to ${route.name} - ${route.tagline || route.country}`}
       onClick={handleRouteClick}
       style={{

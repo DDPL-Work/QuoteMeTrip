@@ -24,7 +24,7 @@ export function AboutPage() {
 
   return (
     <div className="tf-public-container">
-      <PublicBreadcrumbs items={[{ label: 'About Us' }]} />
+      <PublicBreadcrumbs items={[{ label: t('about.breadcrumbs', 'About Us') }]} />
 
       <SectionHeading
         title={t('about.title', 'About QuoteMeTrip')}
@@ -38,45 +38,41 @@ export function AboutPage() {
         style={{ maxWidth: '48rem', margin: '0 auto 4rem', fontSize: '1.05rem', lineHeight: 1.8 }}
       >
         <p>
-          <strong>QuoteMeTrip</strong> was built to solve a fundamental challenge in
-          multi-stop travel planning: bridging the gap between a traveller's unique route vision and
-          the local expertise required to execute it seamlessly without overpriced intermediaries.
+          {t('about.mission', "QuoteMeTrip was built to solve a fundamental challenge in multi-stop travel planning: bridging the gap between a traveller's unique route vision and the local expertise required to execute it seamlessly without overpriced intermediaries.")}
         </p>
 
-        <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem' }}>How We Help Travellers</h3>
+        <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem' }}>{t('about.howWeHelp', 'How We Help Travellers')}</h3>
         <ul className="tf-list" style={{ gap: '1rem', marginTop: '1rem' }}>
           <li className="tf-card">
             <strong style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Icons.MapPin aria-hidden="true" /> Route-First Itinerary Builder
+              <Icons.MapPin aria-hidden="true" /> {t('about.feature1Title', 'Route-First Itinerary Builder')}
             </strong>
             <p className="tf-card-text" style={{ margin: '0.4rem 0 0' }}>
-              Map out custom multi-stop itineraries across Istanbul, Cappadocia, and the Turquoise Coast with automatic distance calculation and recommended day allocation.
+              {t('about.feature1Desc', 'Map out custom multi-stop itineraries across Istanbul, Cappadocia, and the Turquoise Coast with automatic distance calculation and recommended day allocation.')}
             </p>
           </li>
           <li className="tf-card">
             <strong style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Icons.Quotations aria-hidden="true" /> Competitive Agency Quotations
+              <Icons.Quotations aria-hidden="true" /> {t('about.feature2Title', 'Competitive Agency Quotations')}
             </strong>
             <p className="tf-card-text" style={{ margin: '0.4rem 0 0' }}>
-              Receive itemized offers directly from licensed local travel operators tailored to your
-              specific travel requirements and budget.
+              {t('about.feature2Desc', 'Receive itemized offers directly from licensed local travel operators tailored to your specific travel requirements and budget.')}
             </p>
           </li>
           <li className="tf-card">
             <strong style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Icons.Messages aria-hidden="true" /> Secure Direct Messaging
+              <Icons.Messages aria-hidden="true" /> {t('about.feature3Title', 'Secure Direct Messaging')}
             </strong>
             <p className="tf-card-text" style={{ margin: '0.4rem 0 0' }}>
-              Chat directly with agency partners to adjust line items, refine itineraries, and
-              confirm travel arrangements.
+              {t('about.feature3Desc', 'Chat directly with agency partners to adjust line items, refine itineraries, and confirm travel arrangements.')}
             </p>
           </li>
           <li className="tf-card">
             <strong style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Icons.Requests aria-hidden="true" /> Zero Platform Fees for Travellers
+              <Icons.Requests aria-hidden="true" /> {t('about.feature4Title', 'Zero Platform Fees for Travellers')}
             </strong>
             <p className="tf-card-text" style={{ margin: '0.4rem 0 0' }}>
-              Travellers never pay booking fees to QuoteMeTrip. You pay your chosen agency directly via their secure invoice.
+              {t('about.feature4Desc', 'Travellers never pay booking fees to QuoteMeTrip. You pay your chosen agency directly via their secure invoice.')}
             </p>
           </li>
         </ul>

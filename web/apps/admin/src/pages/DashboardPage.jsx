@@ -12,8 +12,10 @@ import {
   FiCheckCircle,
 } from 'react-icons/fi';
 import { adminApi } from '../services/api.js';
+import { useI18n } from '@troublefree/i18n';
 
 export function DashboardPage() {
+  const { t } = useI18n();
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -82,11 +84,11 @@ export function DashboardPage() {
       <div className="admin-card" style={{ padding: '2.5rem', textAlign: 'center' }}>
         <FiAlertCircle style={{ fontSize: '2.5rem', color: '#EF4444', marginBottom: '1rem' }} />
         <h2 style={{ margin: '0 0 0.5rem 0', color: '#1F2937' }}>
-          Unable to load dashboard metrics.
+          {t('admin.dashboard.errorLoading', 'Unable to load dashboard metrics.')}
         </h2>
         <p style={{ color: '#6B7280', margin: '0 0 1.5rem 0', fontSize: '0.95rem' }}>{error}</p>
         <button type="button" className="admin-btn admin-btn-primary" onClick={fetchMetrics}>
-          <FiRefreshCw /> Retry Connection
+          <FiRefreshCw /> {t('admin.dashboard.retry', 'Retry Connection')}
         </button>
       </div>
     );
@@ -109,11 +111,13 @@ export function DashboardPage() {
         }}
       >
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>
-          Good afternoon, Admin
+          {t('admin.dashboard.greeting', 'Good afternoon, Admin')}
         </h1>
         <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem', maxWidth: '600px' }}>
-          Monitor agencies, requests, memberships and platform operations across the QuoteMeTrip
-          marketplace.
+          {t(
+            'admin.dashboard.subtitle',
+            'Monitor agencies, requests, memberships and platform operations across the QuoteMeTrip marketplace.',
+          )}
         </p>
       </div>
 
@@ -138,10 +142,12 @@ export function DashboardPage() {
                 className="admin-btn admin-btn-outline admin-btn-sm"
                 style={{ padding: '0.2rem 0.5rem' }}
               >
-                View <FiArrowRight />
+                {t('admin.common.view', 'View')} <FiArrowRight />
               </Link>
             </div>
-            <div className="admin-stat-label">Total Agencies</div>
+            <div className="admin-stat-label">
+              {t('admin.dashboard.totalAgencies', 'Total Agencies')}
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -152,10 +158,18 @@ export function DashboardPage() {
               }}
             >
               <span className="admin-badge admin-badge-warning">
-                Pending: {agencies?.pending || 0}
+                {t(
+                  'admin.dashboard.pending',
+                  { count: agencies?.pending || 0 },
+                  `Pending: ${agencies?.pending || 0}`,
+                )}
               </span>
               <span className="admin-badge admin-badge-success">
-                Approved: {agencies?.approved || 0}
+                {t(
+                  'admin.dashboard.approved',
+                  { count: agencies?.approved || 0 },
+                  `Approved: ${agencies?.approved || 0}`,
+                )}
               </span>
             </div>
           </div>
@@ -174,10 +188,12 @@ export function DashboardPage() {
                 className="admin-btn admin-btn-outline admin-btn-sm"
                 style={{ padding: '0.2rem 0.5rem' }}
               >
-                Manage <FiArrowRight />
+                {t('admin.common.manage', 'Manage')} <FiArrowRight />
               </Link>
             </div>
-            <div className="admin-stat-label">Active Memberships</div>
+            <div className="admin-stat-label">
+              {t('admin.dashboard.activeMemberships', 'Active Memberships')}
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -188,10 +204,18 @@ export function DashboardPage() {
               }}
             >
               <span className="admin-badge admin-badge-warning">
-                Pending: {memberships?.pending || 0}
+                {t(
+                  'admin.dashboard.pending',
+                  { count: memberships?.pending || 0 },
+                  `Pending: ${memberships?.pending || 0}`,
+                )}
               </span>
               <span className="admin-badge admin-badge-info">
-                Expired: {memberships?.expired || 0}
+                {t(
+                  'admin.dashboard.expired',
+                  { count: memberships?.expired || 0 },
+                  `Expired: ${memberships?.expired || 0}`,
+                )}
               </span>
             </div>
           </div>
@@ -210,10 +234,12 @@ export function DashboardPage() {
                 className="admin-btn admin-btn-outline admin-btn-sm"
                 style={{ padding: '0.2rem 0.5rem' }}
               >
-                Requests <FiArrowRight />
+                {t('admin.common.requests', 'Requests')} <FiArrowRight />
               </Link>
             </div>
-            <div className="admin-stat-label">Travel Requests</div>
+            <div className="admin-stat-label">
+              {t('admin.dashboard.travelRequests', 'Travel Requests')}
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -224,10 +250,18 @@ export function DashboardPage() {
               }}
             >
               <span className="admin-badge admin-badge-info">
-                Active Jobs: {marketplace?.activeJobs || 0}
+                {t(
+                  'admin.dashboard.activeJobs',
+                  { count: marketplace?.activeJobs || 0 },
+                  `Active Jobs: ${marketplace?.activeJobs || 0}`,
+                )}
               </span>
               <span className="admin-badge admin-badge-success">
-                Completed: {marketplace?.completedJobs || 0}
+                {t(
+                  'admin.dashboard.completed',
+                  { count: marketplace?.completedJobs || 0 },
+                  `Completed: ${marketplace?.completedJobs || 0}`,
+                )}
               </span>
             </div>
           </div>
@@ -248,10 +282,12 @@ export function DashboardPage() {
                 className="admin-btn admin-btn-outline admin-btn-sm"
                 style={{ padding: '0.2rem 0.5rem' }}
               >
-                Details <FiArrowRight />
+                {t('admin.common.details', 'Details')} <FiArrowRight />
               </Link>
             </div>
-            <div className="admin-stat-label">Total Commissions</div>
+            <div className="admin-stat-label">
+              {t('admin.dashboard.totalCommissions', 'Total Commissions')}
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -262,10 +298,18 @@ export function DashboardPage() {
               }}
             >
               <span className="admin-badge admin-badge-warning">
-                Pending: ${commissions?.pendingAmount ?? '0.00'}
+                {t(
+                  'admin.dashboard.pendingCommission',
+                  { amount: commissions?.pendingAmount ?? '0.00' },
+                  `Pending: $${commissions?.pendingAmount ?? '0.00'}`,
+                )}
               </span>
               <span className="admin-badge admin-badge-success">
-                Paid: ${commissions?.paidAmount ?? '0.00'}
+                {t(
+                  'admin.dashboard.paid',
+                  { amount: commissions?.paidAmount ?? '0.00' },
+                  `Paid: $${commissions?.paidAmount ?? '0.00'}`,
+                )}
               </span>
             </div>
           </div>
@@ -275,7 +319,9 @@ export function DashboardPage() {
       {/* Operational Attention Needed Card */}
       <div className="admin-card">
         <div className="admin-card-header">
-          <h3 className="admin-card-title">Operational Attention Needed</h3>
+          <h3 className="admin-card-title">
+            {t('admin.dashboard.attentionNeeded', 'Operational Attention Needed')}
+          </h3>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {agencies?.pending > 0 ? (
@@ -297,15 +343,18 @@ export function DashboardPage() {
               >
                 <FiAlertCircle />
                 <span>
-                  <strong>{agencies.pending} agency registrations</strong> waiting for document
-                  verification and approval.
+                  {t(
+                    'admin.dashboard.agencyAlert',
+                    { count: agencies.pending },
+                    `${agencies.pending} agency registrations waiting for document verification and approval.`,
+                  )}
                 </span>
               </div>
               <Link
                 to="/agencies?status=pending"
                 className="admin-btn admin-btn-primary admin-btn-sm"
               >
-                Review Agencies
+                {t('admin.dashboard.reviewAgencies', 'Review Agencies')}
               </Link>
             </div>
           ) : (
@@ -318,8 +367,8 @@ export function DashboardPage() {
                 fontSize: '0.9rem',
               }}
             >
-              <FiCheckCircle style={{ color: '#16A34A' }} /> All agency applications have been
-              reviewed.
+              <FiCheckCircle style={{ color: '#16A34A' }} />{' '}
+              {t('admin.dashboard.allAgenciesReviewed', 'All agency applications have been reviewed.')}
             </div>
           )}
 
@@ -342,15 +391,18 @@ export function DashboardPage() {
               >
                 <FiAlertCircle />
                 <span>
-                  <strong>{memberships.pending} membership payments</strong> pending manual admin
-                  confirmation.
+                  {t(
+                    'admin.dashboard.membershipAlert',
+                    { count: memberships.pending },
+                    `${memberships.pending} membership payments pending manual admin confirmation.`,
+                  )}
                 </span>
               </div>
               <Link
                 to="/memberships?status=pending"
                 className="admin-btn admin-btn-accent admin-btn-sm"
               >
-                Confirm Payments
+                {t('admin.dashboard.confirmPayments', 'Confirm Payments')}
               </Link>
             </div>
           ) : null}

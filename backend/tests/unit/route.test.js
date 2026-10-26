@@ -32,12 +32,18 @@ import {
   validatePatchRequestInput,
 } from '../../src/modules/travel-requests/travel-requests.validation.js';
 import { TRAVEL_REQUEST_TRANSITIONS } from '../../src/db/models/TravelRequest.js';
-import { findOwnedRoute } from '../../src/modules/routes/routes.service.js';
+import { findOwnedRoute, calculateRouteForTraveller } from '../../src/modules/routes/routes.service.js';
+import { MapService } from '../../src/integrations/maps/map.service.js';
 import {
   GoogleRoutesMapProvider,
   decodeEncodedPolyline,
   parseDurationSeconds,
 } from '../../src/integrations/maps/google-routes.provider.js';
+import {
+  getMapProvider,
+  HaversineMapProvider,
+  OsrmMapProvider,
+} from '../../src/integrations/maps/map.provider.js';
 
 const start = (overrides = {}) => ({
   name: 'Istanbul',
@@ -454,5 +460,500 @@ describe('GoogleRoutesMapProvider unit tests', () => {
       (err) => err.statusCode === 422 && /No driving route could be found/i.test(err.message),
     );
   });
-});
 
+  test('regression: Delhi-to-Chandigarh driving request builds mutually exclusive waypoints without placeId collision', async () => {
+    const delhi = {
+      name: 'Delhi',
+      latitude: 28.68146,
+      longitude: 77.22279,
+      type: 'start',
+      placeId: 'ChIJL_P_CXMEDTkRw0ZdG-0GVvw',
+    };
+    const chandigarh = {
+      name: 'Chandigarh',
+      latitude: 30.73331,
+      longitude: 76.77942,
+      type: 'final',
+      placeId: 'ChIJa8lu5gvtDzkR_hlzUvln_6U',
+    };
+
+    let sentBody = null;
+    let sentHeaders = null;
+
+    const mockFetch = async (url, options) => {
+      sentBody = JSON.parse(options.body);
+      sentHeaders = options.headers;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          routes: [
+            {
+              distanceMeters: 248350,
+              duration: '15600s',
+              polyline: { encodedPolyline: '_p~iF~ps|U_ulLnnqC' },
+              legs: [
+                {
+                  distanceMeters: 248350,
+                  duration: '15600s',
+                },
+              ],
+            },
+          ],
+        }),
+      };
+    };
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key', fetchFn: mockFetch });
+    const result = await provider.calculateRoute({ stops: [delhi, chandigarh], travelMode: 'DRIVE' });
+
+    // Origin: must have location.latLng and MUST NOT have placeId in the same object
+    assert.deepStrictEqual(sentBody.origin, {
+      location: {
+        latLng: {
+          latitude: 28.68146,
+          longitude: 77.22279,
+        },
+      },
+    });
+    assert.strictEqual(sentBody.origin.placeId, undefined);
+
+    // Destination: must have location.latLng and MUST NOT have placeId
+    assert.deepStrictEqual(sentBody.destination, {
+      location: {
+        latLng: {
+          latitude: 30.73331,
+          longitude: 76.77942,
+        },
+      },
+    });
+    assert.strictEqual(sentBody.destination.placeId, undefined);
+
+    // Travel mode and routing preferences
+    assert.strictEqual(sentBody.travelMode, 'DRIVE');
+    assert.strictEqual(sentBody.routingPreference, 'TRAFFIC_UNAWARE');
+    assert.strictEqual(sentBody.units, 'METRIC');
+
+    // Field mask header
+    assert.strictEqual(
+      sentHeaders['X-Goog-FieldMask'],
+      'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs,routes.warnings',
+    );
+
+    // Normalized result
+    assert.strictEqual(result.travelMode, 'DRIVE');
+    assert.strictEqual(result.distanceKm, 248.35);
+    assert.strictEqual(result.durationMinutes, 260); // 15600s / 60
+    assert.strictEqual(result.encodedPolyline, '_p~iF~ps|U_ulLnnqC');
+    assert.strictEqual(result.legs.length, 1);
+    assert.strictEqual(result.legs[0].startStopName, 'Delhi');
+    assert.strictEqual(result.legs[0].endStopName, 'Chandigarh');
+  });
+
+  test('waypoint mapping falls back to placeId if coordinates are absent', async () => {
+    let sentBody = null;
+    const mockFetch = async (url, options) => {
+      sentBody = JSON.parse(options.body);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ routes: [{ distanceMeters: 1000, duration: '60s' }] }),
+      };
+    };
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key', fetchFn: mockFetch });
+    await provider.calculateRoute({
+      stops: [
+        { name: 'Start', placeId: 'PID_START', type: 'start' },
+        { name: 'End', placeId: 'PID_END', type: 'final' },
+      ],
+    });
+
+    assert.deepStrictEqual(sentBody.origin, { placeId: 'PID_START' });
+    assert.deepStrictEqual(sentBody.destination, { placeId: 'PID_END' });
+  });
+
+  test('travelMode option: WALK, BICYCLE, and TRANSIT do not include routingPreference', async () => {
+    const modes = ['WALK', 'BICYCLE', 'TRANSIT'];
+
+    for (const mode of modes) {
+      let sentBody = null;
+      const mockFetch = async (url, options) => {
+        sentBody = JSON.parse(options.body);
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            routes: [{ distanceMeters: 10000, duration: '3600s', polyline: { encodedPolyline: 'abc' } }],
+          }),
+        };
+      };
+
+      const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key', fetchFn: mockFetch });
+      const result = await provider.calculateRoute({
+        stops: [start(), final()],
+        travelMode: mode,
+      });
+
+      assert.strictEqual(sentBody.travelMode, mode);
+      assert.strictEqual(
+        sentBody.routingPreference,
+        undefined,
+        `routingPreference should NOT be set for ${mode}`,
+      );
+      assert.strictEqual(result.travelMode, mode);
+    }
+  });
+
+  test('travelMode option: TWO_WHEELER includes routingPreference TRAFFIC_UNAWARE', async () => {
+    let sentBody = null;
+    const mockFetch = async (url, options) => {
+      sentBody = JSON.parse(options.body);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          routes: [{ distanceMeters: 50000, duration: '3600s', polyline: { encodedPolyline: 'def' } }],
+        }),
+      };
+    };
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key', fetchFn: mockFetch });
+    const result = await provider.calculateRoute({
+      stops: [start(), final()],
+      travelMode: 'TWO_WHEELER',
+    });
+
+    assert.strictEqual(sentBody.travelMode, 'TWO_WHEELER');
+    assert.strictEqual(sentBody.routingPreference, 'TRAFFIC_UNAWARE');
+    assert.strictEqual(result.travelMode, 'TWO_WHEELER');
+  });
+
+  test('TRANSIT mode rejects intermediate stops with a client-safe 400 error', async () => {
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key' });
+    await assert.rejects(
+      provider.calculateRoute({
+        stops: [start(), intermediate(), final()],
+        travelMode: 'TRANSIT',
+      }),
+      (err) =>
+        err.statusCode === 400 &&
+        /Public transit routing supports direct origin-to-destination journeys only/i.test(err.message),
+    );
+  });
+
+  test('AIR mode calculates great-circle haversine distance without calling Google Routes API', async () => {
+    let fetchCalled = false;
+    const mockFetch = async () => {
+      fetchCalled = true;
+      throw new Error('Google Routes API should NOT be called in AIR mode');
+    };
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key', fetchFn: mockFetch });
+    const result = await provider.calculateRoute({
+      stops: [
+        { name: 'Delhi', latitude: 28.68146, longitude: 77.22279, type: 'start' },
+        { name: 'Chandigarh', latitude: 30.73331, longitude: 76.77942, type: 'final' },
+      ],
+      travelMode: 'AIR',
+    });
+
+    assert.strictEqual(fetchCalled, false, 'External Google Routes API was not called');
+    assert.strictEqual(result.travelMode, 'AIR');
+    assert.strictEqual(result.isAir, true);
+    assert.strictEqual(result.durationMinutes, null);
+    assert.ok(result.distanceKm > 220 && result.distanceKm < 245, `Distance was ${result.distanceKm} km`);
+    assert.strictEqual(result.legs.length, 1);
+    assert.strictEqual(result.legs[0].durationMinutes, null);
+    assert.ok(result.encodedPolyline.length > 0);
+  });
+
+  test('handles Google API 429 RESOURCE_EXHAUSTED with rate limit message', async () => {
+    const mockQuotaResponse = {
+      error: {
+        code: 429,
+        message: 'Quota exceeded for quota metric computeRoutes.',
+        status: 'RESOURCE_EXHAUSTED',
+      },
+    };
+
+    const mockFetch = async () => ({
+      ok: false,
+      status: 429,
+      json: async () => mockQuotaResponse,
+    });
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'test-key', fetchFn: mockFetch });
+    await assert.rejects(
+      provider.calculateRoute({ stops: [start(), final()] }),
+      (err) => err.statusCode === 429 && /rate limit or quota exceeded/i.test(err.message),
+    );
+  });
+
+  test('handles network failure with 503 error', async () => {
+    const mockFetch = async () => {
+      throw new Error('getaddrinfo ENOTFOUND routes.googleapis.com');
+    };
+
+    const provider = new GoogleRoutesMapProvider({ apiKey: 'test-key', fetchFn: mockFetch });
+    await assert.rejects(
+      provider.calculateRoute({ stops: [start(), final()] }),
+      (err) => err.statusCode === 503 && /network request failed/i.test(err.message),
+    );
+  });
+
+  describe('Deterministic Map Provider Selection', () => {
+    const originalEnv = { ...process.env };
+
+    const restoreEnv = () => {
+      for (const key of Object.keys(process.env)) {
+        if (!(key in originalEnv)) {
+          delete process.env[key];
+        }
+      }
+      Object.assign(process.env, originalEnv);
+    };
+
+    test('1. Test mode selects Haversine when no test override is configured', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        delete process.env.MAP_PROVIDER;
+        delete process.env.MAP_TEST_PROVIDER;
+        delete process.env.GOOGLE_ROUTES_API_KEY;
+
+        const provider = getMapProvider();
+        assert.strictEqual(provider.name, 'haversine');
+        assert.ok(provider instanceof HaversineMapProvider);
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('2. Test mode selects Haversine even if MAP_PROVIDER=google', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        process.env.MAP_PROVIDER = 'google';
+        delete process.env.MAP_TEST_PROVIDER;
+
+        const provider = getMapProvider();
+        assert.strictEqual(provider.name, 'haversine');
+        assert.ok(provider instanceof HaversineMapProvider);
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('3. Test mode selects Haversine if MAP_PROVIDER=GOOGLE', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        process.env.MAP_PROVIDER = 'GOOGLE';
+        delete process.env.MAP_TEST_PROVIDER;
+
+        const provider = getMapProvider();
+        assert.strictEqual(provider.name, 'haversine');
+        assert.ok(provider instanceof HaversineMapProvider);
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('4. Test mode selects Haversine if MAP_PROVIDER=google_routes', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        process.env.MAP_PROVIDER = 'google_routes';
+        delete process.env.MAP_TEST_PROVIDER;
+
+        const provider = getMapProvider();
+        assert.strictEqual(provider.name, 'haversine');
+        assert.ok(provider instanceof HaversineMapProvider);
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('5. Test mode selects Haversine if GOOGLE_ROUTES_API_KEY is populated', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        process.env.GOOGLE_ROUTES_API_KEY = 'real_or_fake_secret_key';
+        delete process.env.MAP_PROVIDER;
+        delete process.env.MAP_TEST_PROVIDER;
+
+        const provider = getMapProvider();
+        assert.strictEqual(provider.name, 'haversine');
+        assert.ok(provider instanceof HaversineMapProvider);
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('6. A supported MAP_TEST_PROVIDER override works intentionally', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        process.env.MAP_TEST_PROVIDER = 'osrm';
+        process.env.MAP_OSRM_BASE_URL = 'http://127.0.0.1:5000';
+
+        const provider = getMapProvider();
+        assert.strictEqual(provider.name, 'osrm');
+        assert.ok(provider instanceof OsrmMapProvider);
+
+        process.env.MAP_TEST_PROVIDER = 'google';
+        process.env.GOOGLE_ROUTES_API_KEY = 'test-key';
+        const googleProvider = getMapProvider();
+        assert.strictEqual(googleProvider.name, 'google');
+        assert.ok(googleProvider instanceof GoogleRoutesMapProvider);
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('7. Production/development provider selection remains compatible with existing behavior', () => {
+      try {
+        process.env.NODE_ENV = 'development';
+        delete process.env.MAP_PROVIDER;
+        delete process.env.GOOGLE_ROUTES_API_KEY;
+        assert.strictEqual(getMapProvider().name, 'haversine');
+
+        process.env.GOOGLE_ROUTES_API_KEY = 'dev-key';
+        assert.strictEqual(getMapProvider().name, 'google');
+
+        process.env.MAP_PROVIDER = 'osrm';
+        assert.strictEqual(getMapProvider().name, 'osrm');
+
+        process.env.NODE_ENV = 'production';
+        process.env.MAP_PROVIDER = 'google';
+        assert.strictEqual(getMapProvider().name, 'google');
+      } finally {
+        restoreEnv();
+      }
+    });
+
+    test('8. Explicit provider arguments behave according to a clearly documented contract', () => {
+      try {
+        process.env.NODE_ENV = 'test';
+        process.env.MAP_PROVIDER = 'google';
+        process.env.MAP_TEST_PROVIDER = 'haversine';
+
+        const explicitOsrm = getMapProvider('osrm');
+        assert.strictEqual(explicitOsrm.name, 'osrm');
+
+        const explicitHaversine = getMapProvider('haversine');
+        assert.strictEqual(explicitHaversine.name, 'haversine');
+
+        const explicitGoogle = getMapProvider('google');
+        assert.strictEqual(explicitGoogle.name, 'google');
+      } finally {
+        restoreEnv();
+      }
+    });
+  });
+
+  describe('travel-mode forwarding and mode-specific route calculations', () => {
+    const delhi = { name: 'Delhi', latitude: 28.6139, longitude: 77.209, type: 'start' };
+    const dehradun = { name: 'Dehradun', latitude: 30.3165, longitude: 78.0322, type: 'final' };
+
+    test('1. MapService.calculateRoute forwards travelMode to provider', async () => {
+      let receivedMode = null;
+      const fakeProvider = {
+        name: 'mock',
+        calculateRoute: async ({ stops, travelMode }) => {
+          receivedMode = travelMode;
+          return {
+            distanceKm: 216.12,
+            durationMinutes: 190,
+            travelMode,
+            geometry: { type: 'LineString', coordinates: [] },
+          };
+        },
+      };
+
+      const mapService = new MapService(fakeProvider);
+      const result = await mapService.calculateRoute({
+        stops: [delhi, dehradun],
+        travelMode: 'WALK',
+      });
+
+      assert.strictEqual(receivedMode, 'WALK');
+      assert.strictEqual(result.travelMode, 'WALK');
+    });
+
+    test('2. HaversineMapProvider calculates mode-specific durations (Walk > Bicycle > Drive)', async () => {
+      const provider = new HaversineMapProvider();
+
+      const driveRes = await provider.calculateRoute({
+        stops: [delhi, dehradun],
+        travelMode: 'DRIVE',
+      });
+      const walkRes = await provider.calculateRoute({
+        stops: [delhi, dehradun],
+        travelMode: 'WALK',
+      });
+      const bikeRes = await provider.calculateRoute({
+        stops: [delhi, dehradun],
+        travelMode: 'BICYCLE',
+      });
+      const motoRes = await provider.calculateRoute({
+        stops: [delhi, dehradun],
+        travelMode: 'TWO_WHEELER',
+      });
+
+      // Distances are consistent across ground modes
+      assert.strictEqual(driveRes.distanceKm, walkRes.distanceKm);
+
+      // Durations MUST reflect mode speeds: WALK (5km/h) > BICYCLE (15km/h) > TWO_WHEELER (45km/h) > DRIVE (60km/h)
+      assert.ok(walkRes.durationMinutes > bikeRes.durationMinutes);
+      assert.ok(bikeRes.durationMinutes > motoRes.durationMinutes);
+      assert.ok(motoRes.durationMinutes > driveRes.durationMinutes);
+
+      // Walking 200+ km should take ~40+ hours, not 3 hours!
+      assert.ok(walkRes.durationMinutes >= 2400, `Expected walk duration >= 2400 mins, got ${walkRes.durationMinutes}`);
+      assert.ok(driveRes.durationMinutes <= 300, `Expected drive duration <= 300 mins, got ${driveRes.durationMinutes}`);
+
+      assert.strictEqual(driveRes.travelMode, 'DRIVE');
+      assert.strictEqual(walkRes.travelMode, 'WALK');
+      assert.strictEqual(bikeRes.travelMode, 'BICYCLE');
+      assert.strictEqual(motoRes.travelMode, 'TWO_WHEELER');
+    });
+
+    test('3. calculateRouteForTraveller handles DRIVE vs WALK vs AIR correctly', async () => {
+      const mockProvider = new HaversineMapProvider();
+
+      // DRIVE
+      const driveResult = await calculateRouteForTraveller(
+        { stops: [delhi, dehradun], travelMode: 'DRIVE' },
+        { provider: mockProvider },
+      );
+      assert.strictEqual(driveResult.travelMode, 'DRIVE');
+      assert.ok(driveResult.durationMinutes > 0);
+
+      // WALK
+      const walkResult = await calculateRouteForTraveller(
+        { stops: [delhi, dehradun], travelMode: 'WALK' },
+        { provider: mockProvider },
+      );
+      assert.strictEqual(walkResult.travelMode, 'WALK');
+      assert.strictEqual(walkResult.distanceKm, driveResult.distanceKm);
+      // Walking duration is dramatically higher than driving duration
+      assert.ok(walkResult.durationMinutes > driveResult.durationMinutes * 5);
+
+      // AIR
+      const airResult = await calculateRouteForTraveller(
+        { stops: [delhi, dehradun], travelMode: 'AIR' },
+        { provider: mockProvider },
+      );
+      assert.strictEqual(airResult.travelMode, 'AIR');
+      assert.strictEqual(airResult.isAir, true);
+      assert.strictEqual(airResult.durationMinutes, null);
+      assert.strictEqual(airResult.calculationProvider, 'great-circle-air');
+    });
+
+    test('4. GoogleRoutesMapProvider maps supported travel modes properly', () => {
+      const provider = new GoogleRoutesMapProvider({ apiKey: 'mock-key' });
+      assert.strictEqual(provider.mapTravelMode('DRIVE'), 'DRIVE');
+      assert.strictEqual(provider.mapTravelMode('WALK'), 'WALK');
+      assert.strictEqual(provider.mapTravelMode('BICYCLE'), 'BICYCLE');
+      assert.strictEqual(provider.mapTravelMode('TWO_WHEELER'), 'TWO_WHEELER');
+      assert.strictEqual(provider.mapTravelMode('TRANSIT'), 'TRANSIT');
+      assert.strictEqual(provider.mapTravelMode('unknown'), 'DRIVE');
+    });
+  });
+});

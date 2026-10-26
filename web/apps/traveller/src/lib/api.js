@@ -22,6 +22,7 @@ import {
   createNotificationApi,
   createTravelGuideApi,
   createWeatherApi,
+  createTranslationApi,
 } from '@troublefree/api-client';
 
 const rawUrl =
@@ -50,6 +51,7 @@ export const jobApi = createJobApi(apiClient);
 export const notificationApi = createNotificationApi(apiClient);
 export const travelGuideApi = createTravelGuideApi(apiClient);
 export const weatherApi = createWeatherApi(apiClient);
+export const translationApi = createTranslationApi(apiClient);
 
 export { apiBaseUrl };
 

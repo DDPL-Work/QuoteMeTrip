@@ -15,8 +15,9 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { getDatabaseConfig, getSslConfig, isTestDatabase } from '../../src/config/database.js';
+import { getDatabaseConfig, getSslConfig, isTestDatabase, isLoopbackHost } from '../../src/config/database.js';
 import { validateEnvironment } from '../../src/config/env.js';
+import { assertTestDatabaseSafety } from '../../scripts/db-test-prepare.js';
 
 describe('Database Configuration & Environment Validation', () => {
   const originalEnv = { ...process.env };
@@ -113,14 +114,51 @@ describe('Database Configuration & Environment Validation', () => {
       assert.strictEqual(config.dialectOptions.connectTimeout, 10000);
     });
 
-    it('refuses unverified connections in production when DB_SSL_CA_PATH is missing', () => {
+    it('recognizes loopback hosts explicitly and correctly', () => {
+      assert.strictEqual(isLoopbackHost('127.0.0.1'), true);
+      assert.strictEqual(isLoopbackHost('localhost'), true);
+      assert.strictEqual(isLoopbackHost('::1'), true);
+      assert.strictEqual(isLoopbackHost(' 127.0.0.1 '), true);
+      assert.strictEqual(isLoopbackHost('LOCALHOST'), true);
+      assert.strictEqual(isLoopbackHost('quotemetrip-sql-ddpldeveloper-0717.c.aivencloud.com'), false);
+      assert.strictEqual(isLoopbackHost('192.168.1.100'), false);
+      assert.strictEqual(isLoopbackHost(''), false);
+      assert.strictEqual(isLoopbackHost(null), false);
+    });
+
+    it('refuses unverified connections for remote production databases when DB_SSL_CA_PATH is missing', () => {
       process.env.NODE_ENV = 'production';
+      process.env.DB_HOST = 'quotemetrip-sql-ddpldeveloper-0717.c.aivencloud.com';
       delete process.env.DB_SSL_CA_PATH;
 
       assert.throws(
         () => getDatabaseConfig(),
         /Production database requires verified TLS: DB_SSL_CA_PATH must be configured\./,
       );
+    });
+
+    it('allows loopback production connections without DB_SSL_CA_PATH when database is local to VPS', () => {
+      process.env.NODE_ENV = 'production';
+      process.env.DB_HOST = '127.0.0.1';
+      delete process.env.DB_SSL_CA_PATH;
+
+      const sslConfig = getSslConfig();
+      assert.strictEqual(sslConfig, null);
+
+      const config = getDatabaseConfig();
+      assert.strictEqual(config.dialectOptions.ssl, undefined);
+    });
+
+    it('loads verified TLS on loopback production connections if DB_SSL_CA_PATH is provided', () => {
+      process.env.NODE_ENV = 'production';
+      process.env.DB_HOST = '127.0.0.1';
+      const certPath = createTempCert('-----BEGIN CERTIFICATE-----\nLOCAL_PROD_CA\n-----END CERTIFICATE-----');
+      process.env.DB_SSL_CA_PATH = certPath;
+
+      const sslConfig = getSslConfig();
+      assert.ok(sslConfig);
+      assert.strictEqual(sslConfig.rejectUnauthorized, true);
+      assert.ok(sslConfig.ca.includes('LOCAL_PROD_CA'));
     });
 
     it('throws a clear error if the configured CA path does not exist without leaking credentials', () => {
@@ -190,7 +228,7 @@ describe('Database Configuration & Environment Validation', () => {
       );
     });
 
-    it('rejects missing DB_SSL_CA_PATH in production', () => {
+    it('rejects missing DB_SSL_CA_PATH for remote production hosts', () => {
       setupValidProductionEnv();
       delete process.env.DB_SSL_CA_PATH;
 
@@ -201,6 +239,15 @@ describe('Database Configuration & Environment Validation', () => {
           return true;
         },
       );
+    });
+
+    it('passes production environment validation for loopback hosts without DB_SSL_CA_PATH', () => {
+      setupValidProductionEnv();
+      process.env.DB_HOST = '127.0.0.1';
+      delete process.env.DB_SSL_CA_PATH;
+
+      const envInfo = validateEnvironment();
+      assert.strictEqual(envInfo.isProduction, true);
     });
 
     it('rejects nonexistent DB_SSL_CA_PATH file in production', () => {
@@ -303,6 +350,96 @@ describe('Database Configuration & Environment Validation', () => {
       assert.strictEqual(config.pool.acquire, 45000);
       assert.strictEqual(config.pool.idle, 15000);
       assert.strictEqual(config.dialectOptions.connectTimeout, 12000);
+    });
+  });
+
+  describe('Test database preparation safety guards', () => {
+    it('refuses to run when NODE_ENV is production', () => {
+      assert.throws(
+        () =>
+          assertTestDatabaseSafety({
+            nodeEnv: 'production',
+            host: '127.0.0.1',
+            testDb: 'troublefree_holiday_test',
+            devDb: 'troublefree_holiday',
+            sequelizeDb: 'troublefree_holiday_test',
+            isLoopback: true,
+          }),
+        /Refusing to run db:test:prepare in production environment/,
+      );
+    });
+
+    it('refuses to run against non-loopback hosts', () => {
+      assert.throws(
+        () =>
+          assertTestDatabaseSafety({
+            nodeEnv: 'test',
+            host: '192.168.1.100',
+            testDb: 'troublefree_holiday_test',
+            devDb: 'troublefree_holiday',
+            sequelizeDb: 'troublefree_holiday_test',
+            isLoopback: false,
+          }),
+        /Refusing to run db:test:prepare against non-loopback host/,
+      );
+    });
+
+    it('refuses to drop development database troublefree_holiday', () => {
+      assert.throws(
+        () =>
+          assertTestDatabaseSafety({
+            nodeEnv: 'test',
+            host: '127.0.0.1',
+            testDb: 'troublefree_holiday',
+            devDb: 'troublefree_holiday',
+            sequelizeDb: 'troublefree_holiday',
+            isLoopback: true,
+          }),
+        /Refusing to drop development database/,
+      );
+    });
+
+    it('refuses database names that do not end with _test', () => {
+      assert.throws(
+        () =>
+          assertTestDatabaseSafety({
+            nodeEnv: 'test',
+            host: '127.0.0.1',
+            testDb: 'troublefree_holiday_staging',
+            devDb: 'troublefree_holiday',
+            sequelizeDb: 'troublefree_holiday_staging',
+            isLoopback: true,
+          }),
+        /Test database name must end with "_test"/,
+      );
+    });
+
+    it('refuses execution if Sequelize target does not match the test database', () => {
+      assert.throws(
+        () =>
+          assertTestDatabaseSafety({
+            nodeEnv: 'test',
+            host: '127.0.0.1',
+            testDb: 'troublefree_holiday_test',
+            devDb: 'troublefree_holiday',
+            sequelizeDb: 'other_db_test',
+            isLoopback: true,
+          }),
+        /Sequelize target mismatch/,
+      );
+    });
+
+    it('passes validation when targeting isolated test database on loopback', () => {
+      assert.doesNotThrow(() =>
+        assertTestDatabaseSafety({
+          nodeEnv: 'development',
+          host: '127.0.0.1',
+          testDb: 'troublefree_holiday_test',
+          devDb: 'troublefree_holiday',
+          sequelizeDb: 'troublefree_holiday_test',
+          isLoopback: true,
+        }),
+      );
     });
   });
 });

@@ -193,36 +193,36 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
     user?.agencyName ?? user?.companyName ?? user?.name ?? user?.email?.split('@')[0] ?? 'Agency';
 
   const navItems = [
-    { key: 'dashboard', label: t('header.home', 'Dashboard'), path: '/', icon: FiGrid },
+    { key: 'dashboard', label: t('agency.nav.dashboard', 'Dashboard'), path: '/', icon: FiGrid },
     {
       key: 'requests',
-      label: t('dashboard.summary.requests', 'Incoming Requests'),
+      label: t('agency.nav.requests', 'Incoming Requests'),
       path: '/requests',
       icon: FiInbox,
       badge: unreadRequestsCount > 0 ? unreadRequestsCount : null,
     },
     {
       key: 'quotations',
-      label: t('dashboard.summary.quotations', 'My Quotations'),
+      label: t('agency.nav.quotations', 'My Quotations'),
       path: '/quotations',
       icon: FiFileText,
     },
     {
       key: 'messages',
-      label: t('dashboard.summary.messages', 'Conversations'),
+      label: t('agency.nav.messages', 'Conversations'),
       path: '/messages',
       icon: FiMessageSquare,
       badge: unreadMessagesCount > 0 ? unreadMessagesCount : null,
     },
     {
       key: 'jobs',
-      label: t('dashboard.summary.jobs', 'Accepted Jobs'),
+      label: t('agency.nav.jobs', 'Accepted Jobs'),
       path: '/jobs',
       icon: FiBriefcase,
     },
     {
       key: 'profile',
-      label: t('header.profile', 'Agency Profile'),
+      label: t('agency.nav.profile', 'Agency Profile'),
       path: '/profile',
       icon: FiUser,
     },

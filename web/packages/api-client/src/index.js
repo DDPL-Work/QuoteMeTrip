@@ -436,6 +436,7 @@ export function createNotificationApi(client) {
     getUnreadCount: () => unwrap(http.get('/api/v1/notifications/unread-count')),
     markRead: (id) => unwrap(http.patch(`/api/v1/notifications/${id}/read`, {})),
     markAllRead: () => unwrap(http.post('/api/v1/notifications/mark-all-read', {})),
+    getAnnouncement: (id) => unwrap(http.get(`/api/v1/notifications/announcements/${id}`)),
     registerPushToken: (tokenData) =>
       unwrap(
         http.post(
@@ -519,6 +520,16 @@ export function createAdminApi(client) {
 
     // Audit Logs
     listAuditLogs: (params = {}) => unwrap(http.get('/api/v1/admin/audit-logs', { params })),
+
+    // Announcements & Broadcasts
+    listAnnouncements: (params = {}) => unwrap(http.get('/api/v1/admin/announcements', { params })),
+    getAnnouncementById: (id) => unwrap(http.get(`/api/v1/admin/announcements/${id}`)),
+    createAnnouncement: (input) => unwrap(http.post('/api/v1/admin/announcements', input)),
+    updateAnnouncement: (id, input) => unwrap(http.patch(`/api/v1/admin/announcements/${id}`, input)),
+    publishAnnouncement: (id) => unwrap(http.post(`/api/v1/admin/announcements/${id}/publish`, {})),
+    withdrawAnnouncement: (id) => unwrap(http.post(`/api/v1/admin/announcements/${id}/withdraw`, {})),
+    deleteAnnouncement: (id) => unwrap(http.delete(`/api/v1/admin/announcements/${id}`)),
+    getAnnouncementStats: (id) => unwrap(http.get(`/api/v1/admin/announcements/${id}/stats`)),
   };
 }
 
@@ -585,5 +596,47 @@ export function createWeatherApi(client) {
   return {
     getForecast: (destination, date) =>
       unwrap(http.get('/api/v1/weather', { params: { destination, date } })),
+  };
+}
+
+/**
+ * Translation resource calls (Google Translation Advanced v3 + persistent MySQL cache).
+ */
+export function createTranslationApi(client) {
+  const { http } = client;
+
+  async function unwrap(promise) {
+    try {
+      const response = await promise;
+      return response.data?.data;
+    } catch (error) {
+      throw toApiError(error);
+    }
+  }
+
+  return {
+    translateContent: ({
+      contentType,
+      contentId,
+      fieldName,
+      sourceText,
+      targetLanguage = 'tr',
+      sourceLanguage,
+    }) =>
+      unwrap(
+        http.post('/api/v1/translations/content', {
+          contentType,
+          contentId,
+          fieldName,
+          sourceText,
+          targetLanguage,
+          sourceLanguage,
+        }),
+      ),
+    translateBatch: ({ items, targetLanguage = 'tr' }) =>
+      unwrap(http.post('/api/v1/translations/batch', { items, targetLanguage })),
+    translateTransient: ({ text, sourceLanguage = 'en', targetLanguage = 'tr' }) =>
+      unwrap(http.post('/api/v1/translations/transient', { text, sourceLanguage, targetLanguage })),
+    getStats: () => unwrap(http.get('/api/v1/translations/stats')),
   };
 }

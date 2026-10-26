@@ -54,9 +54,10 @@ const EXPECTED_TABLES = [
   'travel_guide_destinations',
   'travel_guide_articles',
   'ratings',
+  'translation_cache',
 ];
 
-const EXPECTED_MIGRATION_COUNT = 39;
+const EXPECTED_MIGRATION_COUNT = 41;
 
 let db;
 

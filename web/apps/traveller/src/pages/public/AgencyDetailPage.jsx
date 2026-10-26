@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useI18n } from '@troublefree/i18n';
+import { useI18n, useDynamicTranslation } from '@troublefree/i18n';
 import { CTASection } from '@troublefree/ui';
 import { getAgencyById } from '../../services/public-api.js';
 import { useAuth } from '../../features/auth/auth-context.js';
@@ -45,10 +45,19 @@ export function AgencyDetailPage({ agencyId }) {
     };
   }, [id]);
 
-  const agencyName = data?.agency?.agencyName || 'Agency Profile';
+  const agency = data?.agency;
+
+  const { text: translatedBio } = useDynamicTranslation({
+    contentType: 'agency_profile',
+    contentId: agency?.id || id,
+    fieldName: 'description',
+    sourceText: agency?.bio || '',
+  });
+
+  const agencyName = agency?.agencyName || 'Agency Profile';
   usePageMetadata(
-    `${agencyName} - Verified Travel Agency in ${data?.agency?.city || 'Turkey'}`,
-    data?.agency?.bio || 'Verified travel agency on QuoteMeTrip.',
+    `${agencyName} - Verified Travel Agency in ${agency?.city || 'Turkey'}`,
+    agency?.bio || 'Verified travel agency on QuoteMeTrip.',
   );
 
   if (loading) {
@@ -59,25 +68,23 @@ export function AgencyDetailPage({ agencyId }) {
     );
   }
 
-  if (error || !data?.agency) {
+  if (error || !agency) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-        <h2>Agency Not Found</h2>
-        <p className="tf-card-text">{error || 'The requested agency profile does not exist.'}</p>
+        <h2>{t('agency.notFound', 'Agency Not Found')}</h2>
+        <p className="tf-card-text">{error || t('agency.notFoundDesc', 'The requested agency profile does not exist.')}</p>
         <Link to="/agencies" className="tf-btn tf-btn-primary">
-          Back to Agencies
+          {t('agency.backToAgencies', 'Back to Agencies')}
         </Link>
       </div>
     );
   }
 
-  const { agency } = data;
-
   return (
     <div className="tf-public-container">
       <PublicBreadcrumbs
         items={[
-          { label: 'Agencies', to: '/agencies' },
+          { label: t('header.agencies', 'Agencies'), to: '/agencies' },
           { label: agency.agencyName },
         ]}
       />
@@ -93,19 +100,19 @@ export function AgencyDetailPage({ agencyId }) {
           <div>
             <h1 style={{ fontSize: '2rem', margin: 0 }}>{agency.agencyName}</h1>
             <p className="tf-agency-location" style={{ fontSize: '1rem', marginTop: '0.25rem' }}>
-              📍 {agency.city}, {agency.country} • Verified Travel Agency
+              📍 {agency.city}, {agency.country} • {t('agencies.verifiedAgency', 'Verified Travel Agency')}
             </p>
           </div>
         </div>
 
-        <h3 style={{ fontSize: '1.2rem', marginTop: '1.5rem' }}>About the Agency</h3>
+        <h3 style={{ fontSize: '1.2rem', marginTop: '1.5rem' }}>{t('agency.about', 'About the Agency')}</h3>
         <p style={{ fontSize: '1.05rem', lineHeight: 1.6, color: 'var(--tf-text-muted)' }}>
-          {agency.bio}
+          {translatedBio || agency.bio}
         </p>
 
         {agency.specialties && (
           <div style={{ marginTop: '1.5rem' }}>
-            <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem' }}>Specialties & Services</h4>
+            <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem' }}>{t('agency.specialtiesServices', 'Specialties & Services')}</h4>
             <div className="tf-agency-chips">
               {agency.specialties.map((spec) => (
                 <span
@@ -122,7 +129,7 @@ export function AgencyDetailPage({ agencyId }) {
 
         {agency.languages && (
           <div style={{ marginTop: '1.25rem' }}>
-            <h4 style={{ margin: '0 0 0.4rem', fontSize: '1rem' }}>Spoken Languages</h4>
+            <h4 style={{ margin: '0 0 0.4rem', fontSize: '1rem' }}>{t('agency.spokenLanguages', 'Spoken Languages')}</h4>
             <p style={{ margin: 0, color: 'var(--tf-text-muted)', fontSize: '0.95rem' }}>
               {agency.languages.join(', ')}
             </p>
@@ -137,17 +144,17 @@ export function AgencyDetailPage({ agencyId }) {
           }}
         >
           <p style={{ fontSize: '0.85rem', color: 'var(--tf-text-muted)', marginBottom: '1rem' }}>
-            ℹ️ Direct contact details become available after accepting a quotation from this agency.
+            ℹ️ {t('agency.preAcceptanceNotice', 'Direct contact details become available after accepting a quotation from this agency.')}
           </p>
           <a href={planTripHref} className="tf-btn tf-btn-primary tf-btn-lg">
-            Plan Trip & Request Quotation →
+            {t('agency.planTripRequestQuote', 'Plan Trip & Request Quotation →')}
           </a>
         </div>
       </div>
 
       <CTASection
-        title="Ready to Request a Quotation?"
-        subtitle="Build your route now and matched agencies will submit custom offers."
+        title={t('agency.readyToRequest', 'Ready to Request a Quotation?')}
+        subtitle={t('agency.readyToRequestSubtitle', 'Build your route now and matched agencies will submit custom offers.')}
         ctaHref={planTripHref}
       />
     </div>

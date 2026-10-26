@@ -33,12 +33,22 @@ async function findOwnedRoute(routeId, travellerId, { registry = null } = {}) {
   return route;
 }
 
-export async function calculateRouteForTraveller({ stops }, { provider = null } = {}) {
+export async function calculateRouteForTraveller(
+  { stops, travelMode = 'DRIVE' },
+  { provider = null } = {},
+) {
   const normalized = validateRouteStops(stops);
+  const normalizedMode = String(travelMode || 'DRIVE').trim().toUpperCase();
+
+  if (normalizedMode === 'AIR') {
+    const { calculateAirRoute } = await import('../../integrations/maps/air-route.service.js');
+    return calculateAirRoute(normalized);
+  }
+
   const service = provider
     ? { calculateRoute: (args) => provider.calculateRoute(args) }
     : getMapService();
-  const result = await service.calculateRoute({ stops: normalized });
+  const result = await service.calculateRoute({ stops: normalized, travelMode: normalizedMode });
 
   const intermediateCount = normalized.filter((s) => s.type === 'intermediate').length;
   const recommendedDays = calculateRecommendedDays({
@@ -52,6 +62,9 @@ export async function calculateRouteForTraveller({ stops }, { provider = null } 
     finalDestination: normalized[normalized.length - 1].name,
     distanceKm: result.distanceKm,
     durationMinutes: result.durationMinutes,
+    travelMode: result.travelMode || normalizedMode,
+    isAir: result.isAir || false,
+    modeLabel: result.modeLabel || null,
     geometry: result.geometry,
     encodedPolyline: result.encodedPolyline ?? result.geometry?.encodedPolyline ?? null,
     legs: result.legs ?? [],
@@ -75,7 +88,11 @@ export function toPublicRoute(route) {
     recommendedDays: route.recommendedDays,
     calculationProvider: route.calculationProvider,
     calculationVersion: route.calculationVersion,
-    geometry: rawData.geometry ?? (rawData.encodedPolyline ? { type: 'LineString', encodedPolyline: rawData.encodedPolyline } : null),
+    travelMode: rawData.travelMode || 'DRIVE',
+    isAir: rawData.travelMode === 'AIR',
+    geometry:
+      rawData.geometry ??
+      (rawData.encodedPolyline ? { type: 'LineString', encodedPolyline: rawData.encodedPolyline } : null),
     encodedPolyline: rawData.encodedPolyline ?? null,
     legs: rawData.legs ?? [],
     rawRouteData: route.rawRouteData ?? null,
@@ -101,12 +118,13 @@ export async function saveCalculatedRoute(travellerId, calculated, { role = null
     startLocation: calculated.startLocation,
     finalDestination: calculated.finalDestination,
     totalDistanceKm: calculated.distanceKm,
-    estimatedDurationMinutes: calculated.durationMinutes,
+    estimatedDurationMinutes: calculated.durationMinutes ?? 0,
     recommendedDays: calculated.recommendedDays,
     calculationProvider: calculated.calculationProvider,
     calculationVersion: calculated.calculationVersion,
     rawRouteData: {
       ...(calculated.rawResponse || {}),
+      travelMode: calculated.travelMode || 'DRIVE',
       geometry: calculated.geometry,
       encodedPolyline: calculated.encodedPolyline,
       legs: calculated.legs,

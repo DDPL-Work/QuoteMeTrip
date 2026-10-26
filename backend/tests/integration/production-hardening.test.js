@@ -9,6 +9,7 @@ import app from '../../src/app.js';
 import { validateEnvironment } from '../../src/config/env.js';
 import { validateFileMetadata } from '../../src/middleware/upload.js';
 import { sanitizeHtml } from '../../src/utils/sanitizer.js';
+import { closeDatabase, resetSequelizeInstance } from '../../src/db/sequelize.js';
 
 let server;
 let baseUrl;
@@ -21,7 +22,12 @@ before(async () => {
 });
 
 after(async () => {
-  await new Promise((resolve) => server.close(resolve));
+  try {
+    await new Promise((resolve) => server.close(resolve));
+  } finally {
+    await closeDatabase();
+    resetSequelizeInstance();
+  }
 });
 
 describe('Phase 9 — Production Hardening & Readiness Integration Tests', () => {

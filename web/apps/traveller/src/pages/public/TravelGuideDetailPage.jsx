@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useI18n } from '@troublefree/i18n';
+import { useI18n, useDynamicTranslation } from '@troublefree/i18n';
 import { GuideCard, CTASection } from '@troublefree/ui';
 import { getTravelGuideBySlug } from '../../services/public-api.js';
 import { useAuth } from '../../features/auth/auth-context.js';
@@ -51,6 +51,29 @@ export function TravelGuideDetailPage() {
 
   const planTripHref = user ? '/plan-trip' : '/login?redirect=/plan-trip';
 
+  const guide = data?.guide;
+
+  const { text: translatedTitle } = useDynamicTranslation({
+    contentType: 'travel_guide_article',
+    contentId: guide?.id || slug,
+    fieldName: 'title',
+    sourceText: guide?.title || '',
+  });
+
+  const { text: translatedSummary } = useDynamicTranslation({
+    contentType: 'travel_guide_article',
+    contentId: guide?.id || slug,
+    fieldName: 'summary',
+    sourceText: guide?.summary || '',
+  });
+
+  const { text: translatedContent } = useDynamicTranslation({
+    contentType: 'travel_guide_article',
+    contentId: guide?.id || slug,
+    fieldName: 'content',
+    sourceText: guide?.content || '',
+  });
+
   if (loading) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 0' }}>
@@ -59,26 +82,42 @@ export function TravelGuideDetailPage() {
     );
   }
 
-  if (error || !data?.guide) {
+  if (error || !guide) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-        <h2>Article Not Found</h2>
-        <p className="tf-card-text">{error || 'The requested article does not exist.'}</p>
+        <h2>{t('guide.notFound', 'Article Not Found')}</h2>
+        <p className="tf-card-text">{error || t('guide.notFoundDesc', 'The requested article does not exist.')}</p>
         <Link to="/travel-guides" className="tf-btn tf-btn-primary">
-          Back to Travel Guides
+          {t('guide.backToGuides', 'Back to Travel Guides')}
         </Link>
       </div>
     );
   }
 
-  const { guide, relatedGuides } = data;
+  const { relatedGuides } = data;
+
+  const categoryName = guide.category ? (
+    guide.category.toLowerCase().includes('city') ? t('guide.category.cityGuide', 'City Guide') :
+    guide.category.toLowerCase().includes('adventure') ? t('guide.category.adventure', 'Adventure') :
+    guide.category.toLowerCase().includes('culture') ? t('guide.category.historyCulture', 'History & Culture') :
+    guide.category.toLowerCase().includes('heritage') ? t('guide.category.natureHeritage', 'Nature & Heritage') :
+    guide.category.toLowerCase().includes('archaeology') ? t('guide.category.archaeology', 'Archaeology') :
+    guide.category.toLowerCase().includes('beach') ? t('guide.category.coastBeaches', 'Coast & Beaches') :
+    guide.category
+  ) : '';
+
+  const readTimeFormatted = guide.readTime
+    ? (guide.readTime.match(/\d+/)
+        ? t('guide.readTime', { count: guide.readTime.match(/\d+/)[0] }, `${guide.readTime.match(/\d+/)[0]} min read`)
+        : guide.readTime)
+    : '';
 
   return (
     <div className="tf-public-container">
       <PublicBreadcrumbs
         items={[
-          { label: 'Travel Guides', to: '/travel-guides' },
-          { label: guide.title },
+          { label: t('header.travelGuides', 'Travel Guides'), to: '/travel-guides' },
+          { label: translatedTitle || guide.title },
         ]}
       />
 
@@ -88,10 +127,10 @@ export function TravelGuideDetailPage() {
             className="tf-card-badge tf-badge-sec"
             style={{ position: 'static', display: 'inline-block' }}
           >
-            {guide.category}
+            {categoryName}
           </span>
           <span style={{ fontSize: '0.85rem', color: 'var(--tf-text-muted)' }}>
-            {guide.readTime} • Published {guide.publishedAt}
+            {readTimeFormatted} • {t('guide.published', 'Published')} {guide.publishedAt}
           </span>
           {guide.destinationSlug && (
             <Link
@@ -104,13 +143,13 @@ export function TravelGuideDetailPage() {
                 fontWeight: 600,
               }}
             >
-              Explore Destination →
+              {t('common.explore', 'Explore Destination')} →
             </Link>
           )}
         </div>
 
         <h1 style={{ fontSize: '2.5rem', margin: '0 0 1rem', fontWeight: 800, lineHeight: 1.25 }}>
-          {guide.title}
+          {translatedTitle || guide.title}
         </h1>
 
         <p
@@ -121,7 +160,7 @@ export function TravelGuideDetailPage() {
             marginBottom: '2rem',
           }}
         >
-          {guide.summary}
+          {translatedSummary || guide.summary}
         </p>
 
         <div
@@ -134,7 +173,7 @@ export function TravelGuideDetailPage() {
         >
           <img
             src={guide.coverImage}
-            alt={guide.title}
+            alt={translatedTitle || guide.title}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
@@ -147,14 +186,14 @@ export function TravelGuideDetailPage() {
             whiteSpace: 'pre-line',
           }}
         >
-          {guide.content}
+          {translatedContent || guide.content}
         </div>
       </article>
 
       {/* Related Guides */}
       {relatedGuides && relatedGuides.length > 0 && (
         <section style={{ marginBottom: '3.5rem' }}>
-          <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem' }}>More Travel Guides</h2>
+          <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem' }}>{t('guide.relatedGuides', 'More Travel Guides')}</h2>
           <div className="tf-grid-3">
             {relatedGuides.map((g) => (
               <GuideCard key={g.id} guide={g} />

@@ -8,7 +8,7 @@ import assert from 'node:assert';
 import { before, after, test } from 'node:test';
 import { createServer } from 'node:http';
 import app from '../../src/app.js';
-import { getSequelize } from '../../src/db/sequelize.js';
+import { getSequelize, closeDatabase, resetSequelizeInstance } from '../../src/db/sequelize.js';
 import { initModels } from '../../src/db/models/index.js';
 import { migrateUp } from '../../src/db/runner.js';
 
@@ -33,8 +33,13 @@ test('Travel Guide CMS → DB → Public API Pipeline Test Suite', async (t) => 
   });
 
   after(async () => {
-    if (server) {
-      await new Promise((resolve) => server.close(resolve));
+    try {
+      if (server) {
+        await new Promise((resolve) => server.close(resolve));
+      }
+    } finally {
+      await closeDatabase();
+      resetSequelizeInstance();
     }
   });
 

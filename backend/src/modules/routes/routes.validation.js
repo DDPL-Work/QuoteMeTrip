@@ -72,13 +72,34 @@ export function validateRouteStops(stops) {
   return normalized;
 }
 
+export const SUPPORTED_TRAVEL_MODES = ['DRIVE', 'WALK', 'BICYCLE', 'TWO_WHEELER', 'TRANSIT', 'AIR'];
+
+export function validateTravelMode(value) {
+  if (value === undefined || value === null || value === '') {
+    return 'DRIVE';
+  }
+  const mode = String(value).trim().toUpperCase();
+  if (!SUPPORTED_TRAVEL_MODES.includes(mode)) {
+    throw invalid(
+      `Travel mode "${value}" is not supported. Must be one of: ${SUPPORTED_TRAVEL_MODES.join(', ')}.`,
+    );
+  }
+  return mode;
+}
+
 export function validateCalculateRouteInput(body = {}) {
-  return { stops: validateRouteStops(body.stops) };
+  return {
+    stops: validateRouteStops(body.stops),
+    travelMode: validateTravelMode(body.travelMode),
+  };
 }
 
 export function validateSaveRouteInput(body = {}) {
   const stops = body.stops !== undefined ? validateRouteStops(body.stops) : null;
   const output = { stops };
+  if (body.travelMode !== undefined) {
+    output.travelMode = validateTravelMode(body.travelMode);
+  }
   if (body.startLocation !== undefined) {
     const v = String(body.startLocation).trim();
     if (!v || v.length > 190) throw invalid('startLocation must be 1–190 characters.');

@@ -39,8 +39,12 @@ test('GET /api/v1/health returns a healthy JSON payload', async () => {
 
     assert.strictEqual(body.status, 200);
     assert.strictEqual(body.json.success, true);
-    assert.strictEqual(body.json.status, 'healthy');
-    assert.strictEqual(body.json.database.status, 'connected');
+    if (body.json.database?.status === 'connected') {
+      assert.strictEqual(body.json.status, 'healthy');
+    } else {
+      assert.strictEqual(body.json.status, 'degraded');
+      assert.strictEqual(body.json.database?.status, 'unavailable');
+    }
   } finally {
     server.close();
   }

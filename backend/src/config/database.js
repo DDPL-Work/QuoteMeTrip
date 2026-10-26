@@ -21,13 +21,21 @@ function isTestEnv() {
   return process.env.NODE_ENV === 'test';
 }
 
+export function isLoopbackHost(host) {
+  if (!host || typeof host !== 'string') return false;
+  const normalized = host.trim().toLowerCase();
+  return normalized === '127.0.0.1' || normalized === 'localhost' || normalized === '::1';
+}
+
 export function getSslConfig() {
   const rawCaPath = process.env.DB_SSL_CA_PATH;
   const caPath = rawCaPath ? rawCaPath.trim() : '';
   const isProduction = process.env.NODE_ENV === 'production';
+  const host = process.env.DB_HOST || '127.0.0.1';
+  const isLoopback = isLoopbackHost(host);
 
   if (!caPath) {
-    if (isProduction) {
+    if (isProduction && !isLoopback) {
       throw new Error('Production database requires verified TLS: DB_SSL_CA_PATH must be configured.');
     }
     return null;

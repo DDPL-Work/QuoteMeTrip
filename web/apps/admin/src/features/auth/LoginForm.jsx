@@ -6,12 +6,14 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FormField, PasswordInput, LoadingButton, AuthError } from '@troublefree/ui';
+import { useI18n } from '@troublefree/i18n';
 import { useAuth } from './auth-context.js';
 import { friendlyAuthMessage } from './friendly-message.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export function LoginForm() {
+  const { t } = useI18n();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,8 +28,8 @@ export function LoginForm() {
     const password = String(form.get('password') || '');
 
     const next = {};
-    if (!EMAIL_PATTERN.test(email)) next.email = 'Enter a valid email address.';
-    if (!password) next.password = 'Enter your password.';
+    if (!EMAIL_PATTERN.test(email)) next.email = t('admin.auth.validEmailError');
+    if (!password) next.password = t('admin.auth.passwordRequiredError');
     setFieldErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -45,22 +47,22 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <FormField id="email" label="Admin email" error={fieldErrors.email}>
+      <FormField id="email" label={t('admin.auth.emailLabel')} error={fieldErrors.email}>
         <input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="admin@QuoteMeTrip.com"
+          placeholder={t('admin.auth.emailPlaceholder')}
           required
           disabled={submitting}
         />
       </FormField>
-      <FormField id="password" label="Password" error={fieldErrors.password}>
+      <FormField id="password" label={t('admin.auth.passwordLabel')} error={fieldErrors.password}>
         <PasswordInput id="password" name="password" disabled={submitting} />
       </FormField>
       <AuthError error={error} />
-      <LoadingButton loading={submitting}>Sign in to Admin Console</LoadingButton>
+      <LoadingButton loading={submitting}>{t('admin.auth.signInButton')}</LoadingButton>
 
       <div className="auth-security-notice">
         <svg className="auth-security-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,8 +74,7 @@ export function LoginForm() {
           />
         </svg>
         <span>
-          Encrypted administrative session. System activity is monitored and logged for security
-          audits.
+          {t('admin.auth.securityNotice')}
         </span>
       </div>
     </form>

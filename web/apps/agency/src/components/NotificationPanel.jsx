@@ -6,6 +6,7 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '@troublefree/i18n';
 import {
   FiBell,
   FiMessageSquare,
@@ -16,7 +17,9 @@ import {
   FiAlertCircle,
   FiX,
   FiCheck,
+  FiExternalLink,
 } from 'react-icons/fi';
+import { AnnouncementDetailModal } from '@troublefree/ui';
 import * as apiModule from '../lib/api.js';
 const notificationApi = apiModule?.notificationApi;
 
@@ -38,6 +41,60 @@ function formatRelativeTime(dateString) {
 
 function getNotificationVisuals(item) {
   const type = item.eventType || '';
+  const d = item.data && typeof item.data === 'object' ? item.data : {};
+
+  if (type.includes('ANNOUNCEMENT')) {
+    const annType = d.type || 'general';
+    if (annType === 'urgent') {
+      return {
+        icon: <FiAlertCircle size={16} />,
+        color: '#DC2626',
+        bg: '#FEE2E2',
+        badge: 'URGENT',
+        badgeBg: '#DC2626',
+        badgeColor: '#FFFFFF',
+      };
+    }
+    if (annType === 'important') {
+      return {
+        icon: <FiAlertCircle size={16} />,
+        color: '#EA580C',
+        bg: '#FFEDD5',
+        badge: 'IMPORTANT',
+        badgeBg: '#EA580C',
+        badgeColor: '#FFFFFF',
+      };
+    }
+    if (annType === 'maintenance') {
+      return {
+        icon: <FiBriefcase size={16} />,
+        color: '#D97706',
+        bg: '#FEF3C7',
+        badge: 'MAINTENANCE',
+        badgeBg: '#D97706',
+        badgeColor: '#FFFFFF',
+      };
+    }
+    if (annType === 'info') {
+      return {
+        icon: <FiFileText size={16} />,
+        color: '#2563EB',
+        bg: '#DBEAFE',
+        badge: 'INFO',
+        badgeBg: '#2563EB',
+        badgeColor: '#FFFFFF',
+      };
+    }
+    return {
+      icon: <FiBell size={16} />,
+      color: '#0C4E28',
+      bg: '#E5F2EA',
+      badge: 'NOTICE',
+      badgeBg: '#0C4E28',
+      badgeColor: '#FFFFFF',
+    };
+  }
+
   if (type.includes('MESSAGE')) {
     return {
       icon: <FiMessageSquare size={16} />,
@@ -80,8 +137,11 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
   const panelRef = useRef(null);
   const navigate = useNavigate();
+  const { locale } = useI18n();
 
   const fetchNotifications = async (targetPage = 1, append = false) => {
     setLoading(true);
@@ -158,27 +218,39 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
     }
   };
 
-  const handleItemClick = async (item) => {
+  const handleItemClick = (item) => {
     if (!item.isRead && !item.readAt) {
-      try {
-        await notificationApi.markRead(item.id);
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === item.id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
-          ),
-        );
-        if (onUnreadCountChange) {
-          onUnreadCountChange((prev) => Math.max(0, prev - 1));
-        }
-      } catch (err) {
-        console.warn('markRead error:', err);
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === item.id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+        ),
+      );
+      if (onUnreadCountChange) {
+        onUnreadCountChange((prev) => Math.max(0, prev - 1));
       }
+      notificationApi?.markRead(item.id).catch((err) => {
+        console.warn('markRead error:', err);
+      });
+    }
+
+    // Check if notification is an announcement or notice
+    const isAnnouncement =
+      item.eventType?.includes('ANNOUNCEMENT') ||
+      item.eventType?.includes('NOTICE') ||
+      Boolean(item.data?.announcementId);
+
+    if (isAnnouncement) {
+      setSelectedAnnouncement(item);
+      setIsAnnouncementModalOpen(true);
+      onClose();
+      return;
     }
 
     onClose();
 
     // Contextual deep linking for Agency portal
-    let link = item.deepLink;
+    const rawData = item.data && typeof item.data === 'object' ? item.data : {};
+    let link = item.deepLink || rawData.actionUrl;
     if (!link) {
       if (item.eventType?.includes('MESSAGE')) {
         link = item.requestId ? `/messages?requestId=${item.requestId}` : '/messages';
@@ -193,19 +265,25 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
       }
     }
 
-    navigate(link);
+    if (link.startsWith('http://') || link.startsWith('https://')) {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(link);
+    }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !isAnnouncementModalOpen) return null;
 
   return (
-    <div
-      ref={panelRef}
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 8px)',
-        right: 0,
-        width: '380px',
+    <>
+      {isOpen && (
+        <div
+          ref={panelRef}
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: 0,
+            width: '380px',
         maxWidth: '92vw',
         background: '#FFFBF3',
         borderRadius: '16px',
@@ -351,6 +429,11 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
           notifications.map((item) => {
             const isUnread = !item.isRead && !item.readAt;
             const visuals = getNotificationVisuals(item);
+            const d = item.data && typeof item.data === 'object' ? item.data : {};
+            const isTr = locale === 'tr';
+            const displayTitle = isTr && d.titleTr ? d.titleTr : item.title;
+            const displayBody = isTr && d.messageTr ? d.messageTr : item.body;
+            const displayActionLabel = isTr && d.actionLabelTr ? d.actionLabelTr : d.actionLabel || 'View Details';
 
             return (
               <div
@@ -402,18 +485,37 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
                       marginBottom: '2px',
                     }}
                   >
-                    <span
-                      style={{
-                        fontWeight: isUnread ? 700 : 600,
-                        fontSize: '0.88rem',
-                        color: '#13291C',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {item.title}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                      {visuals.badge && (
+                        <span
+                          style={{
+                            fontSize: '9.5px',
+                            fontWeight: 800,
+                            letterSpacing: '0.05em',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            background: visuals.badgeBg,
+                            color: visuals.badgeColor,
+                            textTransform: 'uppercase',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {visuals.badge}
+                        </span>
+                      )}
+                      <span
+                        style={{
+                          fontWeight: isUnread ? 700 : 600,
+                          fontSize: '0.88rem',
+                          color: '#13291C',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {displayTitle}
+                      </span>
+                    </div>
                     <span
                       style={{
                         fontSize: '0.74rem',
@@ -432,13 +534,30 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
                       color: '#4E5754',
                       lineHeight: 1.35,
                       display: '-webkit-box',
-                      WebkitLineClamp: 2,
+                      WebkitLineClamp: 3,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                     }}
                   >
-                    {item.body}
+                    {displayBody}
                   </p>
+
+                  {d.actionUrl && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                      <span
+                        style={{
+                          fontSize: '0.76rem',
+                          fontWeight: 700,
+                          color: '#0C4E28',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        {displayActionLabel} <FiExternalLink size={10} />
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Unread indicator dot */}
@@ -482,5 +601,20 @@ export function NotificationPanel({ isOpen, onClose, onUnreadCountChange }) {
         )}
       </div>
     </div>
+      )}
+
+      {isAnnouncementModalOpen && (
+        <AnnouncementDetailModal
+          isOpen={isAnnouncementModalOpen}
+          onClose={() => {
+            setIsAnnouncementModalOpen(false);
+            setSelectedAnnouncement(null);
+          }}
+          announcement={selectedAnnouncement}
+          announcementId={selectedAnnouncement?.data?.announcementId}
+          notificationApi={notificationApi}
+        />
+      )}
+    </>
   );
 }

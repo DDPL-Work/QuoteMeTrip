@@ -181,10 +181,13 @@ export function RequestReview({
             <FiCalendar /> Dates & Travellers
           </h3>
           <div style={{ fontSize: '14.5px', color: '#13291C' }}>
+            Destination: <b>{form.destinationCountry || 'Türkiye'}</b>
+          </div>
+          <div style={{ fontSize: '14.5px', color: '#13291C' }}>
             Dates: <b>{form.travelStartDate || 'Not set'}</b> to{' '}
             <b>{form.travelEndDate || 'Not set'}</b>
           </div>
-          <div style={{ fontSize: '14px', color: '#4E5754', display: 'flex', gap: '16px' }}>
+          <div style={{ fontSize: '14px', color: '#4E5754', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <FiUsers /> <b>{form.numberOfTravellers || 1}</b> Travellers
             </span>
@@ -192,6 +195,38 @@ export function RequestReview({
               <FiBriefcase /> <b>{form.luggageCount || 0}</b> Luggage pieces
             </span>
           </div>
+          {(form.isFlexibleDates || form.suggestRoute) && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+              {form.isFlexibleDates && (
+                <span
+                  style={{
+                    fontSize: '12px',
+                    background: '#E5F2EA',
+                    color: '#0C4E28',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontWeight: '600',
+                  }}
+                >
+                  Flexible dates
+                </span>
+              )}
+              {form.suggestRoute && (
+                <span
+                  style={{
+                    fontSize: '12px',
+                    background: '#FFF3E0',
+                    color: '#D96A00',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontWeight: '600',
+                  }}
+                >
+                  Agencies suggest route
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Services Card */}

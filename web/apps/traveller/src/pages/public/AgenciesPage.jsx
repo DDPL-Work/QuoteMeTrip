@@ -10,9 +10,9 @@
  * Private contact details (email/phone/WhatsApp) are safely omitted.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useI18n } from '@troublefree/i18n';
+import { useI18n, useBatchDynamicTranslation } from '@troublefree/i18n';
 import { SectionHeading, AgencyCard } from '@troublefree/ui';
 import { getAgencies } from '../../services/public-api.js';
 import { usePageMetadata } from '../../hooks/usePageMetadata.js';
@@ -30,7 +30,7 @@ export function AgenciesPage({ locationFilter }) {
   const params = useParams();
   const locationSlug = (params.locationSlug || locationFilter || '').toLowerCase();
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [agencies, setAgencies] = useState([]);
   const [search, setSearch] = useState('');
   const [activeLocation, setActiveLocation] = useState(locationSlug || 'all');
@@ -45,8 +45,8 @@ export function AgenciesPage({ locationFilter }) {
 
   const locationDisplay = LOCATION_TITLES[activeLocation] || (activeLocation !== 'all' ? activeLocation : null);
   const pageTitle = locationDisplay
-    ? `Verified Travel Agencies in ${locationDisplay}`
-    : 'Verified Travel Agencies in Turkey';
+    ? `${t('agencies.verifiedIn', 'Verified Travel Agencies in')} ${locationDisplay}`
+    : t('agencies.title', 'Verified Travel Agencies in Turkey');
 
   usePageMetadata(
     pageTitle,
@@ -75,7 +75,20 @@ export function AgenciesPage({ locationFilter }) {
     };
   }, [search, activeLocation, t]);
 
-  const breadcrumbs = [{ label: 'Agencies', to: locationDisplay ? '/agencies' : undefined }];
+  const batchItems = useMemo(
+    () =>
+      agencies.map((a) => ({
+        contentType: 'agency_profile',
+        contentId: a.id,
+        fieldName: 'bio',
+        sourceText: a.bio,
+      })),
+    [agencies],
+  );
+
+  const { translationsMap = {}, getTranslated } = useBatchDynamicTranslation({ items: batchItems });
+
+  const breadcrumbs = [{ label: t('header.agencies', 'Agencies'), to: locationDisplay ? '/agencies' : undefined }];
   if (locationDisplay) {
     breadcrumbs.push({ label: locationDisplay });
   }
@@ -85,10 +98,10 @@ export function AgenciesPage({ locationFilter }) {
       <PublicBreadcrumbs items={breadcrumbs} />
 
       <SectionHeading
-        title={locationDisplay ? `Verified Travel Agencies in ${locationDisplay}` : t('agencies.title', 'Verified Travel Agencies')}
+        title={locationDisplay ? `${t('agencies.verifiedIn', 'Verified Travel Agencies in')} ${locationDisplay}` : t('agencies.title', 'Verified Travel Agencies')}
         subtitle={
           locationDisplay
-            ? `Licensed local travel operators based in ${locationDisplay} ready to plan and execute your trip.`
+            ? `${t('agencies.licensedIn', 'Licensed local travel operators based in')} ${locationDisplay} ${t('agencies.readyToPlan', 'ready to plan and execute your trip.')}`
             : t('agencies.subtitle', 'Browse verified local operators ready to provide custom trip quotations.')
         }
       />
@@ -108,28 +121,28 @@ export function AgenciesPage({ locationFilter }) {
           onClick={() => setActiveLocation('all')}
           className={`tf-btn ${activeLocation === 'all' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
         >
-          All Locations
+          {t('agencies.filter.all', 'All Locations')}
         </Link>
         <Link
           to="/agencies/turkey"
           onClick={() => setActiveLocation('turkey')}
           className={`tf-btn ${activeLocation === 'turkey' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
         >
-          Turkey (All)
+          {t('agencies.filter.turkey', 'Turkey (All)')}
         </Link>
         <Link
           to="/agencies/istanbul"
           onClick={() => setActiveLocation('istanbul')}
           className={`tf-btn ${activeLocation === 'istanbul' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
         >
-          Istanbul
+          {t('agencies.filter.istanbul', 'Istanbul')}
         </Link>
         <Link
           to="/agencies/cappadocia"
           onClick={() => setActiveLocation('cappadocia')}
           className={`tf-btn ${activeLocation === 'cappadocia' ? 'tf-btn-primary' : 'tf-btn-ghost'} tf-btn-sm`}
         >
-          Cappadocia
+          {t('agencies.filter.cappadocia', 'Cappadocia')}
         </Link>
       </div>
 
@@ -149,12 +162,12 @@ export function AgenciesPage({ locationFilter }) {
           onChange={(e) => setActiveLocation(e.target.value)}
           aria-label="Filter by city"
         >
-          <option value="all">{t('common.all', 'All Locations')}</option>
-          <option value="turkey">Turkey (Nationwide)</option>
-          <option value="istanbul">Istanbul</option>
-          <option value="antalya">Antalya</option>
-          <option value="cappadocia">Nevsehir (Cappadocia)</option>
-          <option value="izmir">Izmir (Aegean)</option>
+          <option value="all">{t('agencies.filter.all', 'All Locations')}</option>
+          <option value="turkey">{t('agencies.filter.turkeyNationwide', 'Turkey (Nationwide)')}</option>
+          <option value="istanbul">{t('agencies.filter.istanbul', 'Istanbul')}</option>
+          <option value="antalya">{t('agencies.filter.antalya', 'Antalya')}</option>
+          <option value="cappadocia">{t('agencies.filter.cappadociaNevsehir', 'Nevsehir (Cappadocia)')}</option>
+          <option value="izmir">{t('agencies.filter.izmirAegean', 'Izmir (Aegean)')}</option>
         </select>
       </div>
 
@@ -176,7 +189,7 @@ export function AgenciesPage({ locationFilter }) {
       {!loading && !error && agencies.length === 0 && (
         <div className="tf-card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
           <h3>{t('common.empty', 'No results found matching your query.')}</h3>
-          <p className="tf-card-text">Try adjusting your search terms or filters.</p>
+          <p className="tf-card-text">{t('guide.adjustSearch', 'Try adjusting your search terms or filters.')}</p>
           <button
             type="button"
             className="tf-btn tf-btn-ghost"
@@ -185,7 +198,7 @@ export function AgenciesPage({ locationFilter }) {
               setActiveLocation('all');
             }}
           >
-            Clear Filters
+            {t('guide.clearFilters', 'Clear Filters')}
           </button>
         </div>
       )}
@@ -193,7 +206,11 @@ export function AgenciesPage({ locationFilter }) {
       {!loading && !error && agencies.length > 0 && (
         <div className="tf-grid-3">
           {agencies.map((agency) => (
-            <AgencyCard key={agency.id} agency={agency} />
+            <AgencyCard
+              key={agency.id}
+              agency={agency}
+              translatedBio={getTranslated ? getTranslated('agency_profile', agency.id, 'bio', agency.bio) : (translationsMap && translationsMap[`agency_profile:${agency.id}:bio`])}
+            />
           ))}
         </div>
       )}

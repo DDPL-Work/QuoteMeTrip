@@ -18,6 +18,32 @@ import { usePageMetadata } from '../../hooks/usePageMetadata.js';
 import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 import { useAuth } from '../../features/auth/auth-context.js';
 
+function getServiceName(svc, t) {
+  if (!svc) return 'Travel Service';
+  const map = {
+    'private-tours': 'services.service.privateTours.name',
+    'private-transfer': 'services.service.privateTransfer.name',
+    'minibus-with-driver': 'services.service.minibusWithDriver.name',
+    guide: 'services.service.guide.name',
+    'hot-air-balloon': 'services.service.hotAirBalloon.name',
+  };
+  const key = map[svc.slug];
+  return key ? t(key, svc.name) : svc.name;
+}
+
+function getServiceSummary(svc, t) {
+  if (!svc) return '';
+  const map = {
+    'private-tours': 'services.service.privateTours.tagline',
+    'private-transfer': 'services.service.privateTransfer.tagline',
+    'minibus-with-driver': 'services.service.minibusWithDriver.tagline',
+    guide: 'services.service.guide.tagline',
+    'hot-air-balloon': 'services.service.hotAirBalloon.tagline',
+  };
+  const key = map[svc.slug];
+  return key ? t(key, svc.summary || svc.tagline) : svc.summary || svc.tagline;
+}
+
 export function TravelServiceDetailPage() {
   const { serviceSlug } = useParams();
   const { t } = useI18n();
@@ -45,10 +71,13 @@ export function TravelServiceDetailPage() {
     };
   }, [serviceSlug]);
 
-  const serviceName = data?.service?.name || 'Travel Service';
+  const service = data?.service;
+  const serviceName = getServiceName(service, t);
+  const serviceSummary = getServiceSummary(service, t);
+
   usePageMetadata(
-    `${data?.service?.title || serviceName} in Turkey`,
-    data?.service?.tagline || data?.service?.summary,
+    `${serviceName} in Turkey`,
+    serviceSummary || data?.service?.tagline || data?.service?.summary,
   );
 
   const planTripHref = user
@@ -66,16 +95,16 @@ export function TravelServiceDetailPage() {
   if (error || !data?.service) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-        <h2>Service Not Found</h2>
+        <h2>{t('common.empty', 'Service Not Found')}</h2>
         <p className="tf-card-text">{error || 'The requested travel service does not exist.'}</p>
         <Link to="/travel-services" className="tf-btn tf-btn-primary">
-          Back to Travel Services
+          {t('header.travelServices', 'Back to Travel Services')}
         </Link>
       </div>
     );
   }
 
-  const { service, relatedDestinations } = data;
+  const { relatedDestinations } = data;
 
   return (
     <div>
@@ -91,13 +120,13 @@ export function TravelServiceDetailPage() {
             className="tf-card-badge"
             style={{ position: 'static', marginBottom: '0.75rem', display: 'inline-block' }}
           >
-            Verified Travel Service
+            {t('services.verifiedService', 'Verified Travel Service')}
           </span>
           <h1 className="tf-detail-hero-title">
-            {service.name}
+            {serviceName}
           </h1>
           <p className="tf-detail-hero-tagline">
-            {service.tagline}
+            {serviceSummary}
           </p>
         </div>
       </section>
@@ -105,20 +134,20 @@ export function TravelServiceDetailPage() {
       <div className="tf-public-container">
         <PublicBreadcrumbs
           items={[
-            { label: 'Travel Services', to: '/travel-services' },
-            { label: service.name },
+            { label: t('header.travelServices', 'Travel Services'), to: '/travel-services' },
+            { label: serviceName },
           ]}
         />
 
         <div className="tf-detail-grid">
           <div>
-            <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>Overview</h2>
+            <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>{t('services.overview', 'Overview')}</h2>
             <p style={{ fontSize: '1.05rem', lineHeight: 1.8, color: 'var(--tf-text)' }}>
               {service.summary}
             </p>
 
             <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem', marginBottom: '1rem' }}>
-              What Is Included
+              {t('services.inclusions', 'What Is Included')}
             </h3>
             <ul className="tf-list" style={{ gap: '0.75rem' }}>
               {service.inclusions.map((item, idx) => (
@@ -140,7 +169,7 @@ export function TravelServiceDetailPage() {
 
             {service.highlights && (
               <div style={{ marginTop: '2.5rem' }}>
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Service Standards & Guarantees</h3>
+                <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>{t('services.standards', 'Service Standards & Guarantees')}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1rem' }}>
                   {service.highlights.map((h, i) => (
                     <div key={i} className="tf-card" style={{ padding: '1rem' }}>
@@ -156,14 +185,17 @@ export function TravelServiceDetailPage() {
 
           <div>
             <div className="tf-card tf-sticky-sidebar">
-              <h3 style={{ marginTop: 0 }}>Service Booking</h3>
+              <h3 style={{ marginTop: 0 }}>{t('services.booking', 'Service Booking')}</h3>
               <p style={{ fontSize: '0.9rem', color: 'var(--tf-text-muted)' }}>
-                Select this service when building your custom itinerary to receive competitive quotes from verified local agencies.
+                {t(
+                  'services.bookingSubtitle',
+                  'Select this service when building your custom itinerary to receive competitive quotes from verified local agencies.',
+                )}
               </p>
 
               <div style={{ margin: '1.25rem 0', padding: '0.75rem 0', borderTop: '1px solid var(--tf-border)', borderBottom: '1px solid var(--tf-border)' }}>
                 <strong style={{ fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>
-                  Available in Regions:
+                  {t('services.availableRegions', 'Available in Regions:')}
                 </strong>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                   {service.destinations.map((d) => (
@@ -188,7 +220,7 @@ export function TravelServiceDetailPage() {
                 className="tf-btn tf-btn-primary"
                 style={{ width: '100%', textAlign: 'center', boxSizing: 'border-box' }}
               >
-                Plan Trip with {service.name} →
+                {t('services.planWith', { name: serviceName }, `Plan Trip with ${serviceName} →`)}
               </a>
             </div>
           </div>
@@ -198,10 +230,10 @@ export function TravelServiceDetailPage() {
         {relatedDestinations && relatedDestinations.length > 0 && (
           <section style={{ marginBottom: '4rem' }}>
             <h2 style={{ fontSize: '1.6rem', marginBottom: '0.5rem' }}>
-              Popular Destinations for {service.name}
+              {t('services.popularFor', { name: serviceName }, `Popular Destinations for ${serviceName}`)}
             </h2>
             <p style={{ color: 'var(--tf-text-muted)', marginBottom: '1.5rem' }}>
-              Explore destinations where this service is frequently requested.
+              {t('services.popularForDesc', 'Explore destinations where this service is frequently requested.')}
             </p>
             <div className="tf-grid-3">
               {relatedDestinations.map((dest) => (
@@ -217,7 +249,7 @@ export function TravelServiceDetailPage() {
                       to={`/destinations/${dest.countrySlug || 'turkey'}/${dest.slug}`}
                       className="tf-btn tf-btn-ghost tf-btn-sm"
                     >
-                      Explore {dest.name} →
+                      {t('common.explore', 'Explore')} {dest.name} →
                     </Link>
                   </div>
                 </div>
@@ -227,8 +259,8 @@ export function TravelServiceDetailPage() {
         )}
 
         <CTASection
-          title={`Book ${service.name} with Verified Operators`}
-          subtitle="Submit your travel dates and requirements. Matched local operators will submit itemized quotes."
+          title={t('services.bookWith', { name: serviceName }, `Book ${serviceName} with Verified Operators`)}
+          subtitle={t('services.bookWithDesc', 'Submit your travel dates and requirements. Matched local operators will submit itemized quotes.')}
           ctaHref={planTripHref}
         />
       </div>

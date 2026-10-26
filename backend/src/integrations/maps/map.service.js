@@ -14,8 +14,8 @@ export class MapService {
     this.provider = provider || getMapProvider();
   }
 
-  async calculateRoute({ stops } = {}) {
-    return this.provider.calculateRoute({ stops });
+  async calculateRoute({ stops, travelMode = 'DRIVE' } = {}) {
+    return this.provider.calculateRoute({ stops, travelMode });
   }
 }
 

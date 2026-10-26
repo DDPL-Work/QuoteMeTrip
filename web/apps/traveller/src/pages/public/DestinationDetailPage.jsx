@@ -5,21 +5,59 @@
  * relevant travel services, related travel guides, and a prominent "Plan a Trip to <Destination>" CTA.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useI18n } from '@troublefree/i18n';
+import { useI18n, useDynamicTranslation } from '@troublefree/i18n';
 import { GuideCard, CTASection } from '@troublefree/ui';
 import { getDestinationBySlug } from '../../services/public-api.js';
 import { useAuth } from '../../features/auth/auth-context.js';
 import { usePageMetadata } from '../../hooks/usePageMetadata.js';
 import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
+const HIGHLIGHTS_TR = {
+  'Hagia Sophia': 'Ayasofya Camii',
+  'Bosphorus Cruise': 'Boğaz Turu',
+  'Grand Bazaar': 'Kapalıçarşı',
+  'Topkapi Palace': 'Topkapı Sarayı',
+  'Galata Tower': 'Galata Kulesi',
+  'Sultanahmet Square': 'Sultanahmet Meydanı',
+  'Goreme Open Air Museum': 'Göreme Açık Hava Müzesi',
+  'Love Valley & Rose Valley': 'Aşk Vadisi ve Güllüdere Vadisi',
+  'Derinkuyu Underground City': 'Derinkuyu Yeraltı Şehri',
+  'Uchisar Castle': 'Uçhisar Kalesi',
+  'Pigeon Valley': 'Güvercinlik Vadisi',
+  'Kaleici Old Town': 'Kaleiçi Tarihi Merkez',
+  'Duden Waterfalls': 'Düden Şelaleleri',
+  'Aspendos Roman Theater': 'Aspendos Roma Tiyatrosu',
+  'Perge Ancient City': 'Perge Antik Kenti',
+  'Konyaalti Beach': 'Konyaaltı Plajı',
+  'White Travertine Terraces': 'Beyaz Traverten Terasları',
+  'Hierapolis Ancient City': 'Hierapolis Antik Kenti',
+  'Cleopatra Antique Pool': 'Kleopatra Antik Havuzu',
+  'Hierapolis Roman Amphitheater': 'Hierapolis Roma Amfitiyatrosu',
+  'Hierapolis Archaeology Museum': 'Hierapolis Arkeoloji Müzesi',
+  'Library of Celsus': 'Celsus Kütüphanesi',
+  'Great Theatre of Ephesus': 'Büyük Efes Tiyatrosu',
+  'Terraced Houses': 'Yamaç Evleri',
+  'Temple of Hadrian': 'Hadrian Tapınağı',
+  'House of the Virgin Mary': 'Meryem Ana Evi',
+  'Sirince Hilltop Village': 'Şirince Köyü',
+  'Bodrum Castle': 'Bodrum Kalesi',
+  'Yalikavak Marina': 'Yalıkavak Marina',
+  'Bodrum Amphitheater': 'Bodrum Amfitiyatrosu',
+  'Gumusluk Bay': 'Gümüşlük Koyu',
+  'Sumela Monastery': 'Sümela Manastırı',
+  'Uzungol Lake': 'Uzungöl',
+  'Ayder Plateau': 'Ayder Yaylası',
+  'Zilkale Castle': 'Zilkale',
+};
+
 export function DestinationDetailPage() {
   const params = useParams();
   const slug = params.destinationSlug || params.slug;
   const countrySlug = params.countrySlug || 'turkey';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +92,76 @@ export function DestinationDetailPage() {
     ? `/plan-trip?destination=${encodeURIComponent(destName)}`
     : `/login?redirect=${encodeURIComponent(`/plan-trip?destination=${destName}`)}`;
 
+  const destination = data?.destination;
+
+  const { text: translatedName } = useDynamicTranslation({
+    contentType: 'travel_guide_destination',
+    contentId: destination?.id || slug,
+    fieldName: 'name',
+    sourceText: destination?.name || '',
+  });
+
+  const { text: translatedTagline } = useDynamicTranslation({
+    contentType: 'travel_guide_destination',
+    contentId: destination?.id || slug,
+    fieldName: 'tagline',
+    sourceText: destination?.shortDescription || destination?.tagline || '',
+  });
+
+  const { text: translatedDescription } = useDynamicTranslation({
+    contentType: 'travel_guide_destination',
+    contentId: destination?.id || slug,
+    fieldName: 'description',
+    sourceText: destination?.description || '',
+  });
+
+  const localizedRegion = useMemo(() => {
+    if (!destination?.region) return '';
+    const keyMap = {
+      'aegean': 'destinations.region.aegean',
+      'ege': 'destinations.region.aegean',
+      'central anatolia': 'destinations.region.centralAnatolia',
+      'iç anadolu': 'destinations.region.centralAnatolia',
+      'mediterranean': 'destinations.region.mediterranean',
+      'akdeniz': 'destinations.region.mediterranean',
+      'marmara': 'destinations.region.marmara',
+      'black sea': 'destinations.region.blackSea',
+      'karadeniz': 'destinations.region.blackSea',
+    };
+    const key = keyMap[destination.region.toLowerCase().trim()];
+    return key ? t(key, destination.region) : destination.region;
+  }, [destination?.region, t]);
+
+  const localizedCountry = useMemo(() => {
+    if (locale === 'tr' && (destination?.country?.toLowerCase() === 'turkey' || destination?.country?.toLowerCase() === 'türkiye')) {
+      return 'Türkiye';
+    }
+    return destination?.country || 'Turkey';
+  }, [destination?.country, locale]);
+
+  const localizedBestTime = useMemo(() => {
+    if (locale !== 'tr' || !destination?.bestTimeToVisit) return destination?.bestTimeToVisit || '';
+    const months = {
+      'January': 'Ocak',
+      'February': 'Şubat',
+      'March': 'Mart',
+      'April': 'Nisan',
+      'May': 'Mayıs',
+      'June': 'Haziran',
+      'July': 'Temmuz',
+      'August': 'Ağustos',
+      'September': 'Eylül',
+      'October': 'Ekim',
+      'November': 'Kasım',
+      'December': 'Aralık',
+    };
+    let result = destination.bestTimeToVisit;
+    for (const [en, tr] of Object.entries(months)) {
+      result = result.replace(new RegExp(`\\b${en}\\b`, 'g'), tr);
+    }
+    return result;
+  }, [destination?.bestTimeToVisit, locale]);
+
   if (loading) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 0' }}>
@@ -62,19 +170,21 @@ export function DestinationDetailPage() {
     );
   }
 
-  if (error || !data?.destination) {
+  if (error || !destination) {
     return (
       <div className="tf-public-container" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-        <h2>Destination Not Found</h2>
-        <p className="tf-card-text">{error || 'The requested destination does not exist.'}</p>
+        <h2>{t('destinations.notFound', 'Destination Not Found')}</h2>
+        <p className="tf-card-text">{error || t('destinations.notFoundDesc', 'The requested destination does not exist.')}</p>
         <Link to="/destinations" className="tf-btn tf-btn-primary">
-          Back to Destinations
+          {t('destinations.backToDestinations', 'Back to Destinations')}
         </Link>
       </div>
     );
   }
 
-  const { destination, relatedGuides, relevantServices } = data;
+  const { relatedGuides, relevantServices } = data;
+  const displayName = translatedName || destination.name;
+  const displayTagline = translatedTagline || destination.shortDescription || destination.tagline;
 
   return (
     <div>
@@ -90,13 +200,13 @@ export function DestinationDetailPage() {
             className="tf-card-badge"
             style={{ position: 'static', marginBottom: '0.75rem', display: 'inline-block' }}
           >
-            {destination.region}, {destination.country}
+            {localizedRegion}, {localizedCountry}
           </span>
           <h1 className="tf-detail-hero-title">
-            {destination.name}
+            {displayName}
           </h1>
           <p className="tf-detail-hero-tagline">
-            {destination.tagline}
+            {displayTagline}
           </p>
         </div>
       </section>
@@ -104,20 +214,20 @@ export function DestinationDetailPage() {
       <div className="tf-public-container">
         <PublicBreadcrumbs
           items={[
-            { label: 'Destinations', to: '/destinations' },
-            { label: destination.country || 'Turkey', to: `/destinations/${destination.countrySlug || 'turkey'}` },
-            { label: destination.name },
+            { label: t('header.destinations', 'Destinations'), to: '/destinations' },
+            { label: localizedCountry, to: `/destinations/${destination.countrySlug || 'turkey'}` },
+            { label: displayName },
           ]}
         />
 
         <div className="tf-detail-grid">
           <div>
-            <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>Overview</h2>
+            <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>{t('destinations.overview', 'Overview')}</h2>
             <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--tf-text)' }}>
-              {destination.description}
+              {translatedDescription || destination.description}
             </p>
 
-            <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem' }}>Popular Highlights & Places</h3>
+            <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem' }}>{t('destinations.highlights', 'Popular Highlights & Places')}</h3>
             <ul className="tf-list" style={{ gap: '0.6rem' }}>
               {destination.popularPlaces.map((place) => (
                 <li
@@ -131,7 +241,7 @@ export function DestinationDetailPage() {
                   }}
                 >
                   <span style={{ fontSize: '1.2rem' }}>📍</span>
-                  <strong>{place}</strong>
+                  <strong>{locale === 'tr' && HIGHLIGHTS_TR[place] ? HIGHLIGHTS_TR[place] : place}</strong>
                 </li>
               ))}
             </ul>
@@ -139,19 +249,19 @@ export function DestinationDetailPage() {
 
           <div>
             <div className="tf-card tf-sticky-sidebar">
-              <h3 style={{ marginTop: 0 }}>Travel Information</h3>
+              <h3 style={{ marginTop: 0 }}>{t('destination.travelInfo', 'Travel Information')}</h3>
               <div style={{ margin: '1rem 0', fontSize: '0.95rem' }}>
                 <p>
-                  <strong>Region:</strong> {destination.region}
+                  <strong>{t('destination.regionLabel', 'Region:')}</strong> {localizedRegion}
                 </p>
                 <p>
-                  <strong>Country:</strong>{' '}
+                  <strong>{t('destination.countryLabel', 'Country:')}</strong>{' '}
                   <Link to={`/destinations/${destination.countrySlug || 'turkey'}`} style={{ color: 'var(--tf-primary)' }}>
-                    {destination.country}
+                    {localizedCountry}
                   </Link>
                 </p>
                 <p>
-                  <strong>Best Time to Visit:</strong> {destination.bestTimeToVisit}
+                  <strong>{t('destination.bestTimeLabel', 'Best Time to Visit:')}</strong> {localizedBestTime}
                 </p>
               </div>
               <a
@@ -159,7 +269,7 @@ export function DestinationDetailPage() {
                 className="tf-btn tf-btn-primary"
                 style={{ width: '100%', textAlign: 'center', boxSizing: 'border-box' }}
               >
-                {t('destinations.planCTA', 'Plan a Trip to')} {destination.name} →
+                {locale === 'tr' ? `${displayName} İçin Rota Planla →` : `${t('destinations.planCTA', 'Plan a Trip to')} ${displayName} →`}
               </a>
             </div>
           </div>
@@ -169,10 +279,10 @@ export function DestinationDetailPage() {
         {relevantServices && relevantServices.length > 0 && (
           <section style={{ marginBottom: '3.5rem' }}>
             <h2 style={{ fontSize: '1.6rem', marginBottom: '0.5rem' }}>
-              Available Travel Services in {destination.name}
+              {t('destination.availableServices', { name: displayName }, `Available Travel Services in ${displayName}`)}
             </h2>
             <p style={{ color: 'var(--tf-text-muted)', marginBottom: '1.5rem' }}>
-              Add verified local services to your custom itinerary for {destination.name}.
+              {t('destination.availableServicesDesc', { name: displayName }, `Add verified local services to your custom itinerary for ${displayName}.`)}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
               {relevantServices.map((svc) => (
@@ -182,7 +292,7 @@ export function DestinationDetailPage() {
                     {svc.tagline}
                   </p>
                   <Link to={`/travel-services/${svc.slug}`} className="tf-btn tf-btn-ghost tf-btn-sm" style={{ alignSelf: 'flex-start' }}>
-                    Service Details →
+                    {t('services.viewDetails', 'Service Details →')}
                   </Link>
                 </div>
               ))}
@@ -194,7 +304,7 @@ export function DestinationDetailPage() {
         {relatedGuides && relatedGuides.length > 0 && (
           <section style={{ marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '1.6rem', marginBottom: '1.5rem' }}>
-              Travel Guides for {destination.name}
+              {t('destinations.relatedGuides', 'Travel Guides for')} {displayName}
             </h2>
             <div className="tf-grid-3">
               {relatedGuides.map((guide) => (
@@ -205,8 +315,8 @@ export function DestinationDetailPage() {
         )}
 
         <CTASection
-          title={`Plan a Trip to ${destination.name}`}
-          subtitle="Build your route including this destination and get custom agency quotations."
+          title={locale === 'tr' ? `${displayName} İçin Seyahat Planlayın` : `${t('destinations.planCTA', 'Plan a Trip to')} ${displayName}`}
+          subtitle={t('destinations.ctaSubtitle', 'Build your route including this destination and get custom agency quotations.')}
           ctaHref={planTripHref}
         />
       </div>

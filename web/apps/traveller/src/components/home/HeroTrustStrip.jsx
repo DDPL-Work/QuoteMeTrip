@@ -1,36 +1,38 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { FiShield, FiDollarSign, FiSliders, FiCreditCard, FiHeadphones } from 'react-icons/fi';
-
-const TRUST_ITEMS = [
-  {
-    icon: FiShield,
-    title: 'Verified agencies',
-    desc: 'Documents checked by our team',
-  },
-  {
-    icon: FiDollarSign,
-    title: 'Free request',
-    desc: 'No fee for travellers',
-  },
-  {
-    icon: FiSliders,
-    title: 'Compare offers',
-    desc: 'Price, inclusions, ratings',
-  },
-  {
-    icon: FiCreditCard,
-    title: 'Pay the agency directly',
-    desc: 'On the agency’s own terms',
-  },
-  {
-    icon: FiHeadphones,
-    title: 'Support',
-    desc: 'We step in if needed',
-  },
-];
+import { useI18n } from '@troublefree/i18n';
 
 export function HeroTrustStrip() {
+  const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
+
+  const TRUST_ITEMS = [
+    {
+      icon: FiShield,
+      title: t('home.trust.verified', 'Verified agencies'),
+      desc: t('home.trust.verifiedDesc', 'Documents checked by our team'),
+    },
+    {
+      icon: FiDollarSign,
+      title: t('home.trust.freeRequest', 'Free request'),
+      desc: t('home.trust.freeRequestDesc', 'No fee for travellers'),
+    },
+    {
+      icon: FiSliders,
+      title: t('home.trust.compareOffers', 'Compare offers'),
+      desc: t('home.trust.compareOffersDesc', 'Price, inclusions, ratings'),
+    },
+    {
+      icon: FiCreditCard,
+      title: t('home.trust.payDirect', 'Pay the agency directly'),
+      desc: t('home.trust.payDirectDesc', 'On the agency’s own terms'),
+    },
+    {
+      icon: FiHeadphones,
+      title: t('home.trust.support', 'Support'),
+      desc: t('home.trust.supportDesc', 'We step in if needed'),
+    },
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },

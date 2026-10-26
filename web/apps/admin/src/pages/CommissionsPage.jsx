@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useI18n } from '@troublefree/i18n';
 import { adminApi } from '../services/api.js';
 import { StatusBadge } from '@troublefree/ui';
 
 export function CommissionsPage() {
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [commissions, setCommissions] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -59,9 +61,11 @@ export function CommissionsPage() {
       style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
     >
       <div>
-        <h1 style={{ fontSize: '1.75rem', color: '#23272B', margin: 0 }}>Commission Tracking</h1>
+        <h1 style={{ fontSize: '1.75rem', color: '#23272B', margin: 0 }}>
+          {t('admin.commissions.title')}
+        </h1>
         <p style={{ color: '#718096', marginTop: '0.25rem' }}>
-          Track platform commission earnings from accepted marketplace jobs.
+          {t('admin.commissions.subtitle')}
         </p>
       </div>
 
@@ -82,7 +86,7 @@ export function CommissionsPage() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             }}
           >
-            <div style={{ fontSize: '0.875rem', color: '#718096' }}>Total Earned</div>
+            <div style={{ fontSize: '0.875rem', color: '#718096' }}>{t('admin.commissions.totalEarned')}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2E9E5B' }}>
               ${summary.totalCommissionAmount}
             </div>
@@ -95,7 +99,7 @@ export function CommissionsPage() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             }}
           >
-            <div style={{ fontSize: '0.875rem', color: '#718096' }}>Pending</div>
+            <div style={{ fontSize: '0.875rem', color: '#718096' }}>{t('admin.commissions.pendingAmount')}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#D69E2E' }}>
               ${summary.pendingAmount}
             </div>
@@ -108,7 +112,7 @@ export function CommissionsPage() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             }}
           >
-            <div style={{ fontSize: '0.875rem', color: '#718096' }}>Confirmed</div>
+            <div style={{ fontSize: '0.875rem', color: '#718096' }}>{t('admin.commissions.confirmedAmount')}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3182CE' }}>
               ${summary.confirmedAmount}
             </div>
@@ -121,7 +125,7 @@ export function CommissionsPage() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             }}
           >
-            <div style={{ fontSize: '0.875rem', color: '#718096' }}>Paid Out</div>
+            <div style={{ fontSize: '0.875rem', color: '#718096' }}>{t('admin.commissions.paidOut')}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#38A169' }}>
               ${summary.paidAmount}
             </div>
@@ -145,19 +149,19 @@ export function CommissionsPage() {
           onChange={(e) => handleStatusFilter(e.target.value)}
           style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
         >
-          <option value="">All Commission Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="paid">Paid</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="">{t('admin.commissions.allStatuses')}</option>
+          <option value="pending">{t('status.pending')}</option>
+          <option value="confirmed">{t('status.confirmed', 'Confirmed')}</option>
+          <option value="paid">{t('status.paid')}</option>
+          <option value="cancelled">{t('status.cancelled')}</option>
         </select>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div>Loading commissions...</div>
+        <div>{t('admin.commissions.loading')}</div>
       ) : error ? (
-        <div style={{ color: '#E53E3E' }}>Error: {error}</div>
+        <div style={{ color: '#E53E3E' }}>{t('admin.common.error')}: {error}</div>
       ) : commissions.length === 0 ? (
         <div
           style={{
@@ -168,7 +172,7 @@ export function CommissionsPage() {
             borderRadius: '8px',
           }}
         >
-          No commission records found.
+          {t('admin.commissions.empty')}
         </div>
       ) : (
         <div
@@ -191,14 +195,14 @@ export function CommissionsPage() {
           >
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>Commission ID</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Agency</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Job / Quotation</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Basis (Job Amount)</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Rate</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Commission</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colCommissionId')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colAgency')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colJobQuotation')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colBookingAmount')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colRate')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colCommission')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.commissions.colStatus')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>{t('admin.common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -219,7 +223,7 @@ export function CommissionsPage() {
                     ${comm.commissionAmount}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <StatusBadge status={comm.status} />
+                    <StatusBadge status={comm.status} label={t(`status.${comm.status}`, comm.status)} />
                   </td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
@@ -237,7 +241,7 @@ export function CommissionsPage() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          Confirm
+                          {t('admin.commissions.confirmBtn')}
                         </button>
                       )}
                       {(comm.status === 'pending' || comm.status === 'confirmed') && (
@@ -254,7 +258,7 @@ export function CommissionsPage() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          Mark Paid
+                          {t('admin.commissions.markAsPaid')}
                         </button>
                       )}
                       {comm.status !== 'cancelled' && (
@@ -271,7 +275,7 @@ export function CommissionsPage() {
                             fontSize: '0.75rem',
                           }}
                         >
-                          Cancel
+                          {t('admin.common.cancel')}
                         </button>
                       )}
                     </div>

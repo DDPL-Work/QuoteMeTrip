@@ -73,3 +73,35 @@ export function createAdminRateLimiter() {
     },
   });
 }
+
+export function createTranslationRateLimiter() {
+  return rateLimit({
+    windowMs: 60 * 1000,
+    max: 120, // 120 requests per minute
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: {
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Translation request rate limit exceeded. Please try again later.',
+      },
+    },
+  });
+}
+
+export function createTransientTranslationRateLimiter() {
+  return rateLimit({
+    windowMs: 60 * 1000,
+    max: 30, // 30 transient requests per minute
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: {
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Transient translation rate limit exceeded. Please try again later.',
+      },
+    },
+  });
+}

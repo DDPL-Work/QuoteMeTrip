@@ -17,6 +17,7 @@
 import 'dotenv/config';
 
 process.env.NODE_ENV = 'test';
+process.env.MAP_PROVIDER ||= 'haversine';
 process.env.JWT_ACCESS_SECRET ||= 'test-access-secret-not-for-production';
 process.env.JWT_REFRESH_SECRET ||= 'test-refresh-secret-not-for-production';
 process.env.JWT_ACCESS_EXPIRES_IN ||= '15m';

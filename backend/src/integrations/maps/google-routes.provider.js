@@ -81,6 +81,45 @@ export function parseDurationSeconds(durationStr) {
   return Math.round(seconds / 60);
 }
 
+/**
+ * Encodes an array of [latitude, longitude] pairs into a Google encoded polyline string.
+ */
+export function encodePolyline(points) {
+  if (!Array.isArray(points) || points.length === 0) return '';
+  let result = '';
+  let prevLat = 0;
+  let prevLng = 0;
+
+  function encodeValue(val) {
+    let num = val < 0 ? ~(val << 1) : val << 1;
+    let chunks = '';
+    while (num >= 0x20) {
+      chunks += String.fromCharCode((0x20 | (num & 0x1f)) + 63);
+      num >>= 5;
+    }
+    chunks += String.fromCharCode(num + 63);
+    return chunks;
+  }
+
+  for (const [lat, lng] of points) {
+    const latE5 = Math.round(Number(lat) * 1e5);
+    const lngE5 = Math.round(Number(lng) * 1e5);
+    result += encodeValue(latE5 - prevLat);
+    result += encodeValue(lngE5 - prevLng);
+    prevLat = latE5;
+    prevLng = lngE5;
+  }
+  return result;
+}
+
+/**
+ * Sanitizes sensitive strings (e.g. API keys, secrets) from diagnostic logs.
+ */
+export function sanitizeDiagnosticMessage(message) {
+  if (!message || typeof message !== 'string') return '';
+  return message.replace(/[a-zA-Z0-9_-]{20,}/g, '[REDACTED]');
+}
+
 export class GoogleRoutesMapProvider extends MapProvider {
   constructor({ apiKey = null, fetchFn = null } = {}) {
     super();
@@ -94,25 +133,69 @@ export class GoogleRoutesMapProvider extends MapProvider {
 
   /**
    * Builds Google Routes API Waypoint representation for a stop.
+   * In Google Routes API computeRoutes, a Waypoint target is a oneof union:
+   * exactly one of `location`, `placeId`, or `address` can be set.
+   * Setting both `location` and `placeId` causes HTTP 400 INVALID_ARGUMENT.
    */
   #buildWaypoint(stop) {
-    const wp = {
-      location: {
-        latLng: {
-          latitude: Number(stop.latitude),
-          longitude: Number(stop.longitude),
+    const hasLat =
+      stop.latitude !== undefined &&
+      stop.latitude !== null &&
+      Number.isFinite(Number(stop.latitude));
+    const hasLng =
+      stop.longitude !== undefined &&
+      stop.longitude !== null &&
+      Number.isFinite(Number(stop.longitude));
+
+    if (hasLat && hasLng) {
+      return {
+        location: {
+          latLng: {
+            latitude: Number(stop.latitude),
+            longitude: Number(stop.longitude),
+          },
         },
-      },
-    };
-    if (stop.placeId) {
-      wp.placeId = String(stop.placeId);
+      };
     }
-    return wp;
+
+    if (stop.placeId) {
+      return {
+        placeId: String(stop.placeId),
+      };
+    }
+
+    throw new AppError(`Stop "${stop.name || 'Unknown'}" must have valid coordinates or placeId.`, {
+      statusCode: 400,
+      code: MAP_ERROR_CODES.CALCULATION_FAILED,
+    });
   }
 
-  async calculateRoute({ stops } = {}) {
+  mapTravelMode(mode) {
+    const normalized = String(mode || 'DRIVE').trim().toUpperCase();
+    return ['DRIVE', 'WALK', 'BICYCLE', 'TWO_WHEELER', 'TRANSIT'].includes(normalized)
+      ? normalized
+      : 'DRIVE';
+  }
+
+  async calculateRoute({ stops, travelMode = 'DRIVE' } = {}) {
     if (!Array.isArray(stops) || stops.length < 2) {
       throw new AppError('At least two stops are required to calculate a route.', {
+        statusCode: 400,
+        code: MAP_ERROR_CODES.CALCULATION_FAILED,
+      });
+    }
+
+    const normalizedMode = String(travelMode || 'DRIVE').trim().toUpperCase();
+
+    // AIR mode is handled via great-circle calculations and never sent to Google Routes API
+    if (normalizedMode === 'AIR') {
+      const { calculateAirRoute } = await import('./air-route.service.js');
+      return calculateAirRoute(stops);
+    }
+
+    const GOOGLE_MODES = ['DRIVE', 'WALK', 'BICYCLE', 'TWO_WHEELER', 'TRANSIT'];
+    if (!GOOGLE_MODES.includes(normalizedMode)) {
+      throw new AppError(`Travel mode "${travelMode}" is not supported by Google Routes API.`, {
         statusCode: 400,
         code: MAP_ERROR_CODES.CALCULATION_FAILED,
       });
@@ -129,6 +212,16 @@ export class GoogleRoutesMapProvider extends MapProvider {
     }
 
     const intermediateStops = stops.slice(1, -1);
+    if (normalizedMode === 'TRANSIT' && intermediateStops.length > 0) {
+      throw new AppError(
+        'Public transit routing supports direct origin-to-destination journeys only. Please remove intermediate stops for public transit.',
+        {
+          statusCode: 400,
+          code: MAP_ERROR_CODES.CALCULATION_FAILED,
+        },
+      );
+    }
+
     if (intermediateStops.length > MAX_GOOGLE_INTERMEDIATES) {
       throw new AppError(
         `Google Routes API supports a maximum of ${MAX_GOOGLE_INTERMEDIATES} intermediate stops (received ${intermediateStops.length}).`,
@@ -147,17 +240,21 @@ export class GoogleRoutesMapProvider extends MapProvider {
       origin,
       destination,
       intermediates,
-      travelMode: 'DRIVE',
-      routingPreference: 'TRAFFIC_UNAWARE',
+      travelMode: normalizedMode,
       computeAlternativeRoutes: false,
-      routeModifiers: {
-        avoidTolls: false,
-        avoidHighways: false,
-        avoidFerries: false,
-      },
       languageCode: 'en-US',
       units: 'METRIC',
     };
+
+    // Google Routes API ONLY accepts routingPreference for DRIVE and TWO_WHEELER
+    if (normalizedMode === 'DRIVE' || normalizedMode === 'TWO_WHEELER') {
+      requestBody.routingPreference = 'TRAFFIC_UNAWARE';
+      requestBody.routeModifiers = {
+        avoidTolls: false,
+        avoidHighways: false,
+        avoidFerries: false,
+      };
+    }
 
     const headers = {
       'Content-Type': 'application/json',
@@ -206,26 +303,53 @@ export class GoogleRoutesMapProvider extends MapProvider {
     if (!response.ok || data?.error) {
       const errObj = data?.error || {};
       const status = errObj.status || response.status;
-      const message = errObj.message || 'Routes calculation request rejected.';
+      const code = errObj.code || response.status;
+      const rawMessage = errObj.message || 'Routes calculation request rejected.';
+      const sanitizedMessage = sanitizeDiagnosticMessage(rawMessage);
 
-      // Server-side logging without leaking the secret key
+      // Server-side logging without leaking secrets or API keys
       console.error(
-        `[GoogleRoutesProvider] Google Routes API error: HTTP ${response.status} (${status}) - ${message}`,
+        `[GoogleRoutesProvider] Google Routes API error: HTTP ${response.status} (code: ${code}, status: ${status}) - ${sanitizedMessage}`,
       );
+
+      const msgLower = rawMessage.toLowerCase();
 
       if (
         response.status === 403 ||
         status === 'PERMISSION_DENIED' ||
-        message.includes('API has not been used') ||
-        message.includes('disabled')
+        msgLower.includes('api has not been used') ||
+        msgLower.includes('disabled') ||
+        msgLower.includes('api key not valid')
       ) {
+        if (msgLower.includes('disabled') || msgLower.includes('not been used')) {
+          throw new AppError(
+            'Google Routes API is not enabled in Google Cloud Console. Please ensure Routes API is enabled.',
+            {
+              statusCode: 503,
+              code: MAP_ERROR_CODES.NOT_CONFIGURED,
+            },
+          );
+        }
+        if (msgLower.includes('billing')) {
+          throw new AppError('Google Cloud billing is not enabled for the Routes API.', {
+            statusCode: 503,
+            code: MAP_ERROR_CODES.NOT_CONFIGURED,
+          });
+        }
         throw new AppError(
-          'Google Routes API is not enabled or credentials are misconfigured. Please verify GOOGLE_ROUTES_API_KEY and ensure Routes API is enabled in Google Cloud Console.',
+          'Google Routes API authentication or permission failed. Please verify GOOGLE_ROUTES_API_KEY credentials.',
           {
             statusCode: 503,
             code: MAP_ERROR_CODES.NOT_CONFIGURED,
           },
         );
+      }
+
+      if (response.status === 429 || status === 'RESOURCE_EXHAUSTED' || msgLower.includes('quota')) {
+        throw new AppError('Google Routes API rate limit or quota exceeded. Please try again shortly.', {
+          statusCode: 429,
+          code: MAP_ERROR_CODES.CALCULATION_FAILED,
+        });
       }
 
       if (response.status === 400 || status === 'INVALID_ARGUMENT') {
@@ -235,18 +359,40 @@ export class GoogleRoutesMapProvider extends MapProvider {
         });
       }
 
-      throw new AppError('Google Routes API could not calculate a road route for these stops.', {
-        statusCode: 502,
-        code: MAP_ERROR_CODES.CALCULATION_FAILED,
-      });
+      if (response.status === 404 || status === 'NOT_FOUND') {
+        throw new AppError('One or more destinations could not be found by Google Routes API.', {
+          statusCode: 404,
+          code: MAP_ERROR_CODES.CALCULATION_FAILED,
+        });
+      }
+
+      throw new AppError(
+        `Google Routes API could not calculate a ${normalizedMode.toLowerCase()} route for these stops.`,
+        {
+          statusCode: 502,
+          code: MAP_ERROR_CODES.CALCULATION_FAILED,
+        },
+      );
     }
 
     const route = data?.routes?.[0];
     if (!route) {
-      throw new AppError('No driving route could be found between the selected destinations.', {
-        statusCode: 422,
-        code: MAP_ERROR_CODES.CALCULATION_FAILED,
-      });
+      const modeText = normalizedMode === 'DRIVE' ? 'driving' : normalizedMode.toLowerCase();
+      let regionalHint = '';
+      if (normalizedMode === 'BICYCLE') {
+        regionalHint = ' Bicycle directions may not be supported by Google Maps in this region. Please select Drive, Walk, or Air.';
+      } else if (normalizedMode === 'TRANSIT') {
+        regionalHint = ' Public transit schedules are not available for this route in Google Maps. Please select Drive or Walk.';
+      } else if (normalizedMode === 'TWO_WHEELER') {
+        regionalHint = ' Motorcycle / two-wheeler routing is not available for this route in this region.';
+      }
+      throw new AppError(
+        `No ${modeText} route could be found between the selected destinations.${regionalHint}`,
+        {
+          statusCode: 422,
+          code: MAP_ERROR_CODES.CALCULATION_FAILED,
+        },
+      );
     }
 
     const distanceMeters = Number(route.distanceMeters || 0);
@@ -284,6 +430,7 @@ export class GoogleRoutesMapProvider extends MapProvider {
     return {
       distanceKm,
       durationMinutes,
+      travelMode: normalizedMode,
       geometry,
       encodedPolyline,
       legs,
@@ -292,6 +439,7 @@ export class GoogleRoutesMapProvider extends MapProvider {
       warnings: route.warnings || [],
       rawResponse: {
         provider: this.name,
+        travelMode: normalizedMode,
         distanceMeters,
         duration: route.duration,
         legsCount: legs.length,

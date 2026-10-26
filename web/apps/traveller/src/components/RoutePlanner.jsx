@@ -14,9 +14,18 @@ import {
   FiRefreshCw,
   FiLayers,
 } from 'react-icons/fi';
+import {
+  FaCar,
+  FaMotorcycle,
+  FaWalking,
+  FaBicycle,
+  FaBus,
+  FaPlane,
+} from 'react-icons/fa';
 import { RouteMap } from './RouteMap.jsx';
 import { DestinationAutocomplete } from './DestinationAutocomplete.jsx';
 import { RouteOverviewSummary } from './RouteOverviewSummary.jsx';
+import { useI18n } from '@troublefree/i18n';
 
 /**
  * RoutePlanner Component (Google Maps Platform Edition)
@@ -34,10 +43,13 @@ import { RouteOverviewSummary } from './RouteOverviewSummary.jsx';
  */
 export function RoutePlanner({
   stops = [],
+  travelMode = 'DRIVE',
+  onSelectTravelMode = null,
   onAddStop,
   onRemoveStop,
   onReorderStops,
   onCalculate,
+  onAdvanceStep = null,
   onClearRoute,
   calculationStatus = 'idle',
   isStale = false,
@@ -45,12 +57,22 @@ export function RoutePlanner({
   currentRoute = null,
   recommendedDays = null,
 }) {
+  const { t } = useI18n();
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [stopTypeInput, setStopTypeInput] = useState('intermediate');
   const [inputError, setInputError] = useState('');
 
   const isCalculating = calculationStatus === 'calculating';
   const isCalculated = calculationStatus === 'calculated';
+
+  const TRAVEL_MODES = [
+    { id: 'DRIVE', icon: FaCar, name: t('route.modeDrive', 'Drive'), hint: t('route.modeDriveHint', 'Highway road route') },
+    { id: 'TWO_WHEELER', icon: FaMotorcycle, name: t('route.modeMoto', 'Motorcycle'), hint: t('route.modeMotoHint', 'Two-wheeler routing') },
+    { id: 'WALK', icon: FaWalking, name: t('route.modeWalk', 'Walk'), hint: t('route.modeWalkHint', 'Pedestrian route') },
+    { id: 'BICYCLE', icon: FaBicycle, name: t('route.modeCycle', 'Bicycle'), hint: t('route.modeCycleHint', 'Cycling path') },
+    { id: 'TRANSIT', icon: FaBus, name: t('route.modeTransit', 'Transit'), hint: t('route.modeTransitHint', 'Public transit (2 stops)') },
+    { id: 'AIR', icon: FaPlane, name: t('route.modeAir', 'Air'), hint: t('route.modeAirHint', 'Straight-line great-circle') },
+  ];
 
   const handlePlaceSelect = (place) => {
     setSelectedPlace(place);
@@ -60,7 +82,7 @@ export function RoutePlanner({
   const handleAddStopSubmit = (e) => {
     e.preventDefault();
     if (!selectedPlace) {
-      setInputError('Please search and select a destination from suggestions.');
+      setInputError(t('route.selectFromSuggestions', 'Please search and select a destination from suggestions.'));
       return;
     }
 
@@ -118,7 +140,7 @@ export function RoutePlanner({
             letterSpacing: '0.12em',
           }}
         >
-          <FiCompass size={17} /> Step 1: Design & Calculate Road Route
+          <FiCompass size={17} /> {t('route.step1Header', 'Step 1: Design & Calculate Road Route')}
         </div>
         <div
           style={{
@@ -138,7 +160,7 @@ export function RoutePlanner({
               fontWeight: '700',
             }}
           >
-            Where would you like to travel?
+            {t('route.heading', 'Where would you like to travel?')}
           </h2>
           {stops.length > 0 && onClearRoute && (
             <button
@@ -158,13 +180,12 @@ export function RoutePlanner({
                 fontWeight: '600',
               }}
             >
-              <FiRotateCcw size={13} /> Clear Route
+              <FiRotateCcw size={13} /> {t('route.clearRoute', 'Clear Route')}
             </button>
           )}
         </div>
         <p style={{ color: '#4E5754', margin: 0, fontSize: '14.5px', maxWidth: '800px', lineHeight: 1.5 }}>
-          Add your starting city, intermediate scenic stops, and final destination. Our Google Maps routing
-          engine calculates real driving distance, estimated highway travel duration, and recommended sightseeing days.
+          {t('route.subtitle', 'Add your starting city, intermediate scenic stops, and final destination. Our Google Maps routing engine calculates real driving distance, estimated highway travel duration, and recommended sightseeing days.')}
         </p>
       </div>
 
@@ -183,6 +204,100 @@ export function RoutePlanner({
             gap: '22px',
           }}
         >
+          {/* Travel Mode Selector */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              paddingBottom: '16px',
+              borderBottom: '1px solid #EAE5DC',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <label
+                style={{
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  color: '#13291C',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <FiLayers style={{ color: '#147D33' }} /> {t('route.travelMode', 'Travel Mode')}
+              </label>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#66716B',
+                  background: '#F0ECE1',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                }}
+              >
+                {TRAVEL_MODES.find((m) => m.id === travelMode)?.name || travelMode}
+              </span>
+            </div>
+
+            <div
+              className="qmt-travel-mode-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px',
+              }}
+            >
+              {TRAVEL_MODES.map((mode) => {
+                const isSelected = travelMode === mode.id;
+                const IconComp = mode.icon;
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => onSelectTravelMode && onSelectTravelMode(mode.id)}
+                    title={mode.hint}
+                    aria-label={`${mode.name}: ${mode.hint}`}
+                    aria-pressed={isSelected}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '12px 6px',
+                      borderRadius: '10px',
+                      border: isSelected ? '2px solid #0C4E28' : '1px solid #D5CDBF',
+                      background: isSelected ? '#E5F2EA' : '#FFFFFF',
+                      color: isSelected ? '#0C4E28' : '#2D3732',
+                      fontWeight: isSelected ? '800' : '600',
+                      fontSize: '12.5px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected ? '0 2px 8px rgba(12, 78, 40, 0.15)' : 'none',
+                    }}
+                  >
+                    <IconComp size={18} style={{ color: isSelected ? '#0C4E28' : '#5A6560' }} aria-hidden="true" />
+                    <span style={{ whiteSpace: 'nowrap' }}>{mode.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ fontSize: '11.5px', color: '#66716B', marginTop: '2px' }}>
+              {TRAVEL_MODES.find((m) => m.id === travelMode)?.hint}
+            </div>
+          </div>
+
           {/* Add Stop Form */}
           <form
             onSubmit={handleAddStopSubmit}
@@ -210,10 +325,10 @@ export function RoutePlanner({
                   gap: '8px',
                 }}
               >
-                <FiPlus style={{ color: '#FC7C00' }} /> Add Destination
+                <FiPlus style={{ color: '#FC7C00' }} /> {t('route.addDestination', 'Add Destination')}
               </h3>
               <span style={{ fontSize: '12px', color: '#66716B' }}>
-                Google Places Autocomplete
+                {t('route.placesAutocomplete', 'Google Places Autocomplete')}
               </span>
             </div>
 
@@ -225,7 +340,7 @@ export function RoutePlanner({
                     if (!val) setSelectedPlace(null);
                   }}
                   onSelect={handlePlaceSelect}
-                  placeholder="Search city (e.g. Istanbul, Bodrum)..."
+                  placeholder={t('route.searchPlaceholder', 'Search city (e.g. Istanbul, Bodrum)...')}
                 />
               </div>
 
@@ -246,12 +361,12 @@ export function RoutePlanner({
                 }}
               >
                 {stops.length === 0 ? (
-                  <option value="start">1. Start Location</option>
+                  <option value="start">{t('route.startLocationNum', '1. Start Location')}</option>
                 ) : (
                   <>
-                    <option value="intermediate">Stop (Intermediate)</option>
-                    <option value="final">Final Destination</option>
-                    <option value="start">Start Location</option>
+                    <option value="intermediate">{t('route.intermediateStop', 'Stop (Intermediate)')}</option>
+                    <option value="final">{t('route.finalDestination', 'Final Destination')}</option>
+                    <option value="start">{t('route.startLocation', 'Start Location')}</option>
                   </>
                 )}
               </select>
@@ -276,7 +391,7 @@ export function RoutePlanner({
                   gap: '6px',
                 }}
               >
-                <FiPlus size={16} /> Add
+                <FiPlus size={16} /> {t('route.add', 'Add')}
               </button>
             </div>
 
@@ -309,11 +424,11 @@ export function RoutePlanner({
               }}
             >
               <span style={{ fontSize: '14px', fontWeight: '800', color: '#13291C' }}>
-                Selected Destinations ({stops.length})
+                {t('route.selectedDestinations', { count: stops.length }, `Selected Destinations (${stops.length})`)}
               </span>
               {stops.length > 1 && (
                 <span style={{ fontSize: '12px', color: '#66716B' }}>
-                  Use arrows to adjust routing order
+                  {t('route.adjustOrder', 'Use arrows to adjust routing order')}
                 </span>
               )}
             </div>
@@ -335,10 +450,10 @@ export function RoutePlanner({
               >
                 <FiMapPin size={28} style={{ color: '#147D33', opacity: 0.7 }} />
                 <strong style={{ fontSize: '15px', color: '#13291C' }}>
-                  No destinations added yet
+                  {t('route.noDestinations', 'No destinations added yet')}
                 </strong>
                 <p style={{ margin: 0, fontSize: '13.5px', maxWidth: '320px' }}>
-                  Search your starting point above to begin crafting your personalized road trip.
+                  {t('route.noDestinationsDesc', 'Search your starting point above to begin crafting your personalized road trip.')}
                 </p>
               </div>
             ) : (
@@ -347,7 +462,11 @@ export function RoutePlanner({
                   const isFirst = index === 0;
                   const isLast = index === stops.length - 1;
                   const badgeColor = isFirst ? '#0C4E28' : isLast ? '#FC7C00' : '#147D33';
-                  const badgeRole = isFirst ? 'START' : isLast ? 'FINAL' : `STOP`;
+                  const badgeRole = isFirst
+                    ? t('route.badgeStart', 'START')
+                    : isLast
+                    ? t('route.badgeFinal', 'FINAL')
+                    : t('route.badgeStop', 'STOP');
 
                   return (
                     <div
@@ -545,27 +664,55 @@ export function RoutePlanner({
             {isCalculating ? (
               <>
                 <FiRefreshCw size={18} className="animate-spin" />
-                Calculating Google Road Route...
+                {travelMode === 'AIR'
+                  ? t('route.calculatingAir', 'Calculating Great-Circle Air Route...')
+                  : t('route.calculatingMode', { mode: travelMode }, `Calculating Google ${travelMode} Route...`)}
               </>
             ) : stops.length < 2 ? (
-              <>Add at least 2 destinations to calculate route</>
+              <>{t('route.minStops', 'Add at least 2 destinations to calculate route')}</>
             ) : isStale ? (
               <>
                 <FiRefreshCw size={18} />
-                Recalculate Route ({stops.length} stops)
+                {t('route.recalculate', { count: stops.length }, `Recalculate ${travelMode} Route (${stops.length} stops)`)}
               </>
             ) : isCalculated ? (
               <>
                 <FiCheckCircle size={18} />
-                Route Calculated · Recalculate ({stops.length} stops)
+                {t('route.calculated', { count: stops.length }, `Route Calculated · Recalculate (${stops.length} stops)`)}
               </>
             ) : (
               <>
                 <FiCheckCircle size={18} />
-                Calculate Route ({stops.length} stops)
+                {t('route.calculate', { count: stops.length }, `Calculate ${travelMode} Route (${stops.length} stops)`)}
               </>
             )}
           </button>
+
+          {/* Continue to Step 2 Action when route is calculated */}
+          {isCalculated && onAdvanceStep && (
+            <button
+              type="button"
+              onClick={onAdvanceStep}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '2px solid #0C4E28',
+                background: '#FFFFFF',
+                color: '#0C4E28',
+                fontWeight: '800',
+                fontSize: '15px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span>{t('route.continueToStep2', 'Continue to Trip Details (Step 2) →')}</span>
+            </button>
+          )}
         </div>
 
         {/* RIGHT COLUMN: Interactive Google Map Canvas & Route Overview (58%) */}
@@ -585,6 +732,9 @@ export function RoutePlanner({
               isStale={isStale}
               onRecalculate={onCalculate}
               isCalculating={isCalculating}
+              travelMode={travelMode}
+              apiError={apiError}
+              calculationStatus={calculationStatus}
             />
           )}
 
@@ -613,27 +763,31 @@ export function RoutePlanner({
                 style={{
                   fontSize: '14.5px',
                   fontWeight: '800',
-                  color: '#0C4E28',
+                  color: travelMode === 'AIR' ? '#0284C7' : '#0C4E28',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                 }}
               >
-                <FiMapPin style={{ color: '#147D33' }} size={17} />
-                Google Maps Road Route Preview
+                <FiMapPin style={{ color: travelMode === 'AIR' ? '#0284C7' : '#147D33' }} size={17} />
+                {travelMode === 'AIR'
+                  ? t('route.airRoutePreview', 'Great-Circle Air Route Preview')
+                  : t('route.roadRoutePreview', { mode: travelMode }, `Google Maps Route Preview (${travelMode})`)}
               </span>
 
               <span
                 style={{
                   fontSize: '11.5px',
-                  color: '#0C4E28',
-                  background: '#E5F2EA',
+                  color: travelMode === 'AIR' ? '#0369A1' : '#0C4E28',
+                  background: travelMode === 'AIR' ? '#E0F2FE' : '#E5F2EA',
                   padding: '3px 9px',
                   borderRadius: '6px',
                   fontWeight: '700',
                 }}
               >
-                Interactive Road Geometry
+                {travelMode === 'AIR'
+                  ? t('route.geodesic', 'Geodesic Great-Circle')
+                  : t('route.interactiveRoad', 'Interactive Road Geometry')}
               </span>
             </div>
 
@@ -642,7 +796,8 @@ export function RoutePlanner({
                 stops={stops}
                 geometry={currentRoute?.geometry}
                 encodedPolyline={currentRoute?.encodedPolyline}
-                isStale={isStale}
+                travelMode={travelMode}
+                isStale={isStale || Boolean(currentRoute?.travelMode && currentRoute.travelMode.toUpperCase() !== travelMode)}
                 isCalculating={isCalculating}
                 onRecalculate={onCalculate}
                 apiError={apiError}

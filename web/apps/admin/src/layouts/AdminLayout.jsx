@@ -17,13 +17,14 @@ import {
   FiChevronDown,
   FiShield,
   FiSidebar,
+  FiRadio,
 } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n, SUPPORTED_LOCALES } from '@troublefree/i18n';
 
-export function AdminLayout() {
+export function AdminLayout({ children }) {
   const { user, logout } = useAuth();
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,36 +78,47 @@ export function AdminLayout() {
 
   const navSections = [
     {
-      title: 'OVERVIEW',
+      title: t('admin.nav.overview', 'OVERVIEW'),
       items: [
-        { key: 'dashboard', label: 'Dashboard', path: '/', exact: true, icon: FiGrid },
+        { key: 'dashboard', label: t('admin.nav.dashboard', 'Dashboard'), path: '/', exact: true, icon: FiGrid },
       ],
     },
     {
-      title: 'AGENCY & PLANS',
+      title: t('admin.nav.agencyPlans', 'AGENCY & PLANS'),
       items: [
-        { key: 'agencies', label: 'Agencies', path: '/agencies', icon: FiUsers },
-        { key: 'memberships', label: 'Memberships', path: '/memberships', icon: FiCreditCard },
+        { key: 'agencies', label: t('admin.nav.agencies', 'Agencies'), path: '/agencies', icon: FiUsers },
+        { key: 'memberships', label: t('admin.nav.memberships', 'Memberships'), path: '/memberships', icon: FiCreditCard },
         {
           key: 'membership-plans',
-          label: 'Membership Plans',
+          label: t('admin.nav.membershipPlans', 'Membership Plans'),
           path: '/membership-plans',
           icon: FiLayers,
         },
-        { key: 'commissions', label: 'Commissions', path: '/commissions', icon: FiDollarSign },
+        { key: 'commissions', label: t('admin.nav.commissions', 'Commissions'), path: '/commissions', icon: FiDollarSign },
       ],
     },
     {
-      title: 'MARKETPLACE',
+      title: t('admin.nav.marketplace', 'MARKETPLACE'),
       items: [
-        { key: 'travel-requests', label: 'Travel Requests', path: '/travel-requests', icon: FiMap },
-        { key: 'jobs', label: 'Jobs', path: '/jobs', icon: FiBriefcase },
+        { key: 'travel-requests', label: t('admin.nav.travelRequests', 'Travel Requests'), path: '/travel-requests', icon: FiMap },
+        { key: 'jobs', label: t('admin.nav.jobs', 'Jobs'), path: '/jobs', icon: FiBriefcase },
       ],
     },
     {
-      title: 'SECURITY',
+      title: t('admin.nav.broadcasts', 'BROADCASTS'),
       items: [
-        { key: 'audit-logs', label: 'Audit Logs', path: '/audit-logs', icon: FiActivity },
+        {
+          key: 'announcements',
+          label: t('admin.nav.announcements', 'Announcements'),
+          path: '/announcements',
+          icon: FiRadio,
+        },
+      ],
+    },
+    {
+      title: t('admin.nav.security', 'SECURITY'),
+      items: [
+        { key: 'audit-logs', label: t('admin.nav.auditLogs', 'Audit Logs'), path: '/audit-logs', icon: FiActivity },
       ],
     },
   ];
@@ -171,9 +183,9 @@ export function AdminLayout() {
           <button
             type="button"
             className="admin-header-btn"
-            aria-label="Notifications"
-            onClick={() => navigate('/audit-logs')}
-            title="View Administrative Audit Logs"
+            aria-label="Broadcasts & Announcements"
+            onClick={() => navigate('/announcements')}
+            title="Broadcasts & Announcements"
           >
             <FiBell />
           </button>
@@ -237,7 +249,7 @@ export function AdminLayout() {
                     onClick={handleSignOut}
                     role="menuitem"
                   >
-                    <FiLogOut /> Sign Out
+                    <FiLogOut /> {t('admin.common.signOut')}
                   </button>
                 </motion.div>
               )}
@@ -284,9 +296,9 @@ export function AdminLayout() {
           {!sidebarCollapsed && (
             <div className="admin-sidebar-footer">
               <div className="admin-system-chip">
-                <div className="admin-system-chip-title">QuoteMeTrip Operations</div>
+                <div className="admin-system-chip-title">{t('admin.operations', 'QuoteMeTrip Operations')}</div>
                 <div className="admin-system-chip-status">
-                  <FiShield /> Verified System Admin
+                  <FiShield /> {t('admin.verifiedAdmin', 'Verified System Admin')}
                 </div>
               </div>
             </div>
@@ -380,9 +392,9 @@ export function AdminLayout() {
 
                 <div className="admin-sidebar-footer">
                   <div className="admin-system-chip">
-                    <div className="admin-system-chip-title">QuoteMeTrip Operations</div>
+                    <div className="admin-system-chip-title">{t('admin.operations', 'QuoteMeTrip Operations')}</div>
                     <div className="admin-system-chip-status">
-                      <FiShield /> Verified System Admin
+                      <FiShield /> {t('admin.verifiedAdmin', 'Verified System Admin')}
                     </div>
                   </div>
                   <button
@@ -395,7 +407,7 @@ export function AdminLayout() {
                     }}
                     onClick={handleSignOut}
                   >
-                    <FiLogOut /> Sign Out
+                    <FiLogOut /> {t('admin.common.signOut')}
                   </button>
                 </div>
               </motion.aside>
@@ -411,7 +423,7 @@ export function AdminLayout() {
             transition={{ duration: 0.25 }}
             className="admin-page-container"
           >
-            <Outlet />
+            {children || <Outlet />}
           </motion.div>
         </main>
       </div>

@@ -17,6 +17,7 @@ export function TiltCard({
   maxRotateX = 5,
   maxRotateY = 7,
   depth = 12,
+  showShine = false,
   onClick,
   as: Component = 'div',
   ...props
@@ -35,57 +36,64 @@ export function TiltCard({
   const shineBackground = useTransform(
     [shineX, shineY],
     ([x, y]) =>
-      `radial-gradient(circle 240px at ${x} ${y}, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 80%)`,
+      `radial-gradient(circle 240px at ${x} ${y}, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 80%)`,
   );
+
+  const { onPointerEnter, onPointerLeave, onPointerMove, ...restProps } = props;
+
+  const handlePointerEnter = (e) => {
+    bind.onPointerEnter(e);
+    if (onPointerEnter) onPointerEnter(e);
+  };
+
+  const handlePointerLeave = (e) => {
+    bind.onPointerLeave(e);
+    if (onPointerLeave) onPointerLeave(e);
+  };
+
+  const handlePointerMove = (e) => {
+    bind.onPointerMove(e);
+    if (onPointerMove) onPointerMove(e);
+  };
 
   return (
     <MotionComponent
       ref={cardRef}
       className={`tilt-card-wrapper ${className}`}
       style={{
-        perspective: '1200px',
+        transformPerspective: 1200,
         transformStyle: 'preserve-3d',
         position: 'relative',
+        rotateX: disableTilt ? 0 : rotateX,
+        rotateY: disableTilt ? 0 : rotateY,
         ...style,
       }}
-      whileHover={disableTilt ? { y: -4 } : { scale: 1.01 }}
+      whileHover={disableTilt ? { y: -4 } : { scale: 1.015 }}
       whileTap={{ scale: 0.985 }}
       onClick={onClick}
-      {...bind}
-      {...props}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onPointerMove={handlePointerMove}
+      {...restProps}
     >
-      <motion.div
-        className="tilt-card-inner"
-        style={{
-          width: '100%',
-          height: '100%',
-          transformStyle: 'preserve-3d',
-          rotateX: disableTilt ? 0 : rotateX,
-          rotateY: disableTilt ? 0 : rotateY,
-          transform: disableTilt ? 'none' : `translateZ(${depth}px)`,
-          position: 'relative',
-          borderRadius: 'inherit',
-        }}
-      >
-        {children}
+      {children}
 
-        {!disableTilt && (
-          <motion.div
-            className="tilt-card-shine"
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              pointerEvents: 'none',
-              borderRadius: 'inherit',
-              zIndex: 10,
-              opacity: isHovered ? 1 : 0,
-              transition: 'opacity 0.25s ease',
-              background: shineBackground,
-            }}
-          />
-        )}
-      </motion.div>
+      {!disableTilt && showShine && (
+        <motion.div
+          className="tilt-card-shine"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            borderRadius: 'inherit',
+            zIndex: 1,
+            opacity: isHovered ? 1 : 0,
+            transition: 'opacity 0.25s ease',
+            background: shineBackground,
+          }}
+        />
+      )}
     </MotionComponent>
   );
 }

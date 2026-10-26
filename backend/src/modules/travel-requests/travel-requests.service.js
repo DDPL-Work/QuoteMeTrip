@@ -168,7 +168,10 @@ async function resolveRouteId(travellerId, input, transaction, models) {
     return route.id;
   }
   // Inline route: calculate + persist inside the same transaction.
-  const calculated = await calculateRouteForTraveller({ stops: input.inlineRoute.stops });
+  const calculated = await calculateRouteForTraveller({
+    stops: input.inlineRoute.stops,
+    travelMode: input.inlineRoute.travelMode,
+  });
   const route = await models.Route.create(
     {
       travellerId,

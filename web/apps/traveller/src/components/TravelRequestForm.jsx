@@ -13,6 +13,7 @@ import {
   FiCheck,
   FiAnchor,
   FiCompass,
+  FiMapPin,
 } from 'react-icons/fi';
 import { validateRequestInput } from '../features/trip/validation.js';
 
@@ -29,6 +30,7 @@ function calculateEndDate(startDateStr, durationDays) {
 }
 
 const DEFAULT_FORM = {
+  destinationCountry: 'Türkiye',
   chosenDuration: 5,
   travelStartDate: '',
   travelEndDate: '',
@@ -40,6 +42,8 @@ const DEFAULT_FORM = {
   driverRequired: true,
   packageType: 'blue_cruise',
   cruiseDuration: '4d_3n',
+  isFlexibleDates: false,
+  suggestRoute: false,
   specialRequests: '',
 };
 
@@ -79,10 +83,18 @@ export function TravelRequestForm({
           next.hotelRequired = false;
           next.driverRequired = true;
           next.guideRequired = false;
+        } else if (value === 'guide_activities') {
+          next.hotelRequired = false;
+          next.driverRequired = false;
+          next.guideRequired = true;
         } else if (value === 'full_package') {
           next.hotelRequired = true;
           next.driverRequired = true;
           next.guideRequired = true;
+        } else if (value === 'blue_cruise') {
+          next.hotelRequired = true;
+          next.driverRequired = false;
+          next.guideRequired = false;
         }
       }
       return next;
@@ -157,6 +169,12 @@ export function TravelRequestForm({
       description: 'Private car/van with driver for transfers and sightseeing',
       icon: FiTruck,
     },
+    {
+      id: 'guide_activities',
+      title: 'Guide & Activities',
+      description: 'Licensed local guides, curated excursions, and private experiences',
+      icon: FiMapPin,
+    },
   ];
 
   const accommodationOptions = [
@@ -201,6 +219,46 @@ export function TravelRequestForm({
             gap: '20px',
           }}
         >
+          {/* Destination Country */}
+          <div>
+            <label
+              htmlFor="destination-country-select"
+              style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#4E5754',
+                display: 'block',
+                marginBottom: '6px',
+              }}
+            >
+              Destination Country
+            </label>
+            <select
+              id="destination-country-select"
+              aria-label="Destination Country"
+              value={form.destinationCountry || 'Türkiye'}
+              onChange={(e) => setField('destinationCountry', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                borderRadius: '10px',
+                border: '1px solid #D5CDBF',
+                fontSize: '14px',
+                background: '#FFFBF3',
+                color: '#13291C',
+                outline: 'none',
+                boxSizing: 'border-box',
+                cursor: 'pointer',
+              }}
+            >
+              {['Türkiye', 'Italy', 'Greece'].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Chosen Duration */}
           <div>
             <label
@@ -320,6 +378,57 @@ export function TravelRequestForm({
               </span>
             )}
           </div>
+        </div>
+
+        {/* Date & Route Planning Preferences */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '20px',
+            padding: '12px 16px',
+            background: '#F7F4EE',
+            borderRadius: '10px',
+            fontSize: '13.5px',
+          }}
+        >
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              color: '#13291C',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={Boolean(form.isFlexibleDates)}
+              onChange={(e) => setField('isFlexibleDates', e.target.checked)}
+              style={{ width: '16px', height: '16px', accentColor: '#0C4E28' }}
+            />
+            My travel dates are flexible (± 3 days)
+          </label>
+
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              color: '#13291C',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={Boolean(form.suggestRoute)}
+              onChange={(e) => setField('suggestRoute', e.target.checked)}
+              style={{ width: '16px', height: '16px', accentColor: '#0C4E28' }}
+            />
+            Let verified local agencies suggest & refine the route
+          </label>
         </div>
 
         {/* Stepper Controls: Travellers & Luggage */}

@@ -32,33 +32,74 @@ export class HaversineMapProvider extends MapProvider {
     return 'haversine';
   }
 
-  async calculateRoute({ stops } = {}) {
+  async calculateRoute({ stops, travelMode = 'DRIVE' } = {}) {
     if (!Array.isArray(stops) || stops.length < 2) {
       throw new AppError('At least two stops are required to calculate a route.', {
         statusCode: 400,
         code: MAP_ERROR_CODES.CALCULATION_FAILED,
       });
     }
-    let distanceKm = 0;
-    for (let i = 1; i < stops.length; i += 1) {
-      distanceKm += haversineKm(stops[i - 1], stops[i]);
+
+    const normalizedMode = String(travelMode || 'DRIVE').trim().toUpperCase();
+
+    if (normalizedMode === 'AIR') {
+      const { calculateAirRoute } = await import('./air-route.service.js');
+      return calculateAirRoute(stops);
     }
-    const durationMinutes = Math.round((distanceKm / AVERAGE_SPEED_KMH) * 60);
+
+    const MODE_SPEEDS_KMH = {
+      DRIVE: 60,
+      TWO_WHEELER: 45,
+      BICYCLE: 15,
+      WALK: 5,
+      TRANSIT: 30,
+    };
+    const speedKmh = MODE_SPEEDS_KMH[normalizedMode] || 60;
+
+    let distanceKm = 0;
+    const legs = [];
+
+    for (let i = 1; i < stops.length; i += 1) {
+      const legDist = haversineKm(stops[i - 1], stops[i]);
+      distanceKm += legDist;
+      const legDuration = Math.round((legDist / speedKmh) * 60);
+      legs.push({
+        index: i - 1,
+        startStopName: stops[i - 1]?.name || `Stop ${i}`,
+        endStopName: stops[i]?.name || `Stop ${i + 1}`,
+        distanceKm: Math.round(legDist * 100) / 100,
+        durationMinutes: legDuration,
+      });
+    }
+
+    const { encodePolyline } = await import('./google-routes.provider.js');
+    const encodedPolyline = encodePolyline(
+      stops.map((s) => [Number(s.latitude), Number(s.longitude)]),
+    );
+
+    const durationMinutes = Math.round((distanceKm / speedKmh) * 60);
     const geometry = {
       type: 'LineString',
       coordinates: stops.map((s) => [Number(s.longitude), Number(s.latitude)]),
+      encodedPolyline,
     };
     const rounded = Math.round(distanceKm * 100) / 100;
     return {
       distanceKm: rounded,
       durationMinutes,
+      travelMode: normalizedMode,
       geometry,
+      encodedPolyline,
+      legs,
       stops,
       provider: this.name,
+      warnings: [],
       rawResponse: {
         provider: this.name,
+        travelMode: normalizedMode,
         legs: stops.length - 1,
-        averageSpeedKmh: AVERAGE_SPEED_KMH,
+        averageSpeedKmh: speedKmh,
+        encodedPolyline,
       },
     };
   }
@@ -126,8 +167,26 @@ export class OsrmMapProvider extends MapProvider {
  * Provider factory. `MAP_PROVIDER` selects the adapter:
  *   google | haversine (credential-free great-circle fallback) | osrm
  */
-export function getMapProvider(name = process.env.MAP_PROVIDER || (process.env.GOOGLE_ROUTES_API_KEY ? 'google' : 'haversine')) {
-  const selected = String(name || 'haversine').toLowerCase();
+export function getMapProvider(name = null) {
+  let resolved = name;
+  if (!resolved) {
+    if (process.env.NODE_ENV === 'test') {
+      if (process.env.MAP_TEST_PROVIDER) {
+        resolved = process.env.MAP_TEST_PROVIDER;
+      } else {
+        const envProv = (process.env.MAP_PROVIDER || '').trim().toLowerCase();
+        if (envProv && envProv !== 'google' && envProv !== 'google_routes') {
+          resolved = envProv;
+        } else {
+          resolved = 'haversine';
+        }
+      }
+    } else {
+      resolved = process.env.MAP_PROVIDER || (process.env.GOOGLE_ROUTES_API_KEY ? 'google' : 'haversine');
+    }
+  }
+
+  const selected = String(resolved || 'haversine').trim().toLowerCase();
   if (selected === 'google' || selected === 'google_routes') {
     return new GoogleRoutesMapProvider({ apiKey: process.env.GOOGLE_ROUTES_API_KEY });
   }

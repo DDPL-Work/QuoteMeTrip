@@ -2,6 +2,7 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from '@troublefree/ui';
+import { I18nProvider } from '@troublefree/i18n';
 import { AuthProvider } from './features/auth/AuthContext.jsx';
 import { RequireAuth, RequireRole, PublicOnly } from './features/auth/ProtectedRoute.jsx';
 import { LoginPage, RegisterPage } from './pages/auth.jsx';
@@ -29,9 +30,10 @@ function Guarded({ children }) {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider role="agency">
-        <ToastProvider>
-          <Routes>
+      <I18nProvider>
+        <AuthProvider role="agency">
+          <ToastProvider>
+            <Routes>
             <Route
               path="/login"
               element={
@@ -156,7 +158,8 @@ function App() {
           </Routes>
         </ToastProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </I18nProvider>
+  </BrowserRouter>
   );
 }
 

@@ -227,4 +227,16 @@ describe('Phase 2 model definitions', () => {
     assert.strictEqual(AgencyProfile.associations.jobs.target, Job);
     assert.strictEqual(Job.associations.agency.target, AgencyProfile);
   });
+
+  test('TranslationCache model is registered with expected schema and indexes', () => {
+    const { TranslationCache } = buildRegistry();
+    assert.ok(TranslationCache, 'TranslationCache should be registered');
+    assert.strictEqual(TranslationCache.getTableName(), 'translation_cache');
+    assert.strictEqual(TranslationCache.rawAttributes.cacheKey.allowNull, false);
+    assert.strictEqual(TranslationCache.rawAttributes.sourceContentHash.allowNull, false);
+    assert.strictEqual(TranslationCache.rawAttributes.translatedText.allowNull, false);
+    assert.strictEqual(TranslationCache.rawAttributes.sourceLanguage.allowNull, false);
+    assert.strictEqual(TranslationCache.rawAttributes.targetLanguage.allowNull, false);
+    assert.strictEqual(TranslationCache.rawAttributes.scope.defaultValue, 'public');
+  });
 });

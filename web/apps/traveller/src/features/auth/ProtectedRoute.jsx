@@ -22,17 +22,32 @@ export function RequireAuth({ children }) {
 
   if (isLoading) return <SessionPending />;
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    const fullPath = location.pathname + (location.search || '');
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(fullPath)}`}
+        replace
+        state={{ from: fullPath }}
+      />
+    );
   }
   return children;
 }
 
 export function RequireRole({ roles, children }) {
   const { user, isLoading, logout } = useAuth();
+  const location = useLocation();
 
   if (isLoading) return <SessionPending />;
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const fullPath = location.pathname + (location.search || '');
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(fullPath)}`}
+        replace
+        state={{ from: fullPath }}
+      />
+    );
   }
   if (!roles.includes(user.role)) {
     return (

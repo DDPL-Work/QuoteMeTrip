@@ -5,15 +5,15 @@
  * itineraries, and insider tips.
  */
 
-import { useEffect, useState } from 'react';
-import { useI18n } from '@troublefree/i18n';
+import { useEffect, useState, useMemo } from 'react';
+import { useI18n, useBatchDynamicTranslation } from '@troublefree/i18n';
 import { SectionHeading, GuideCard } from '@troublefree/ui';
 import { getTravelGuides } from '../../services/public-api.js';
 import { usePageMetadata } from '../../hooks/usePageMetadata.js';
 import { PublicBreadcrumbs } from '../../components/public/PublicBreadcrumbs.jsx';
 
 export function TravelGuidePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [guides, setGuides] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
@@ -44,9 +44,34 @@ export function TravelGuidePage() {
     };
   }, [search, category, t]);
 
+  const translationItems = useMemo(() => {
+    const list = [];
+    for (const guide of guides) {
+      if (guide.title) {
+        list.push({
+          contentType: 'travel_guide_article',
+          contentId: guide.id || guide.slug,
+          fieldName: 'title',
+          sourceText: guide.title,
+        });
+      }
+      if (guide.summary) {
+        list.push({
+          contentType: 'travel_guide_article',
+          contentId: guide.id || guide.slug,
+          fieldName: 'summary',
+          sourceText: guide.summary,
+        });
+      }
+    }
+    return list;
+  }, [guides]);
+
+  const { getTranslated } = useBatchDynamicTranslation({ items: translationItems });
+
   return (
     <div className="tf-public-container">
-      <PublicBreadcrumbs items={[{ label: 'Travel Guides' }]} />
+      <PublicBreadcrumbs items={[{ label: t('header.travelGuides', 'Travel Guides') }]} />
 
       <SectionHeading
         title={t('guide.title', 'Travel Guides')}
@@ -63,7 +88,7 @@ export function TravelGuidePage() {
           placeholder={t('guide.searchPlaceholder', 'Search travel articles by topic or destination...')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          aria-label="Search travel guides"
+          aria-label={t('guide.searchPlaceholder', 'Search travel guides')}
         />
         <select
           className="tf-input"
@@ -72,13 +97,13 @@ export function TravelGuidePage() {
           onChange={(e) => setCategory(e.target.value)}
           aria-label="Filter by category"
         >
-          <option value="all">{t('common.all', 'All Categories')}</option>
-          <option value="city guide">City Guide</option>
-          <option value="adventure">Adventure</option>
-          <option value="history & culture">History & Culture</option>
-          <option value="nature & heritage">Nature & Heritage</option>
-          <option value="archaeology">Archaeology</option>
-          <option value="coast & beaches">Coast & Beaches</option>
+          <option value="all">{t('guide.category.all', 'All Categories')}</option>
+          <option value="city guide">{t('guide.category.cityGuide', 'City Guide')}</option>
+          <option value="adventure">{t('guide.category.adventure', 'Adventure')}</option>
+          <option value="history & culture">{t('guide.category.historyCulture', 'History & Culture')}</option>
+          <option value="nature & heritage">{t('guide.category.natureHeritage', 'Nature & Heritage')}</option>
+          <option value="archaeology">{t('guide.category.archaeology', 'Archaeology')}</option>
+          <option value="coast & beaches">{t('guide.category.coastBeaches', 'Coast & Beaches')}</option>
         </select>
       </div>
 
@@ -100,7 +125,7 @@ export function TravelGuidePage() {
       {!loading && !error && guides.length === 0 && (
         <div className="tf-card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
           <h3>{t('common.empty', 'No results found matching your query.')}</h3>
-          <p className="tf-card-text">Try adjusting your search terms or filters.</p>
+          <p className="tf-card-text">{t('guide.adjustSearch', 'Try adjusting your search terms or filters.')}</p>
           <button
             type="button"
             className="tf-btn tf-btn-ghost"
@@ -109,16 +134,26 @@ export function TravelGuidePage() {
               setCategory('all');
             }}
           >
-            Clear Filters
+            {t('guide.clearFilters', 'Clear Filters')}
           </button>
         </div>
       )}
 
       {!loading && !error && guides.length > 0 && (
         <div className="tf-grid-3">
-          {guides.map((guide) => (
-            <GuideCard key={guide.id} guide={guide} />
-          ))}
+          {guides.map((guide) => {
+            const trTitle = getTranslated('travel_guide_article', guide.id || guide.slug, 'title', guide.title);
+            const trSummary = getTranslated('travel_guide_article', guide.id || guide.slug, 'summary', guide.summary);
+
+            return (
+              <GuideCard
+                key={guide.id}
+                guide={guide}
+                translatedTitle={trTitle}
+                translatedSummary={trSummary}
+              />
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useI18n, formatDate } from '@troublefree/i18n';
 import { adminApi } from '../services/api.js';
 
 export function AuditLogsPage() {
+  const { t, locale } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,10 +40,10 @@ export function AuditLogsPage() {
     >
       <div>
         <h1 style={{ fontSize: '1.75rem', color: '#23272B', margin: 0 }}>
-          Administrative Audit Logs
+          {t('admin.auditLogs.title')}
         </h1>
         <p style={{ color: '#718096', marginTop: '0.25rem' }}>
-          Immutable compliance record of admin state changes, approvals, and overrides.
+          {t('admin.auditLogs.subtitle')}
         </p>
       </div>
 
@@ -58,7 +60,7 @@ export function AuditLogsPage() {
       >
         <input
           type="text"
-          placeholder="Filter by action (e.g. agency.approved)..."
+          placeholder={t('admin.auditLogs.filterAction')}
           value={action}
           onChange={(e) => setSearchParams({ action: e.target.value, entityType, page: '1' })}
           style={{
@@ -73,20 +75,20 @@ export function AuditLogsPage() {
           onChange={(e) => setSearchParams({ action, entityType: e.target.value, page: '1' })}
           style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
         >
-          <option value="">All Entity Types</option>
-          <option value="agency">Agency</option>
-          <option value="document">Document</option>
-          <option value="membership">Membership</option>
-          <option value="commission">Commission</option>
-          <option value="membership_plan">Membership Plan</option>
+          <option value="">{t('admin.auditLogs.allEntities')}</option>
+          <option value="agency">{t('admin.auditLogs.entityAgency')}</option>
+          <option value="document">{t('admin.auditLogs.entityDocument')}</option>
+          <option value="membership">{t('admin.auditLogs.entityMembership')}</option>
+          <option value="commission">{t('admin.auditLogs.entityCommission')}</option>
+          <option value="membership_plan">{t('admin.auditLogs.entityMembershipPlan')}</option>
         </select>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div>Loading audit logs...</div>
+        <div>{t('admin.auditLogs.loadingLogs')}</div>
       ) : error ? (
-        <div style={{ color: '#E53E3E' }}>Error: {error}</div>
+        <div style={{ color: '#E53E3E' }}>{t('admin.common.error')}: {error}</div>
       ) : logs.length === 0 ? (
         <div
           style={{
@@ -97,7 +99,7 @@ export function AuditLogsPage() {
             borderRadius: '8px',
           }}
         >
-          No audit log entries found.
+          {t('admin.auditLogs.noLogs')}
         </div>
       ) : (
         <div
@@ -118,12 +120,12 @@ export function AuditLogsPage() {
           >
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>Timestamp</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Actor</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Action</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Target Entity</th>
-                <th style={{ padding: '0.75rem 1rem' }}>IP Address</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>State Diff</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.auditLogs.colTimestamp')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.auditLogs.colActor')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.auditLogs.colAction')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.auditLogs.colTargetEntity')}</th>
+                <th style={{ padding: '0.75rem 1rem' }}>{t('admin.auditLogs.colIpAddress')}</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>{t('admin.auditLogs.colStateDiff')}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,7 +133,7 @@ export function AuditLogsPage() {
                 <tr key={log.id} style={{ borderBottom: '1px solid #E2E8F0' }}>
                   <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap' }}>
                     {log.createdAt || log.created_at
-                      ? new Date(log.createdAt || log.created_at).toLocaleString()
+                      ? new Date(log.createdAt || log.created_at).toLocaleString(locale === 'tr' ? 'tr-TR' : 'en-US')
                       : '—'}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
@@ -143,7 +145,7 @@ export function AuditLogsPage() {
                         </div>
                       </div>
                     ) : (
-                      <span style={{ color: '#718096' }}>System / Public</span>
+                      <span style={{ color: '#718096' }}>{t('admin.auditLogs.systemPublic')}</span>
                     )}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
@@ -177,7 +179,7 @@ export function AuditLogsPage() {
                         fontSize: '0.75rem',
                       }}
                     >
-                      Inspect JSON
+                      {t('admin.auditLogs.inspectJson')}
                     </button>
                   </td>
                 </tr>
@@ -212,12 +214,12 @@ export function AuditLogsPage() {
             }}
           >
             <h3 style={{ marginTop: 0 }}>
-              Audit Entry #{inspectModal.id} ({inspectModal.action})
+              {t('admin.auditLogs.modalTitle')} #{inspectModal.id} ({inspectModal.action})
             </h3>
 
             <div style={{ marginBottom: '1rem' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#718096', fontSize: '0.875rem' }}>
-                Before State:
+                {t('admin.auditLogs.beforeState')}
               </h4>
               <pre
                 style={{
@@ -234,7 +236,7 @@ export function AuditLogsPage() {
 
             <div style={{ marginBottom: '1rem' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#2E9E5B', fontSize: '0.875rem' }}>
-                After State:
+                {t('admin.auditLogs.afterState')}
               </h4>
               <pre
                 style={{
@@ -261,7 +263,7 @@ export function AuditLogsPage() {
                   cursor: 'pointer',
                 }}
               >
-                Close
+                {t('admin.common.close')}
               </button>
             </div>
           </div>

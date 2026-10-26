@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
+import { useI18n } from '@troublefree/i18n';
 import { TravelScopeTabs } from './TravelScopeTabs.jsx';
 import { HeroDestinationField } from './HeroDestinationField.jsx';
 import { HeroDateField } from './HeroDateField.jsx';
@@ -19,6 +20,7 @@ export function HeroSearchPanel({
   onSubmit,
   isSubmitting = false,
 }) {
+  const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
   const [isHovered, setIsHovered] = useState(false);
 
@@ -71,7 +73,7 @@ export function HeroSearchPanel({
           whileHover={shouldReduceMotion ? {} : { y: -2 }}
           whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
         >
-          <span>{isSubmitting ? 'Searching...' : 'Get free quotes'}</span>
+          <span>{isSubmitting ? t('common.loading', 'Searching...') : t('home.search.getQuotes', 'Get free quotes')}</span>
           <motion.span
             style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 6 }}
             animate={isHovered && !shouldReduceMotion ? { x: 4 } : { x: 0 }}
@@ -90,7 +92,7 @@ export function HeroSearchPanel({
               checked={trip.flexible}
               onChange={(e) => setTrip({ ...trip, flexible: e.target.checked })}
             />
-            My dates are flexible
+            {t('home.search.flexibleDates', 'My dates are flexible')}
           </label>
           <label>
             <input
@@ -98,10 +100,10 @@ export function HeroSearchPanel({
               checked={trip.suggest}
               onChange={(e) => setTrip({ ...trip, suggest: e.target.checked })}
             />
-            Let agencies suggest the route
+            {t('home.search.suggestRoute', 'Let agencies suggest the route')}
           </label>
         </div>
-        <a href="#g-how">How does it work?</a>
+        <a href="#g-how">{t('home.search.howItWorks', 'How does it work?')}</a>
       </div>
     </motion.form>
   );

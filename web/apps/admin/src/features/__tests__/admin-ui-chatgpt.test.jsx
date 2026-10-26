@@ -168,4 +168,63 @@ describe('Admin UI & ChatGPT-style Sidebar and Panel Behavior', () => {
       expect(adminApi.deleteMembershipPlan).toHaveBeenCalledWith(101);
     });
   });
+
+  test('MembershipPlansPage shows friendly feedback with Deactivate action when delete encounters PLAN_IN_USE conflict', async () => {
+    const mockPlans = [
+      {
+        id: 1,
+        name: 'Standard Tier',
+        slug: 'standard',
+        price: '49.00',
+        durationDays: 30,
+        status: 'active',
+        description: 'Assigned tier',
+      },
+    ];
+
+    adminApi.listMembershipPlans.mockResolvedValue(mockPlans);
+    const conflictError = new Error(
+      'Cannot delete membership plan because agencies are currently assigned to it. Deactivate the plan instead.',
+    );
+    conflictError.status = 409;
+    conflictError.code = 'PLAN_IN_USE';
+    adminApi.deleteMembershipPlan.mockRejectedValue(conflictError);
+    adminApi.updateMembershipPlan.mockResolvedValue({ id: 1, status: 'inactive' });
+
+    render(
+      <MemoryRouter>
+        <MembershipPlansPage />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Standard Tier')).toBeInTheDocument();
+    });
+
+    // Click Delete Plan button on card
+    const deleteBtn = screen.getByRole('button', { name: /delete plan/i });
+    fireEvent.click(deleteBtn);
+
+    // Confirm deletion in modal
+    const modalConfirmBtn = screen.getAllByRole('button', { name: /delete plan/i }).find(
+      (btn) => btn.closest('.admin-plans-page') === null || btn.getAttribute('style')?.includes('DC2626'),
+    );
+    fireEvent.click(modalConfirmBtn || screen.getAllByRole('button', { name: /delete plan/i })[1]);
+
+    // Expect friendly error banner with "Deactivate Plan Instead" action
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Cannot delete membership plan because agencies are currently assigned to it/i),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /deactivate plan instead/i })).toBeInTheDocument();
+    });
+
+    // Clicking "Deactivate Plan Instead" triggers updateMembershipPlan with status: 'inactive'
+    const deactivateActionBtn = screen.getByRole('button', { name: /deactivate plan instead/i });
+    fireEvent.click(deactivateActionBtn);
+
+    await waitFor(() => {
+      expect(adminApi.updateMembershipPlan).toHaveBeenCalledWith(1, { status: 'inactive' });
+    });
+  });
 });

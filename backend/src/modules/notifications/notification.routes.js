@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../middleware/authenticate.js';
+import { initModels } from '../../db/models/index.js';
 import { notificationService } from './notification.service.js';
 import { toNotificationListDto, toNotificationDto } from './notification.mapper.js';
 
@@ -57,6 +58,56 @@ notificationRoutes.get('/unread-count', async (req, res, next) => {
     res.json({
       status: 'success',
       data: { count },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/v1/notifications/announcements/:id
+ * Retrieves authorized announcement details for the current authenticated user (traveller/agency/admin).
+ * Strictly enforces recipient audience restrictions and published status.
+ */
+notificationRoutes.get('/announcements/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const models = initModels();
+    const announcement = await models.Announcement.findByPk(id);
+
+    if (!announcement) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Announcement not found',
+      });
+    }
+
+    const userRole = req.user.role;
+    if (userRole !== 'admin') {
+      if (announcement.status !== 'published') {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Access denied: Announcement is not published',
+        });
+      }
+      const audience = announcement.targetAudience;
+      if (userRole === 'traveller' && audience !== 'all' && audience !== 'travellers') {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Access denied: Announcement not targeted to travellers',
+        });
+      }
+      if (userRole === 'agency' && audience !== 'all' && audience !== 'agencies') {
+        return res.status(403).json({
+          status: 'error',
+          message: 'Access denied: Announcement not targeted to agencies',
+        });
+      }
+    }
+
+    res.json({
+      status: 'success',
+      data: announcement,
     });
   } catch (err) {
     next(err);

@@ -1,17 +1,19 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-
-const STATUS_ITEMS = [
-  ['Draft', 'You are still planning'],
-  ['Sent', 'Agencies in your country notified'],
-  ['Quotes received', 'Compare the offers'],
-  ['Agreed', 'Price locked, quoting closed'],
-  ['Deposit paid', 'Contacts unlocked'],
-  ['Confirmed', 'Written confirmation + PDF'],
-];
+import { useI18n } from '@troublefree/i18n';
 
 export function JourneyStatusSection() {
+  const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
+
+  const statusItems = [
+    [t('journey.status.draft', 'Draft'), t('journey.status.draftDesc', 'You are still planning')],
+    [t('journey.status.sent', 'Sent'), t('journey.status.sentDesc', 'Agencies in your country notified')],
+    [t('journey.status.quotesReceived', 'Quotes received'), t('journey.status.quotesReceivedDesc', 'Compare the offers')],
+    [t('journey.status.agreed', 'Agreed'), t('journey.status.agreedDesc', 'Price locked, quoting closed')],
+    [t('journey.status.depositPaid', 'Deposit paid'), t('journey.status.depositPaidDesc', 'Contacts unlocked')],
+    [t('journey.status.confirmed', 'Confirmed'), t('journey.status.confirmedDesc', 'Written confirmation + PDF')],
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -31,14 +33,14 @@ export function JourneyStatusSection() {
 
   return (
     <div className="g-journey">
-      <div className="jt">Your trip status, from start to finish</div>
+      <div className="jt">{t('journey.status.title', 'Your trip status, from start to finish')}</div>
       <motion.ol
         variants={shouldReduceMotion ? {} : containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, threshold: 0.2 }}
       >
-        {STATUS_ITEMS.map(([title, desc], i) => (
+        {statusItems.map(([title, desc], i) => (
           <motion.li key={i} variants={shouldReduceMotion ? {} : itemVariants}>
             <span className="n">{i + 1}</span>
             <b>{title}</b>

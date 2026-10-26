@@ -36,6 +36,17 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
+  // Preserve explicit client error status if attached directly to an Error (e.g. err.status = 409)
+  const clientStatus = err.statusCode || err.status;
+  if (clientStatus && Number.isInteger(clientStatus) && clientStatus >= 400 && clientStatus < 500) {
+    return errorResponse(res, {
+      statusCode: clientStatus,
+      code: err.code || 'CLIENT_ERROR',
+      message: err.message,
+      details: err.details || null,
+    });
+  }
+
   // Handle CORS rejection
   if (err.message && err.message.startsWith('Not allowed by CORS')) {
     return errorResponse(res, {

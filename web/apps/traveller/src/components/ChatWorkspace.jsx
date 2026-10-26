@@ -19,7 +19,8 @@ import {
   FiX,
 } from 'react-icons/fi';
 import { SOCKET_EVENTS } from '@troublefree/types';
-import { messagingApi, resolveMediaUrl } from '../lib/api.js';
+import { useI18n } from '@troublefree/i18n';
+import { messagingApi, translationApi, resolveMediaUrl } from '../lib/api.js';
 import { connectMessagingSocket, joinConversation } from '../lib/socket.js';
 
 const EMOJI_CATEGORIES = [
@@ -87,6 +88,49 @@ export function ChatWorkspace({
   const [showTtlMenu, setShowTtlMenu] = useState(false);
   const [activeActionMenuId, setActiveActionMenuId] = useState(null);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
+
+  const { locale, t } = useI18n();
+  const [translatedMessages, setTranslatedMessages] = useState({});
+  const [translatingMessageId, setTranslatingMessageId] = useState(null);
+
+  const handleTranslateMessage = async (msg) => {
+    if (translatedMessages[msg.id]) {
+      // Toggle back to original text
+      setTranslatedMessages((prev) => {
+        const next = { ...prev };
+        delete next[msg.id];
+        return next;
+      });
+      setActiveActionMenuId(null);
+      return;
+    }
+
+    setTranslatingMessageId(msg.id);
+    setActiveActionMenuId(null);
+    try {
+      const targetLang = locale === 'tr' ? 'tr' : 'en';
+      const result = await translationApi.translateContent({
+        contentType: 'message',
+        contentId: String(msg.id),
+        fieldName: 'body',
+        targetLanguage: targetLang,
+      });
+      if (result?.text) {
+        setTranslatedMessages((prev) => ({
+          ...prev,
+          [msg.id]: {
+            text: result.text,
+            cached: result.cached,
+            targetLang,
+          },
+        }));
+      }
+    } catch (err) {
+      setError(err?.message || 'Message translation failed.');
+    } finally {
+      setTranslatingMessageId(null);
+    }
+  };
 
   const [deleteModalMsg, setDeleteModalMsg] = useState(null);
   const [newMessagesBelow, setNewMessagesBelow] = useState(0);
@@ -1003,9 +1047,16 @@ export function ChatWorkspace({
                             fontStyle: isDeleted ? 'italic' : 'normal',
                           }}
                         >
-                          <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {isDeleted && <FiSlash size={13} style={{ flexShrink: 0, opacity: 0.8 }} />}
-                            <span>{msg.body}</span>
+                          <p style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {isDeleted && <FiSlash size={13} style={{ flexShrink: 0, opacity: 0.8 }} />}
+                              <span>{translatedMessages[msg.id]?.text || msg.body}</span>
+                            </span>
+                            {translatedMessages[msg.id] && (
+                              <span style={{ fontSize: '0.72rem', opacity: 0.85, fontWeight: 500 }}>
+                                🌐 {translatedMessages[msg.id].cached ? t('chat.cachedNotice', 'Cached translation') : 'Translated'}
+                              </span>
+                            )}
                           </p>
                         </div>
 
@@ -1042,10 +1093,38 @@ export function ChatWorkspace({
                                   borderRadius: '8px',
                                   boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                                   zIndex: 30,
-                                  minWidth: '150px',
+                                  minWidth: '160px',
                                   padding: '4px 0',
                                 }}
                               >
+                                <button
+                                  type="button"
+                                  onClick={() => handleTranslateMessage(msg)}
+                                  disabled={translatingMessageId === msg.id}
+                                  style={{
+                                    width: '100%',
+                                    textAlign: 'left',
+                                    padding: '8px 12px',
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '0.82rem',
+                                    color: '#0C4E28',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                  }}
+                                >
+                                  {translatingMessageId === msg.id
+                                    ? t('chat.translating', 'Translating...')
+                                    : translatedMessages[msg.id]
+                                    ? t('chat.showOriginal', 'Show Original')
+                                    : locale === 'tr'
+                                    ? t('chat.translate', 'Translate to Turkish')
+                                    : t('chat.translateEn', 'Translate to English')}
+                                </button>
+
                                 <button
                                   type="button"
                                   onClick={() => {

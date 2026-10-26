@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '@troublefree/i18n';
 import { HomeSectionHeader } from './HomeSectionHeader.jsx';
 import { HowItWorksCard } from './HowItWorksCard.jsx';
 import { JourneyStatusSection } from './JourneyStatusSection.jsx';
 
 export function HowItWorksSection() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
 
   const handleStartStep1 = () => {
@@ -38,9 +40,12 @@ export function HowItWorksSection() {
     <section className="g-sec" id="g-how">
       <div className="g-wrap">
         <HomeSectionHeader
-          title="How QuoteMeTrip works"
-          subtitle="Three steps from a rough idea to a confirmed, paid-for trip — with no booking fees."
-          actionText="Learn more →"
+          title={t('home.howItWorks.title', 'How QuoteMeTrip works')}
+          subtitle={t(
+            'home.howItWorks.subtitle',
+            'Three steps from a rough idea to a confirmed, paid-for trip — with no booking fees.',
+          )}
+          actionText={t('home.howItWorks.learnMore', 'Learn more →')}
           onActionClick={() => navigate('/how-it-works')}
         />
 
@@ -54,17 +59,20 @@ export function HowItWorksSection() {
           <motion.div variants={shouldReduceMotion ? {} : cardVariants}>
             <HowItWorksCard
               stepNumber={1}
-              badgeText="STEP 1 · 5 MINUTES"
-              title="Build your itinerary, day by day"
-              description="Pick the country, then give every day a date and a destination. Say what you need on each day — or leave it open and let the agency plan it."
+              badgeText={t('home.howItWorks.step1Badge', 'STEP 1 · 5 MINUTES')}
+              title={t('home.howItWorks.card1Title', 'Build your itinerary, day by day')}
+              description={t(
+                'home.howItWorks.card1Desc',
+                'Pick the country, then give every day a date and a destination. Say what you need on each day — or leave it open and let the agency plan it.',
+              )}
               ticks={[
-                'Add, remove and reorder days as you like',
-                'Per day: activity, guide, hotel and hotel class',
-                'Travellers, luggage and any special requests',
-                'Your name, email and WhatsApp come from your profile',
+                t('home.howItWorks.step1Tick1', 'Add, remove and reorder days as you like'),
+                t('home.howItWorks.step1Tick2', 'Per day: activity, guide, hotel and hotel class'),
+                t('home.howItWorks.step1Tick3', 'Travellers, luggage and any special requests'),
+                t('home.howItWorks.step1Tick4', 'Your name, email and WhatsApp come from your profile'),
               ]}
-              tip="Not sure of the route? Tick “let agencies suggest the route” and they will propose one."
-              ctaText="Build my itinerary"
+              tip={t('home.howItWorks.step1Tip', 'Not sure of the route? Tick “let agencies suggest the route” and they will propose one.')}
+              ctaText={t('home.howItWorks.step1Cta', 'Build my itinerary')}
               onCtaClick={() => navigate('/plan-trip')}
             />
           </motion.div>
@@ -72,17 +80,20 @@ export function HowItWorksSection() {
           <motion.div variants={shouldReduceMotion ? {} : cardVariants}>
             <HowItWorksCard
               stepNumber={2}
-              badgeText="STEP 2 · 24–48 HOURS"
-              title="Receive quotes from local agencies"
-              description="Your itinerary goes only to verified agencies in that country. They reply with a full price and exactly what it includes."
+              badgeText={t('home.howItWorks.step2Badge', 'STEP 2 · 24–48 HOURS')}
+              title={t('home.howItWorks.card2Title', 'Receive quotations from local agencies')}
+              description={t(
+                'home.howItWorks.card2Desc',
+                'Your itinerary goes only to verified agencies in that country. They reply with a full price and exactly what it includes.',
+              )}
               ticks={[
-                'Compare price, inclusions and star rating side by side',
-                'Ask questions in chat — contact details stay hidden',
-                'Change your plan any time; every agency gets the new version',
-                'Old quotes are marked outdated so you never compare the wrong one',
+                t('home.howItWorks.step2Tick1', 'Compare price, inclusions and star rating side by side'),
+                t('home.howItWorks.step2Tick2', 'Ask questions in chat — contact details stay hidden'),
+                t('home.howItWorks.step2Tick3', 'Change your plan any time; every agency gets the new version'),
+                t('home.howItWorks.step2Tick4', 'Old quotes are marked outdated so you never compare the wrong one'),
               ]}
-              tip="Free for travellers. Agencies pay QuoteMeTrip, never you."
-              ctaText="See my quotes"
+              tip={t('home.howItWorks.step2Tip', 'Free for travellers. Agencies pay QuoteMeTrip, never you.')}
+              ctaText={t('home.howItWorks.step2Cta', 'See my quotes')}
               onCtaClick={() => navigate('/plan-trip')}
             />
           </motion.div>
@@ -90,17 +101,20 @@ export function HowItWorksSection() {
           <motion.div variants={shouldReduceMotion ? {} : cardVariants}>
             <HowItWorksCard
               stepNumber={3}
-              badgeText="STEP 3 · SAME DAY"
-              title="Agree, pay the agency, get confirmed"
-              description="Accept the quote you like. The agency sends a payment link and you pay them directly — QuoteMeTrip never touches your money."
+              badgeText={t('home.howItWorks.step3Badge', 'STEP 3 · SAME DAY')}
+              title={t('home.howItWorks.card3Title', 'Agree, pay directly, get confirmed')}
+              description={t(
+                'home.howItWorks.card3Desc',
+                'Accept the quote you like. The agency sends a payment link and you pay them directly — QuoteMeTrip never touches your money.',
+              )}
               ticks={[
-                'Agreeing closes quoting and locks your price',
-                'Tick “deposit paid” with the amount and reference',
-                'Contacts unlock for both sides straight away',
-                'You get a written confirmation with a Print / PDF copy',
+                t('home.howItWorks.step3Tick1', 'Agreeing closes quoting and locks your price'),
+                t('home.howItWorks.step3Tick2', 'Tick “deposit paid” with the amount and reference'),
+                t('home.howItWorks.step3Tick3', 'Contacts unlock for both sides straight away'),
+                t('home.howItWorks.step3Tick4', 'You get a written confirmation with a Print / PDF copy'),
               ]}
-              tip="After the trip you rate the agency from 1 to 5 stars, which helps the next traveller."
-              ctaText="See the booking steps"
+              tip={t('home.howItWorks.step3Tip', 'After the trip you rate the agency from 1 to 5 stars, which helps the next traveller.')}
+              ctaText={t('home.howItWorks.step3Cta', 'See the booking steps')}
               onCtaClick={() => navigate('/plan-trip')}
             />
           </motion.div>
@@ -121,8 +135,8 @@ export function HowItWorksSection() {
             transition={{ duration: 0.5, ease: 'easeOut' }}
           />
           <div className="cap">
-            <b>Every day planned. Every quote compared.</b>
-            <span>Real itineraries, priced by agencies who live there.</span>
+            <b>{t('home.whyUs.feature1Title', 'Every day planned. Every quote compared.')}</b>
+            <span>{t('home.hero.subtitle', 'Real itineraries, priced by agencies who live there.')}</span>
           </div>
         </motion.div>
 

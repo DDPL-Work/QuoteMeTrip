@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/auth-context.js';
+import { serializeSearchToQuery } from '../../features/trip/search-trip-mapping.js';
 import { HomeHero } from '../../components/home/HomeHero.jsx';
 import { HeroTrustStrip } from '../../components/home/HeroTrustStrip.jsx';
 import { PopularRoutesSection } from '../../components/home/PopularRoutesSection.jsx';
@@ -33,14 +34,7 @@ export function PublicHomePage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const params = new URLSearchParams();
-    if (trip.country) params.set('country', trip.country);
-    if (trip.days[0]?.date) params.set('startDate', trip.days[0].date);
-    if (trip.daysCount) params.set('days', String(trip.daysCount));
-    if (trip.travellers) params.set('travellers', String(trip.travellers));
-    if (scope) params.set('scope', scope.toLowerCase().replace(/ /g, '_'));
-
-    const queryString = params.toString();
+    const queryString = serializeSearchToQuery(trip, scope);
     const targetPath = `/plan-trip${queryString ? '?' + queryString : ''}`;
 
     if (user) {

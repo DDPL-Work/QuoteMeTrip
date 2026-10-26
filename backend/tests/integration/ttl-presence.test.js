@@ -1,16 +1,17 @@
 /**
  * Disappearing Messages (TTL) and Presence integration tests.
  */
+process.env.NODE_ENV = 'test';
+process.env.MAP_PROVIDER ||= 'haversine';
 import 'dotenv/config';
-if (!process.env.DB_TEST_NAME) process.env.DB_TEST_NAME = process.env.DB_NAME;
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { getSequelize, closeDatabase } from '../../src/db/sequelize.js';
+import { getSequelize, closeDatabase, resetSequelizeInstance } from '../../src/db/sequelize.js';
 import { initModels } from '../../src/db/models/index.js';
 import { migrateUp } from '../../src/db/runner.js';
 import { createServer } from 'node:http';
 import app from '../../src/app.js';
-import { initSocketServer, closeSocketServer, getUserPresence } from '../../src/realtime/socket.js';
+import { initSocketServer, closeSocketServer, resetSocketServer, getUserPresence } from '../../src/realtime/socket.js';
 
 let server;
 let baseUrl;
@@ -137,11 +138,14 @@ describe('Disappearing Messages TTL & Presence tests', () => {
   });
 
   after(async () => {
+    await new Promise((resolve) => setImmediate(resolve));
     await closeSocketServer();
+    resetSocketServer();
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }
     await closeDatabase();
+    resetSequelizeInstance();
   });
 
   test('update disappearing messages TTL settings and send expiring messages', async () => {

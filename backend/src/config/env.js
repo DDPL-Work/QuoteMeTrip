@@ -6,9 +6,10 @@
  */
 import dotenv from 'dotenv';
 import { existsSync } from 'node:fs';
+import { isLoopbackHost } from './database.js';
 dotenv.config();
 
-const REQUIRED_IN_PRODUCTION = [
+const BASE_REQUIRED_IN_PRODUCTION = [
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
   'DB_HOST',
@@ -16,7 +17,6 @@ const REQUIRED_IN_PRODUCTION = [
   'DB_NAME',
   'DB_USER',
   'DB_PASSWORD',
-  'DB_SSL_CA_PATH',
 ];
 
 export function validateEnvironment() {
@@ -24,7 +24,13 @@ export function validateEnvironment() {
   const missing = [];
 
   if (isProduction) {
-    for (const key of REQUIRED_IN_PRODUCTION) {
+    const isLoopback = isLoopbackHost(process.env.DB_HOST);
+    const required = [...BASE_REQUIRED_IN_PRODUCTION];
+    if (!isLoopback) {
+      required.push('DB_SSL_CA_PATH');
+    }
+
+    for (const key of required) {
       if (!process.env[key] || process.env[key].trim() === '') {
         missing.push(key);
       }
@@ -43,11 +49,13 @@ export function validateEnvironment() {
       throw new Error(errorMsg);
     }
 
-    const caPath = process.env.DB_SSL_CA_PATH.trim();
-    if (!existsSync(caPath)) {
-      const errorMsg = `[CRITICAL] Server startup failed. DB_SSL_CA_PATH file does not exist: ${caPath}`;
-      console.error(errorMsg);
-      throw new Error(errorMsg);
+    if (process.env.DB_SSL_CA_PATH && process.env.DB_SSL_CA_PATH.trim() !== '') {
+      const caPath = process.env.DB_SSL_CA_PATH.trim();
+      if (!existsSync(caPath)) {
+        const errorMsg = `[CRITICAL] Server startup failed. DB_SSL_CA_PATH file does not exist: ${caPath}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+      }
     }
   }
 

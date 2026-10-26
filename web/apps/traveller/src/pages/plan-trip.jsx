@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useI18n } from '@troublefree/i18n';
 import { useTrip } from '../features/trip/useTrip.js';
 import { useAuth } from '../features/auth/auth-context.js';
 import { travelRequestApi, travellerApi } from '../lib/api.js';
+import { parseSearchParams, scopeToLabel } from '../features/trip/search-trip-mapping.js';
 import { RoutePlanner } from '../components/RoutePlanner.jsx';
 import { RouteSummaryCard } from '../components/RouteSummaryCard.jsx';
 import { TravelRequestForm } from '../components/TravelRequestForm.jsx';
 import { DayPlanner } from '../components/DayPlanner.jsx';
 import { RequestReview } from '../components/RequestReview.jsx';
 import { WeatherCard } from '../components/WeatherCard.jsx';
+import { FiMapPin, FiCalendar, FiClock, FiUsers, FiTag, FiCheckCircle, FiArrowRight } from 'react-icons/fi';
 
 import { MotionPage } from '../components/motion/MotionPage.jsx';
 import { toast } from '../components/feedback/ToastProvider.jsx';
@@ -23,6 +26,7 @@ import { toast } from '../components/feedback/ToastProvider.jsx';
  * 4. Step 4: Final Review & Submission
  */
 export function PlanTripPage() {
+  const { t } = useI18n();
   const trip = useTrip();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,24 +48,47 @@ export function PlanTripPage() {
     if (msg) toast.error(msg);
   };
 
-  // Parse URL search params if coming from Public Homepage search
-  const queryParams = new URLSearchParams(location.search);
-  const paramStartDate = queryParams.get('startDate') || '';
-  const paramTravellers = Number(queryParams.get('travellers')) || 2;
-  const paramScope = queryParams.get('scope') || 'full_package';
+  // Parse & validate URL search params from Public Homepage search
+  const initialSearchState = useMemo(() => {
+    return parseSearchParams(location.search);
+  }, [location.search]);
 
-  const [requestForm, setRequestForm] = useState({
-    travelStartDate: paramStartDate,
-    travelEndDate: '',
-    numberOfTravellers: paramTravellers,
-    luggageCount: 2,
+  const [requestForm, setRequestForm] = useState(() => ({
+    destinationCountry: initialSearchState.country,
+    travelStartDate: initialSearchState.startDate,
+    travelEndDate: initialSearchState.travelEndDate,
+    chosenDuration: initialSearchState.days,
+    numberOfTravellers: initialSearchState.travellers,
+    luggageCount: Math.max(1, initialSearchState.travellers),
     accommodationType: '4_star',
-    hotelRequired: true,
-    guideRequired: false,
-    driverRequired: true,
-    packageType: paramScope,
+    hotelRequired: initialSearchState.hotelRequired,
+    guideRequired: initialSearchState.guideRequired,
+    driverRequired: initialSearchState.driverRequired,
+    packageType: initialSearchState.scope,
+    cruiseDuration: initialSearchState.cruiseDuration,
+    isFlexibleDates: initialSearchState.flexible,
+    suggestRoute: initialSearchState.suggest,
     specialRequests: '',
-  });
+  }));
+
+  // Synchronize search params to TripContext once on mount or URL change
+  useEffect(() => {
+    if (initialSearchState.country && trip.setDestinationCountry) {
+      trip.setDestinationCountry(initialSearchState.country);
+    }
+    if (initialSearchState.suggest !== undefined && trip.setSuggestRoute) {
+      trip.setSuggestRoute(initialSearchState.suggest);
+    }
+    if (initialSearchState.flexible !== undefined && trip.setIsFlexibleDates) {
+      trip.setIsFlexibleDates(initialSearchState.flexible);
+    }
+    if (initialSearchState.scope && trip.setPackageScope) {
+      trip.setPackageScope(initialSearchState.scope);
+    }
+    if (initialSearchState.days && trip.setOverriddenDays && !trip.overriddenDays) {
+      trip.setOverriddenDays(initialSearchState.days);
+    }
+  }, [initialSearchState, trip]);
 
   const [days, setDays] = useState([]);
 
@@ -89,7 +116,6 @@ export function PlanTripPage() {
     setErrorNotice(null);
     try {
       await trip.calculateRoute();
-      setActiveStep(2);
     } catch (e) {
       setErrorNotice(e?.message ?? 'Route calculation failed.');
     }
@@ -213,7 +239,7 @@ export function PlanTripPage() {
               color: '#0C4E28',
             }}
           >
-            Plan Your Trip
+            {t('planTrip.title', 'Plan Your Trip')}
           </h1>
 
           {/* Stepper Bar */}
@@ -229,10 +255,10 @@ export function PlanTripPage() {
             }}
           >
             {[
-              { num: 1, title: 'Route', fullTitle: '1. Route' },
-              { num: 2, title: 'Details', fullTitle: '2. Details' },
-              { num: 3, title: 'Day Plan', fullTitle: '3. Day Plan' },
-              { num: 4, title: 'Review', fullTitle: '4. Review' },
+              { num: 1, title: t('planTrip.step1', 'Route'), fullTitle: `1. ${t('planTrip.step1', 'Route')}` },
+              { num: 2, title: t('planTrip.step2', 'Details'), fullTitle: `2. ${t('planTrip.step2', 'Details')}` },
+              { num: 3, title: t('planTrip.step3', 'Day Plan'), fullTitle: `3. ${t('planTrip.step3', 'Day Plan')}` },
+              { num: 4, title: t('planTrip.step4', 'Review'), fullTitle: `4. ${t('planTrip.step4', 'Review')}` },
             ].map((s) => {
               const isActive = activeStep === s.num;
               const isCompleted = activeStep > s.num;
@@ -265,6 +291,101 @@ export function PlanTripPage() {
             })}
           </div>
         </div>
+
+        {/* Search Preferences Summary Strip */}
+        {Boolean(initialSearchState.country || initialSearchState.startDate || initialSearchState.days) && (
+          <div
+            data-testid="search-preferences-strip"
+            style={{
+              marginBottom: '20px',
+              padding: '12px 18px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #F0F7F2 0%, #FFFBF3 100%)',
+              border: '1px solid #D5E7DB',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '8px 16px',
+                fontSize: '13.5px',
+                color: '#13291C',
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: '700',
+                  color: '#0C4E28',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <FiCheckCircle size={16} /> {t('planTrip.searchPrefApplied', 'Search Prefilled:')}
+              </span>
+              {initialSearchState.scope && (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: '#0C4E28',
+                    color: '#FFF',
+                    padding: '3px 10px',
+                    borderRadius: '12px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                  }}
+                >
+                  <FiTag size={12} /> {scopeToLabel(initialSearchState.scope)}
+                </span>
+              )}
+              {initialSearchState.country && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                  <FiMapPin size={14} color="#0C4E28" /> {initialSearchState.country}
+                </span>
+              )}
+              {initialSearchState.startDate && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <FiCalendar size={14} color="#0C4E28" /> {initialSearchState.startDate}
+                  {initialSearchState.flexible ? ` (${t('planTrip.flexible', '±3 days flexible')})` : ''}
+                </span>
+              )}
+              {initialSearchState.days && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <FiClock size={14} color="#0C4E28" /> {initialSearchState.days} {t('planTrip.days', 'Days')}
+                </span>
+              )}
+              {initialSearchState.travellers && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <FiUsers size={14} color="#0C4E28" /> {initialSearchState.travellers} {t('planTrip.travellers', 'Travellers')}
+                </span>
+              )}
+              {initialSearchState.suggest && (
+                <span
+                  style={{
+                    background: '#FFF3E0',
+                    color: '#E65100',
+                    padding: '2px 8px',
+                    borderRadius: '10px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    border: '1px solid #FFE0B2',
+                  }}
+                >
+                  {t('planTrip.agencySuggestRoute', 'Agencies Suggest Route')}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Global Alerts */}
         {(trip.apiError || errorNotice) && (
@@ -302,13 +423,66 @@ export function PlanTripPage() {
 
         {/* STEP 1: Route Planner */}
         {activeStep === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {requestForm.suggestRoute && (
+              <div
+                data-testid="suggest-route-banner"
+                style={{
+                  padding: '14px 18px',
+                  background: '#FFF9E6',
+                  border: '1px solid #FFE082',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>🧭</span>
+                  <div>
+                    <div style={{ fontWeight: '700', color: '#8D6E63', fontSize: '13.5px' }}>
+                      {t('planTrip.agencySuggestRouteTitle', 'Letting agencies suggest the route')}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#5D4037' }}>
+                      {t(
+                        'planTrip.agencySuggestRouteDesc',
+                        'You can customize stops on the map below, or jump directly to Trip Details & Services.'
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(2)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    background: '#0C4E28',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {t('planTrip.skipToStep2', 'Skip to Trip Details (Step 2)')} <FiArrowRight size={14} />
+                </button>
+              </div>
+            )}
             <RoutePlanner
               stops={trip.stops}
+              travelMode={trip.travelMode}
+              onSelectTravelMode={trip.setTravelMode}
               onAddStop={trip.addStop}
               onRemoveStop={trip.removeStop}
               onReorderStops={trip.reorderStops}
               onCalculate={handleCalculateRoute}
+              onAdvanceStep={() => setActiveStep(2)}
               onClearRoute={trip.clearRoute}
               calculationStatus={trip.calculationStatus}
               isStale={trip.isStale}

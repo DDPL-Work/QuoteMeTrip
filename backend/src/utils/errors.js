@@ -77,3 +77,15 @@ export class ForbiddenError extends AppError {
     Error.captureStackTrace?.(this, ForbiddenError);
   }
 }
+
+/**
+ * Resource conflict / state precondition failure (e.g. 409 Conflict).
+ */
+export class ConflictError extends AppError {
+  constructor(message = 'Resource conflict.', { code = 'CONFLICT', details = null } = {}) {
+    super(message, { statusCode: 409, code });
+    this.name = 'ConflictError';
+    this.details = details;
+    Error.captureStackTrace?.(this, ConflictError);
+  }
+}

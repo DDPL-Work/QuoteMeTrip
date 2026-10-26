@@ -4,10 +4,12 @@
 // accounts are provisioned through the controlled CLI process.
 
 import { AuthLayout } from '@troublefree/ui';
+import { useI18n } from '@troublefree/i18n';
 import { LoginForm } from '../features/auth/LoginForm.jsx';
 import { useAuth } from '../features/auth/auth-context.js';
 
 function AdminBrandHeader() {
+  const { t } = useI18n();
   return (
     <div className="auth-brand-header">
       <img
@@ -24,18 +26,19 @@ function AdminBrandHeader() {
         <span className="auth-brand-name" style={{ display: 'none' }}>
           QuoteMeTrip
         </span>
-        <span className="auth-brand-badge">ADMIN PORTAL</span>
+        <span className="auth-brand-badge">{t('admin.auth.brandBadge')}</span>
       </div>
     </div>
   );
 }
 
 export function LoginPage() {
+  const { t } = useI18n();
   return (
     <AuthLayout
       brand={<AdminBrandHeader />}
-      title="Admin Operations Sign In"
-      subtitle="Restricted workspace. Authorized personnel only."
+      title={t('admin.auth.loginTitle')}
+      subtitle={t('admin.auth.loginSubtitle')}
     >
       <LoginForm />
     </AuthLayout>
@@ -44,15 +47,16 @@ export function LoginPage() {
 
 // Minimal authenticated landing — admin analytics arrive later.
 export function HomePage() {
+  const { t } = useI18n();
   const { user, logout } = useAuth();
   return (
     <main className="portal-shell">
-      <h1>Admin Portal</h1>
+      <h1>{t('admin.dashboard')}</h1>
       <p>
-        Signed in as {user?.email} ({user?.role}).
+        {t('admin.common.signedInAs', { email: user?.email })} ({user?.role}).
       </p>
       <button type="button" className="auth-submit auth-signout" onClick={logout}>
-        Sign out
+        {t('admin.common.signOut')}
       </button>
     </main>
   );

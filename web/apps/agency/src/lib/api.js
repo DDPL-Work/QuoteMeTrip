@@ -19,6 +19,7 @@ import {
   createMessagingApi,
   createJobApi,
   createNotificationApi,
+  createTranslationApi,
 } from '@troublefree/api-client';
 
 const rawUrl =
@@ -46,6 +47,7 @@ export const agencyRatingApi = createAgencyRatingApi(apiClient);
 export const messagingApi = createMessagingApi(apiClient);
 export const jobApi = createJobApi(apiClient);
 export const notificationApi = createNotificationApi(apiClient);
+export const translationApi = createTranslationApi(apiClient);
 
 export { apiBaseUrl };
 

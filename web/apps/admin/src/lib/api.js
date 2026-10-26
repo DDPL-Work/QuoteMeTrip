@@ -9,7 +9,12 @@
 // so the React auth provider — which owns navigation — can clear its
 // state and redirect to this app's own login page.
 
-import { createApiClient, createAuthApi, createAdminApi } from '@troublefree/api-client';
+import {
+  createApiClient,
+  createAuthApi,
+  createAdminApi,
+  createTranslationApi,
+} from '@troublefree/api-client';
 
 const rawUrl =
   (typeof import.meta !== 'undefined' &&
@@ -30,5 +35,6 @@ export function setUnauthorizedListener(listener) {
 
 export const authApi = createAuthApi(apiClient);
 export const adminApi = createAdminApi(apiClient);
+export const translationApi = createTranslationApi(apiClient);
 
 export { apiBaseUrl };

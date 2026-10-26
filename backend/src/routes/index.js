@@ -35,6 +35,8 @@ import {
   agencyRatingRoutes,
   adminRatingRoutes,
 } from '../modules/ratings/rating.routes.js';
+import translationRoutes from '../modules/translation/translation.routes.js';
+import announcementRoutes from '../modules/admin/announcements/announcement.routes.js';
 
 const router = Router();
 
@@ -45,6 +47,7 @@ const router = Router();
 // Admin operations (Phase 7): agency approval, memberships, commissions, audit, visibility.
 router.use(healthRoutes);
 router.use('/auth', authRoutes);
+router.use('/translations', translationRoutes);
 router.use('/travellers', travellerRoutes);
 router.use('/routes', routeRoutes);
 router.use('/travel-requests', travelRequestRoutes);
@@ -73,6 +76,7 @@ router.use('/admin/travel-requests', requestVisibilityRouter);
 router.use('/admin/jobs', jobVisibilityRouter);
 router.use('/admin/travel-guide', travelGuideAdminRoutes);
 router.use('/admin/ratings', adminRatingRoutes);
+router.use('/admin/announcements', announcementRoutes);
 router.use('/admin', dashboardRouter);
 
 export default router;

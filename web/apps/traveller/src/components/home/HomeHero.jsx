@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useI18n } from '@troublefree/i18n';
 import { HeroSearchPanel } from './HeroSearchPanel.jsx';
 
 /**
@@ -7,6 +8,7 @@ import { HeroSearchPanel } from './HeroSearchPanel.jsx';
  * Hero section with background entrance motion, line-level headline reveal, and search panel composition.
  */
 export function HomeHero({ trip, setTrip, scope, setScope, onSubmit, isSubmitting }) {
+  const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
 
   const textVariants = {
@@ -36,7 +38,7 @@ export function HomeHero({ trip, setTrip, scope, setScope, onSubmit, isSubmittin
           initial="hidden"
           animate="visible"
         >
-          Day-by-day holidays · local agencies
+          {t('home.hero.eyebrow', 'Day-by-day holidays · local agencies')}
         </motion.div>
 
         <motion.h1 initial="hidden" animate="visible">
@@ -45,14 +47,14 @@ export function HomeHero({ trip, setTrip, scope, setScope, onSubmit, isSubmittin
             variants={textVariants}
             custom={0.12}
           >
-            One request.
+            {t('home.hero.headline1', 'One request.')}
           </motion.span>
           <motion.span
             style={{ display: 'block', color: '#D96A00' }}
             variants={textVariants}
             custom={0.2}
           >
-            Multiple travel quotes.
+            {t('home.hero.headline2', 'Multiple travel quotes.')}
           </motion.span>
         </motion.h1>
 
@@ -63,8 +65,10 @@ export function HomeHero({ trip, setTrip, scope, setScope, onSubmit, isSubmittin
           initial="hidden"
           animate="visible"
         >
-          Plan each day of your trip — dates, destinations, hotels, guides and activities. Verified
-          agencies in that country send you their offers to compare.
+          {t(
+            'home.hero.lead',
+            'Plan each day of your trip — dates, destinations, hotels, guides and activities. Verified agencies in that country send you their offers to compare.',
+          )}
         </motion.p>
 
         <HeroSearchPanel

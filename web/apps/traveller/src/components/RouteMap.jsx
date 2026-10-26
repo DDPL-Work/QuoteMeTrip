@@ -84,6 +84,7 @@ export function RouteMap({
   stops = [],
   geometry = null,
   encodedPolyline = null,
+  travelMode = 'DRIVE',
   isStale = false,
   isCalculating = false,
   onRecalculate = null,
@@ -260,7 +261,7 @@ export function RouteMap({
       markersRef.current.push(marker);
     });
 
-    // 4. Render Google Road Polyline if route geometry is provided and not stale
+    // 4. Render Google Road or Mode-specific Polyline if route geometry is provided and not stale
     const polylineString = encodedPolyline || geometry?.encodedPolyline;
     let pathPoints = [];
 
@@ -278,14 +279,56 @@ export function RouteMap({
     if (pathPoints.length > 1) {
       pathPoints.forEach((pt) => bounds.extend(pt));
 
-      const polyline = new gmaps.Polyline({
+      const modeKey = String(travelMode || 'DRIVE').toUpperCase();
+      let strokeColor = '#0C4E28';
+      let strokeWeight = 5;
+      let strokeOpacity = 0.88;
+      let icons = undefined;
+
+      if (modeKey === 'TWO_WHEELER') {
+        strokeColor = '#059669';
+      } else if (modeKey === 'BICYCLE') {
+        strokeColor = '#10B981';
+        strokeWeight = 4;
+      } else if (modeKey === 'WALK') {
+        strokeColor = '#D97706';
+        strokeWeight = 4;
+        strokeOpacity = 0;
+        icons = [
+          {
+            icon: {
+              path: 'M 0,-1 0,1',
+              strokeOpacity: 1,
+              scale: 3,
+              strokeColor: '#D97706',
+            },
+            offset: '0',
+            repeat: '14px',
+          },
+        ];
+      } else if (modeKey === 'TRANSIT') {
+        strokeColor = '#7C3AED';
+        strokeWeight = 5;
+      } else if (modeKey === 'AIR') {
+        strokeColor = '#0284C7';
+        strokeWeight = 4;
+        strokeOpacity = 0.92;
+      }
+
+      const polylineOptions = {
         path: pathPoints,
         geodesic: true,
-        strokeColor: '#0C4E28',
-        strokeOpacity: 0.88,
-        strokeWeight: 5,
+        strokeColor,
+        strokeOpacity,
+        strokeWeight,
         map,
-      });
+      };
+
+      if (icons) {
+        polylineOptions.icons = icons;
+      }
+
+      const polyline = new gmaps.Polyline(polylineOptions);
 
       polylineRef.current = polyline;
     }
@@ -299,7 +342,7 @@ export function RouteMap({
         map.setZoom(11);
       }
     }
-  }, [stops, geometry, encodedPolyline, isStale]);
+  }, [stops, geometry, encodedPolyline, travelMode, isStale]);
 
   // Run synchronization whenever stops or geometry change
   useEffect(() => {

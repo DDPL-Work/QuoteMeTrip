@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useI18n } from '@troublefree/i18n';
 import { adminApi } from '../services/api.js';
 import { ConfirmModal } from '../components/ConfirmModal.jsx';
 import { AlertBanner } from '../components/AlertBanner.jsx';
 import { FiPlus, FiTrash2, FiEdit2, FiClock, FiX } from 'react-icons/fi';
 
 export function MembershipPlansPage() {
+  const { t } = useI18n();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,39 +42,90 @@ export function MembershipPlansPage() {
     try {
       if (mode === 'create') {
         await adminApi.createMembershipPlan(plan);
-        setFeedback({ type: 'success', message: `Membership plan "${plan.name}" created successfully.` });
+        setFeedback({ type: 'success', message: t('admin.membershipPlans.planCreated', { name: plan.name }) });
       } else {
         await adminApi.updateMembershipPlan(plan.id, plan);
-        setFeedback({ type: 'success', message: `Membership plan "${plan.name}" updated successfully.` });
+        setFeedback({ type: 'success', message: t('admin.membershipPlans.planUpdated', { name: plan.name }) });
       }
       setModal(null);
       loadPlans();
     } catch (err) {
-      setFeedback({ type: 'error', message: `Operation failed: ${err.message}` });
+      setFeedback({ type: 'error', message: err.message });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleTogglePlanStatus = async (plan) => {
+    const nextStatus = plan.status === 'active' ? 'inactive' : 'active';
+    setFeedback(null);
+    try {
+      await adminApi.updateMembershipPlan(plan.id, { status: nextStatus });
+      setFeedback({
+        type: 'success',
+        message: t('admin.membershipPlans.planStatusChanged', {
+          name: plan.name,
+          status: t(`admin.membershipPlans.${nextStatus}`, nextStatus),
+        }),
+      });
+      loadPlans();
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        message: err.message,
+      });
+    }
+  };
+
   const executeDelete = async () => {
     if (!planToDelete) return;
+    const target = planToDelete;
     setIsDeleting(true);
     setFeedback(null);
     try {
-      await adminApi.deleteMembershipPlan(planToDelete.id);
+      await adminApi.deleteMembershipPlan(target.id);
       setFeedback({
         type: 'success',
-        message: `Membership plan "${planToDelete.name}" has been deleted.`,
+        message: t('admin.membershipPlans.planDeleted', { name: target.name }),
       });
-      if (modal?.plan?.id === planToDelete.id) {
+      if (modal?.plan?.id === target.id) {
         setModal(null);
       }
       setPlanToDelete(null);
       loadPlans();
     } catch (err) {
+      const isPlanInUse =
+        err.code === 'PLAN_IN_USE' ||
+        err.status === 409 ||
+        err.message?.toLowerCase().includes('deactivate');
+
       setFeedback({
         type: 'error',
-        message: `Delete failed: ${err.message}`,
+        message: err.message || `Delete failed: ${err.message}`,
+        action:
+          isPlanInUse && target.status === 'active'
+            ? {
+                label: t('admin.membershipPlans.deactivateInstead'),
+                onClick: async () => {
+                  try {
+                    await adminApi.updateMembershipPlan(target.id, { status: 'inactive' });
+                    setFeedback({
+                      type: 'success',
+                      message: t('admin.membershipPlans.planStatusChanged', {
+                        name: target.name,
+                        status: t('admin.membershipPlans.inactive'),
+                      }),
+                    });
+                    loadPlans();
+                  } catch (deactErr) {
+                    setFeedback({
+                      type: 'error',
+                      message: deactErr.message,
+                    });
+                  }
+                },
+              }
+            : null,
       });
       setPlanToDelete(null);
     } finally {
@@ -105,10 +158,10 @@ export function MembershipPlansPage() {
               letterSpacing: '-0.02em',
             }}
           >
-            Membership Plans
+            {t('admin.membershipPlans.title')}
           </h1>
           <p style={{ color: '#64748B', marginTop: '0.25rem', marginBottom: 0, fontSize: '0.95rem' }}>
-            Configure available agency subscription tiers, pricing, and active durations.
+            {t('admin.membershipPlans.subtitle')}
           </p>
         </div>
         <button
@@ -146,7 +199,7 @@ export function MembershipPlansPage() {
           onMouseLeave={(e) => (e.currentTarget.style.background = '#0C4E28')}
         >
           <FiPlus style={{ fontSize: '1.1rem' }} />
-          Create New Plan
+          {t('admin.membershipPlans.createPlan')}
         </button>
       </div>
 
@@ -155,6 +208,7 @@ export function MembershipPlansPage() {
         <AlertBanner
           type={feedback.type}
           message={feedback.message}
+          action={feedback.action}
           onClose={() => setFeedback(null)}
         />
       )}
@@ -182,7 +236,7 @@ export function MembershipPlansPage() {
               marginBottom: '0.75rem',
             }}
           />
-          <div>Loading membership plans...</div>
+          <div>{t('admin.membershipPlans.loading')}</div>
         </div>
       ) : error ? (
         <div
@@ -194,7 +248,7 @@ export function MembershipPlansPage() {
             borderRadius: '8px',
           }}
         >
-          Error loading plans: {error}
+          {t('admin.common.error')}: {error}
         </div>
       ) : plans.length === 0 ? (
         <div
@@ -207,9 +261,9 @@ export function MembershipPlansPage() {
             border: '1px solid #E2E8F0',
           }}
         >
-          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 500 }}>No membership plans configured yet.</p>
+          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 500 }}>{t('admin.membershipPlans.empty')}</p>
           <p style={{ margin: '0.5rem 0 1.25rem 0', fontSize: '0.875rem', color: '#94A3B8' }}>
-            Click &quot;Create New Plan&quot; to define your first subscription tier.
+            {t('admin.membershipPlans.emptyDesc')}
           </p>
         </div>
       ) : (
@@ -221,7 +275,7 @@ export function MembershipPlansPage() {
           }}
         >
           {plans.map((p) => {
-            const isActive = p.status === 'active';
+            const isActive = p.status === 'active' || p.isActive === true;
             return (
               <div
                 key={p.id}
@@ -290,7 +344,9 @@ export function MembershipPlansPage() {
                           background: isActive ? '#10B981' : '#94A3B8',
                         }}
                       />
-                      {p.status}
+                      {isActive
+                        ? t('admin.membershipPlans.active', 'Active')
+                        : t('admin.membershipPlans.inactive', 'Inactive')}
                     </span>
                   </div>
 
@@ -324,7 +380,7 @@ export function MembershipPlansPage() {
                       }}
                     >
                       <FiClock style={{ fontSize: '0.8rem', opacity: 0.7 }} />
-                      / {p.durationDays} days
+                      / {p.durationDays} {t('admin.membershipPlans.days')}
                     </span>
                   </div>
 
@@ -338,7 +394,7 @@ export function MembershipPlansPage() {
                       minHeight: '2.5rem',
                     }}
                   >
-                    {p.description || 'No description provided.'}
+                    {p.description || '—'}
                   </p>
 
                   {/* Slug */}
@@ -349,7 +405,7 @@ export function MembershipPlansPage() {
                       marginTop: '0.75rem',
                     }}
                   >
-                    Slug:{' '}
+                    {t('admin.membershipPlans.slug')}:{' '}
                     <code
                       style={{
                         background: '#F1F5F9',
@@ -371,9 +427,37 @@ export function MembershipPlansPage() {
                     borderTop: '1px solid #F1F5F9',
                     display: 'flex',
                     justifyContent: 'flex-end',
-                    gap: '0.625rem',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    flexWrap: 'wrap',
                   }}
                 >
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePlanStatus(p)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.45rem 0.75rem',
+                      background: '#FFF',
+                      color: isActive ? '#D97706' : '#059669',
+                      border: `1px solid ${isActive ? '#FDE68A' : '#A7F3D0'}`,
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = isActive ? '#FFFBEB' : '#ECFDF5';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#FFF';
+                    }}
+                  >
+                    {isActive ? t('admin.membershipPlans.deactivate') : t('admin.membershipPlans.activate')}
+                  </button>
                   <button
                     type="button"
                     onClick={() => setPlanToDelete(p)}
@@ -401,7 +485,7 @@ export function MembershipPlansPage() {
                     }}
                   >
                     <FiTrash2 style={{ fontSize: '0.9rem' }} />
-                    Delete Plan
+                    {t('admin.membershipPlans.deletePlan')}
                   </button>
                   <button
                     type="button"
@@ -428,7 +512,7 @@ export function MembershipPlansPage() {
                     }}
                   >
                     <FiEdit2 style={{ fontSize: '0.9rem' }} />
-                    Edit Plan
+                    {t('admin.membershipPlans.editPlan')}
                   </button>
                 </div>
               </div>
@@ -484,7 +568,7 @@ export function MembershipPlansPage() {
                   color: '#0F172A',
                 }}
               >
-                {modal.mode === 'create' ? 'Create Membership Plan' : 'Edit Membership Plan'}
+                {modal.mode === 'create' ? t('admin.membershipPlans.createPlan') : t('admin.membershipPlans.editPlan')}
               </h3>
               <button
                 type="button"
@@ -503,20 +587,13 @@ export function MembershipPlansPage() {
               </button>
             </div>
 
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: '#334155',
-                  marginBottom: '0.35rem',
-                }}
-              >
-                Plan Name <span style={{ color: '#EF4444' }}>*</span>
+            <div className="admin-form-group">
+              <label className="admin-form-label">
+                {t('admin.membershipPlans.planName')} <span className="required-star">*</span>
               </label>
               <input
                 type="text"
+                className="admin-form-input"
                 required
                 value={modal.plan.name}
                 onChange={(e) => {
@@ -535,64 +612,32 @@ export function MembershipPlansPage() {
                   });
                 }}
                 placeholder="e.g. Gold Subscription"
-                style={{
-                  width: '100%',
-                  padding: '0.625rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #CBD5E1',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: '#334155',
-                  marginBottom: '0.35rem',
-                }}
-              >
-                Slug <span style={{ color: '#EF4444' }}>*</span>
+            <div className="admin-form-group">
+              <label className="admin-form-label">
+                {t('admin.membershipPlans.slug')} <span className="required-star">*</span>
               </label>
               <input
                 type="text"
+                className="admin-form-input"
                 required
                 value={modal.plan.slug}
                 onChange={(e) =>
                   setModal({ ...modal, plan: { ...modal.plan, slug: e.target.value } })
                 }
-                style={{
-                  width: '100%',
-                  padding: '0.625rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #CBD5E1',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    color: '#334155',
-                    marginBottom: '0.35rem',
-                  }}
-                >
-                  Price (USD $) <span style={{ color: '#EF4444' }}>*</span>
+              <div className="admin-form-group">
+                <label className="admin-form-label">
+                  {t('admin.membershipPlans.price')} <span className="required-star">*</span>
                 </label>
                 <input
                   type="number"
+                  className="admin-form-input"
                   step="0.01"
                   required
                   value={modal.plan.price}
@@ -602,31 +647,15 @@ export function MembershipPlansPage() {
                       plan: { ...modal.plan, price: parseFloat(e.target.value) || 0 },
                     })
                   }
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.75rem',
-                    borderRadius: '6px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
                 />
               </div>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    color: '#334155',
-                    marginBottom: '0.35rem',
-                  }}
-                >
-                  Duration (Days) <span style={{ color: '#EF4444' }}>*</span>
+              <div className="admin-form-group">
+                <label className="admin-form-label">
+                  {t('admin.membershipPlans.duration')} <span className="required-star">*</span>
                 </label>
                 <input
                   type="number"
+                  className="admin-form-input"
                   required
                   value={modal.plan.durationDays}
                   onChange={(e) =>
@@ -635,82 +664,34 @@ export function MembershipPlansPage() {
                       plan: { ...modal.plan, durationDays: parseInt(e.target.value, 10) || 30 },
                     })
                   }
-                  style={{
-                    width: '100%',
-                    padding: '0.625rem 0.75rem',
-                    borderRadius: '6px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
                 />
               </div>
             </div>
 
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: '#334155',
-                  marginBottom: '0.35rem',
-                }}
-              >
-                Status
-              </label>
+            <div className="admin-form-group">
+              <label className="admin-form-label">{t('admin.common.status')}</label>
               <select
+                className="admin-form-select"
                 value={modal.plan.status}
                 onChange={(e) =>
                   setModal({ ...modal, plan: { ...modal.plan, status: e.target.value } })
                 }
-                style={{
-                  width: '100%',
-                  padding: '0.625rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #CBD5E1',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  background: '#FFFFFF',
-                }}
               >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="active">{t('admin.membershipPlans.active')}</option>
+                <option value="inactive">{t('admin.membershipPlans.inactive')}</option>
               </select>
             </div>
 
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: '#334155',
-                  marginBottom: '0.35rem',
-                }}
-              >
-                Description
-              </label>
+            <div className="admin-form-group">
+              <label className="admin-form-label">{t('admin.membershipPlans.description')}</label>
               <textarea
+                className="admin-form-textarea"
                 rows={3}
                 value={modal.plan.description || ''}
                 onChange={(e) =>
                   setModal({ ...modal, plan: { ...modal.plan, description: e.target.value } })
                 }
                 placeholder="Brief summary of subscription benefits..."
-                style={{
-                  width: '100%',
-                  padding: '0.625rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #CBD5E1',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                }}
               />
             </div>
 
@@ -744,7 +725,7 @@ export function MembershipPlansPage() {
                   }}
                 >
                   <FiTrash2 />
-                  Delete Plan
+                  {t('admin.membershipPlans.deletePlan')}
                 </button>
               )}
               <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -763,7 +744,7 @@ export function MembershipPlansPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  Cancel
+                  {t('admin.common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -783,7 +764,7 @@ export function MembershipPlansPage() {
                     opacity: isSubmitting ? 0.75 : 1,
                   }}
                 >
-                  {isSubmitting ? 'Saving...' : 'Save Plan'}
+                  {isSubmitting ? t('admin.membershipPlans.saving') : t('admin.membershipPlans.savePlan')}
                 </button>
               </div>
             </div>
@@ -791,17 +772,17 @@ export function MembershipPlansPage() {
         </div>
       )}
 
-      {/* Modern Custom Delete Confirmation Dialog (Replaces native browser alert/confirm) */}
+      {/* Modern Custom Delete Confirmation Dialog */}
       <ConfirmModal
         isOpen={Boolean(planToDelete)}
-        title="Delete Membership Plan"
+        title={t('admin.membershipPlans.deleteTitle')}
         message={
           planToDelete
-            ? `Are you sure you want to permanently delete the membership plan "${planToDelete.name}"? This action will remove the plan from agency selection.`
+            ? t('admin.membershipPlans.deleteMessage', { name: planToDelete.name })
             : ''
         }
-        confirmText="Delete Plan"
-        cancelText="Cancel"
+        confirmText={t('admin.membershipPlans.deletePlan')}
+        cancelText={t('admin.common.cancel')}
         variant="danger"
         loading={isDeleting}
         onConfirm={executeDelete}

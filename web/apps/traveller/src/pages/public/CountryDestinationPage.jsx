@@ -16,7 +16,7 @@ import { useAuth } from '../../features/auth/auth-context.js';
 
 export function CountryDestinationPage() {
   const { countrySlug } = useParams();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,6 +73,11 @@ export function CountryDestinationPage() {
 
   const { country, destinations, guides, services } = data;
 
+  const countryDisplayName =
+    locale === 'tr' && (country.slug === 'turkey' || country.name.includes('Turkey'))
+      ? 'Türkiye'
+      : country.name;
+
   return (
     <div>
       {/* Country Hero */}
@@ -87,10 +92,10 @@ export function CountryDestinationPage() {
             className="tf-card-badge"
             style={{ position: 'static', marginBottom: '0.75rem', display: 'inline-block' }}
           >
-            Country Landing
+            {t('destinations.featuredRegion', 'Featured Region')}
           </span>
           <h1 className="tf-detail-hero-title">
-            {country.name}
+            {countryDisplayName}
           </h1>
           <p className="tf-detail-hero-tagline">
             {country.tagline}
@@ -101,33 +106,39 @@ export function CountryDestinationPage() {
       <div className="tf-public-container">
         <PublicBreadcrumbs
           items={[
-            { label: 'Destinations', to: '/destinations' },
-            { label: country.name },
+            { label: t('header.destinations', 'Destinations'), to: '/destinations' },
+            { label: countryDisplayName },
           ]}
         />
 
         {/* Overview & Travel Essentials */}
         <div className="tf-detail-grid">
           <div>
-            <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>About {country.name}</h2>
+            <h2 style={{ fontSize: '1.8rem', marginTop: 0 }}>
+              {t('country.about', { name: countryDisplayName }, `About ${countryDisplayName}`)}
+            </h2>
             <p style={{ fontSize: '1.05rem', lineHeight: 1.8, color: 'var(--tf-text)' }}>
               {country.description}
             </p>
 
             <h3 style={{ fontSize: '1.4rem', marginTop: '2.5rem', marginBottom: '1rem' }}>
-              Why Travel with QuoteMeTrip in {country.name}
+              {t('country.whyTravel', { name: countryDisplayName }, `Why Travel with QuoteMeTrip in ${countryDisplayName}`)}
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1rem' }}>
               <div className="tf-card" style={{ padding: '1.25rem' }}>
-                <h4 style={{ margin: '0 0 0.35rem', color: 'var(--tf-primary)' }}>Route-First Planning</h4>
+                <h4 style={{ margin: '0 0 0.35rem', color: 'var(--tf-primary)' }}>
+                  {t('country.routeFirst', 'Route-First Planning')}
+                </h4>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--tf-text-muted)' }}>
-                  Chain multi-city routes across Istanbul, Cappadocia, and Aegean ruins with accurate transit times.
+                  {t('country.routeFirstDesc', 'Chain multi-city routes across Istanbul, Cappadocia, and Aegean ruins with accurate transit times.')}
                 </p>
               </div>
               <div className="tf-card" style={{ padding: '1.25rem' }}>
-                <h4 style={{ margin: '0 0 0.35rem', color: 'var(--tf-primary)' }}>Licensed Operators</h4>
+                <h4 style={{ margin: '0 0 0.35rem', color: 'var(--tf-primary)' }}>
+                  {t('country.licensedOperators', 'Licensed Operators')}
+                </h4>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--tf-text-muted)' }}>
-                  Receive quotes only from government-verified Turkish travel agencies.
+                  {t('country.licensedOperatorsDesc', 'Receive quotes only from government-verified Turkish travel agencies.')}
                 </p>
               </div>
             </div>
@@ -135,22 +146,22 @@ export function CountryDestinationPage() {
 
           <div>
             <div className="tf-card tf-sticky-sidebar">
-              <h3 style={{ marginTop: 0 }}>Travel Essentials</h3>
+              <h3 style={{ marginTop: 0 }}>{t('country.travelEssentials', 'Travel Essentials')}</h3>
               <div style={{ margin: '1rem 0', fontSize: '0.92rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <p style={{ margin: 0 }}>
-                  <strong>Currency:</strong> {country.travelInfo.currency}
+                  <strong>{t('country.currency', 'Currency:')}</strong> {country.travelInfo.currency}
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong>Capital:</strong> {country.travelInfo.capital}
+                  <strong>{t('country.capital', 'Capital:')}</strong> {country.travelInfo.capital}
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong>Languages:</strong> {country.travelInfo.languages}
+                  <strong>{t('country.languages', 'Languages:')}</strong> {country.travelInfo.languages}
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong>Best Time to Visit:</strong> {country.travelInfo.bestTimeToVisit}
+                  <strong>{t('country.bestTime', 'Best Time to Visit:')}</strong> {country.travelInfo.bestTimeToVisit}
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong>Gateways:</strong> {country.travelInfo.internationalAirports}
+                  <strong>{t('country.gateways', 'Gateways:')}</strong> {country.travelInfo.internationalAirports}
                 </p>
               </div>
               <a
@@ -158,7 +169,7 @@ export function CountryDestinationPage() {
                 className="tf-btn tf-btn-primary"
                 style={{ width: '100%', textAlign: 'center', boxSizing: 'border-box', marginTop: '1rem' }}
               >
-                Plan a Trip in {country.name} →
+                {t('country.planTripIn', { name: countryDisplayName }, `Plan a Trip in ${countryDisplayName} →`)}
               </a>
             </div>
           </div>
@@ -168,9 +179,11 @@ export function CountryDestinationPage() {
         <section style={{ marginBottom: '4rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>Destinations in {country.name}</h2>
+              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>
+                {t('country.destinationsIn', { name: countryDisplayName }, `Destinations in ${countryDisplayName}`)}
+              </h2>
               <p style={{ margin: '0.25rem 0 0', color: 'var(--tf-text-muted)' }}>
-                Select a destination to view local highlights, tours, and travel advice.
+                {t('country.destinationsInDesc', 'Select a destination to view local highlights, tours, and travel advice.')}
               </p>
             </div>
           </div>
@@ -185,9 +198,11 @@ export function CountryDestinationPage() {
         {services && services.length > 0 && (
           <section style={{ marginBottom: '4rem' }}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>Travel Services in {country.name}</h2>
+              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>
+                {t('country.servicesIn', { name: countryDisplayName }, `Travel Services in ${countryDisplayName}`)}
+              </h2>
               <p style={{ margin: '0.25rem 0 0', color: 'var(--tf-text-muted)' }}>
-                Professional services provided by verified local operators.
+                {t('country.servicesInDesc', 'Professional services provided by verified local operators.')}
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
@@ -202,7 +217,7 @@ export function CountryDestinationPage() {
                     className="tf-btn tf-btn-ghost tf-btn-sm"
                     style={{ alignSelf: 'flex-start' }}
                   >
-                    View Service Details →
+                    {t('services.viewDetails', 'View Details →')}
                   </Link>
                 </div>
               ))}
@@ -214,9 +229,11 @@ export function CountryDestinationPage() {
         {guides && guides.length > 0 && (
           <section style={{ marginBottom: '4rem' }}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>Travel Guides & Route Advice</h2>
+              <h2 style={{ fontSize: '1.8rem', margin: 0 }}>
+                {t('country.guidesIn', 'Travel Guides & Route Advice')}
+              </h2>
               <p style={{ margin: '0.25rem 0 0', color: 'var(--tf-text-muted)' }}>
-                Insights and itineraries written by regional travel specialists.
+                {t('country.guidesInDesc', 'Insights and itineraries written by regional travel specialists.')}
               </p>
             </div>
             <div className="tf-grid-3">
@@ -228,8 +245,8 @@ export function CountryDestinationPage() {
         )}
 
         <CTASection
-          title={`Ready to Visit ${country.name}?`}
-          subtitle="Build your route across Turkey and receive itemized quotations from verified local agencies."
+          title={t('country.readyToVisit', { name: countryDisplayName }, `Ready to Visit ${countryDisplayName}?`)}
+          subtitle={t('country.readyToVisitDesc', 'Build your route across Turkey and receive itemized quotations from verified local agencies.')}
           ctaHref={planTripHref}
         />
       </div>
