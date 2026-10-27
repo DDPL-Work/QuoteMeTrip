@@ -5,10 +5,12 @@
 
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FormField, PasswordInput, LoadingButton, AuthError } from '@troublefree/ui';
+import { FormField, PasswordInput, LoadingButton, AuthError, ForgotPasswordModal } from '@troublefree/ui';
+import { useI18n } from '@troublefree/i18n';
 import { useAuth } from './auth-context.js';
 import { friendlyAuthMessage } from './friendly-message.js';
 import { GoogleLoginButton } from './GoogleLoginButton.jsx';
+import { authApi } from '../../lib/api.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -27,12 +29,14 @@ export function getSafeRedirect(target) {
 }
 
 export function LoginForm() {
+  const { t } = useI18n();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -62,26 +66,54 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <FormField id="email" label="Email" error={fieldErrors.email}>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          disabled={submitting}
-        />
-      </FormField>
-      <FormField id="password" label="Password" error={fieldErrors.password}>
-        <PasswordInput id="password" name="password" disabled={submitting} />
-      </FormField>
-      <AuthError error={error} />
-      <LoadingButton loading={submitting}>Sign in</LoadingButton>
-      <GoogleLoginButton onError={setError} />
-      <p className="auth-switch">
-        New here? <Link to="/register">Create a traveller account</Link>
-      </p>
-    </form>
+    <>
+      <form onSubmit={handleSubmit} noValidate>
+        <FormField id="email" label="Email" error={fieldErrors.email}>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            disabled={submitting}
+          />
+        </FormField>
+        <FormField id="password" label="Password" error={fieldErrors.password}>
+          <PasswordInput id="password" name="password" disabled={submitting} />
+        </FormField>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+          <button
+            type="button"
+            onClick={() => setForgotOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#2563eb',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              padding: 0,
+              textDecoration: 'underline',
+            }}
+          >
+            {t('auth.forgotPassword', 'Forgot password?')}
+          </button>
+        </div>
+
+        <AuthError error={error} />
+        <LoadingButton loading={submitting}>Sign in</LoadingButton>
+        <GoogleLoginButton onError={setError} />
+        <p className="auth-switch">
+          New here? <Link to="/register">Create a traveller account</Link>
+        </p>
+      </form>
+
+      <ForgotPasswordModal
+        isOpen={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+        authApi={authApi}
+      />
+    </>
   );
 }

@@ -14,6 +14,7 @@ import { AdminTravelRequestsPage } from './pages/AdminTravelRequestsPage.jsx';
 import { AdminJobsPage } from './pages/AdminJobsPage.jsx';
 import { AuditLogsPage } from './pages/AuditLogsPage.jsx';
 import { AnnouncementsPage } from './pages/AnnouncementsPage.jsx';
+import { AdminProfilePage } from './pages/AdminProfilePage.jsx';
 
 function App() {
   return (
@@ -50,6 +51,8 @@ function App() {
               <Route path="jobs" element={<AdminJobsPage />} />
               <Route path="announcements" element={<AnnouncementsPage />} />
               <Route path="audit-logs" element={<AuditLogsPage />} />
+              <Route path="profile" element={<AdminProfilePage />} />
+              <Route path="settings" element={<Navigate to="/profile" replace />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -85,6 +85,20 @@ export function AuthProvider({ role, loginPath = '/login', children }) {
     }
   }, [clearSession, navigate, loginPath]);
 
+  const updateUser = useCallback((updatedUserData) => {
+    setUser((prev) => (prev ? { ...prev, ...updatedUserData } : updatedUserData));
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const identity = await authApi.me();
+      if (identity?.user) setUser(identity.user);
+      return identity?.user;
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -97,8 +111,10 @@ export function AuthProvider({ role, loginPath = '/login', children }) {
       register,
       googleLogin,
       logout,
+      updateUser,
+      refreshUser,
     }),
-    [user, role, isLoading, login, register, googleLogin, logout],
+    [user, role, isLoading, login, register, googleLogin, logout, updateUser, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

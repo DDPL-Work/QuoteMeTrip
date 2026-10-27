@@ -57,6 +57,7 @@ export {
 } from './QuotationDocument.jsx';
 export { ToastProvider, useToast, toast } from './Toast.jsx';
 export { AnnouncementDetailModal } from './AnnouncementDetailModal.jsx';
+export { ForgotPasswordModal } from './ForgotPasswordModal.jsx';
 export {
   getTravelRequestDisplayName,
   formatRequestIdentifier,

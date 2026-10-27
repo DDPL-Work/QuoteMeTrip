@@ -11,6 +11,11 @@ import {
   validateTravellerRegistration,
   validateAgencyRegistration,
   validateGoogleInput,
+  validateChangePasswordInput,
+  validateUpdateProfileInput,
+  validateForgotPasswordInput,
+  validateVerifyResetOtpInput,
+  validateResetPasswordInput,
 } from './auth.validation.js';
 import { successResponse } from '../../utils/apiResponse.js';
 import { getRefreshCookieName, setRefreshCookie, clearRefreshCookie } from '../../utils/cookies.js';
@@ -88,3 +93,37 @@ export const me = asyncHandler(async (req, res) => {
   const user = await service.getCurrentUser(req.user.id);
   return successResponse(res, { data: { user } });
 });
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const input = validateChangePasswordInput(req.body);
+  const result = await service.changePassword(req.user.id, input, contextFrom(req));
+  return successResponse(res, { message: result.message, data: result });
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const updates = validateUpdateProfileInput(req.body);
+  const user = await service.updateProfile(req.user.id, updates, contextFrom(req));
+  return successResponse(res, { message: 'Profile updated successfully.', data: { user } });
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = validateForgotPasswordInput(req.body);
+  const result = await service.requestPasswordResetOtp(email, contextFrom(req));
+  return successResponse(res, { message: result.message });
+});
+
+export const verifyResetOtp = asyncHandler(async (req, res) => {
+  const validated = validateVerifyResetOtpInput(req.body);
+  const result = await service.verifyPasswordResetOtp(validated, contextFrom(req));
+  return successResponse(res, {
+    message: 'Verification successful. You may now reset your password.',
+    data: result,
+  });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const validated = validateResetPasswordInput(req.body);
+  const result = await service.resetPasswordWithOtp(validated, contextFrom(req));
+  return successResponse(res, { message: result.message });
+});
+

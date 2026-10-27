@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiUser, FiLogOut, FiChevronDown, FiGlobe } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiChevronDown, FiGlobe, FiKey } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { getMediaUrl } from '../lib/api.js';
+import { ChangePasswordModal } from './ChangePasswordModal.jsx';
 
 export function UserMenu() {
   let user = null;
@@ -17,6 +18,7 @@ export function UserMenu() {
   }
 
   const [isOpen, setIsOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const menuRef = useRef(null);
 
   const displayName = user?.firstName
@@ -96,6 +98,31 @@ export function UserMenu() {
           >
             <FiUser size={16} /> My Profile
           </Link>
+          <button
+            type="button"
+            className="tf-portal-dropdown-item"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              setShowChangePassword(true);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              textAlign: 'left',
+              cursor: 'pointer',
+              font: 'inherit',
+              padding: '8px 12px',
+              fontSize: '14px',
+              color: 'inherit',
+            }}
+          >
+            <FiKey size={16} /> Change Password
+          </button>
           <Link
             to="/"
             className="tf-portal-dropdown-item"
@@ -119,6 +146,11 @@ export function UserMenu() {
           </button>
         </div>
       ) : null}
+
+      <ChangePasswordModal
+        isOpen={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
     </div>
   );
 }

@@ -4,13 +4,15 @@
 // Light Green (#2E9E5B) + Yellow (#F5C518) visual identity.
 
 import { useState, useEffect } from 'react';
+import { FiGlobe } from 'react-icons/fi';
 import { useI18n, SUPPORTED_LOCALES, useDynamicTranslation } from '@troublefree/i18n';
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ variant = '' }) {
   const { locale, setLocale } = useI18n();
 
   return (
-    <div className="tf-lang-switcher" aria-label="Language selector">
+    <div className={`tf-lang-switcher ${variant}`.trim()} aria-label="Language selector">
+      <FiGlobe className="tf-lang-globe-icon" size={13} />
       {SUPPORTED_LOCALES.map((loc) => (
         <button
           key={loc}

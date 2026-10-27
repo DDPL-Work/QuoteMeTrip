@@ -26,6 +26,22 @@ export function createAuthRateLimiter() {
   });
 }
 
+export function createPasswordResetRateLimiter() {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: {
+        code: AUTH_ERROR_CODES.RATE_LIMITED,
+        message: 'Too many password reset attempts from this IP. Please try again later.',
+      },
+    },
+  });
+}
+
 export function createQuotationRateLimiter() {
   return rateLimit({
     windowMs: 15 * 60 * 1000,

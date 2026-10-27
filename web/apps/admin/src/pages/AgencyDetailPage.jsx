@@ -18,8 +18,14 @@ import {
   FiExternalLink,
   FiArrowLeft,
   FiLayers,
+  FiEye,
+  FiDownload,
+  FiZoomIn,
+  FiZoomOut,
+  FiImage,
+  FiFile,
 } from 'react-icons/fi';
-import { adminApi } from '../services/api.js';
+import { adminApi, apiBaseUrl } from '../services/api.js';
 import { StatusBadge } from '@troublefree/ui';
 import { useI18n, formatDate } from '@troublefree/i18n';
 
@@ -35,10 +41,54 @@ export function AgencyDetailPage() {
   // Modals
   const [confirmActionModal, setConfirmActionModal] = useState(null); // { type, reason }
   const [rejectDocModal, setRejectDocModal] = useState(null); // { doc, note }
+  const [viewDocModal, setViewDocModal] = useState(null); // doc
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [createMemModal, setCreateMemModal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const [memReference, setMemReference] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  const getDocumentUrl = (filePath) => {
+    if (!filePath) return '';
+    if (
+      filePath.startsWith('http://') ||
+      filePath.startsWith('https://') ||
+      filePath.startsWith('data:')
+    ) {
+      return filePath;
+    }
+    const cleanPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+    return `${apiBaseUrl}${cleanPath}`;
+  };
+
+  const isImageDocument = (doc) => {
+    if (!doc) return false;
+    if (doc.mimeType && doc.mimeType.toLowerCase().startsWith('image/')) return true;
+    const path = (doc.filePath || doc.originalName || '').toLowerCase();
+    return (
+      path.endsWith('.png') ||
+      path.endsWith('.jpg') ||
+      path.endsWith('.jpeg') ||
+      path.endsWith('.webp') ||
+      path.endsWith('.gif') ||
+      path.endsWith('.svg')
+    );
+  };
+
+  const isPdfDocument = (doc) => {
+    if (!doc) return false;
+    if (doc.mimeType && doc.mimeType.toLowerCase().includes('pdf')) return true;
+    const path = (doc.filePath || doc.originalName || '').toLowerCase();
+    return path.endsWith('.pdf');
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes <= 0) return null;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
 
   const loadAgencyData = useCallback(() => {
     setLoading(true);
@@ -557,74 +607,171 @@ export function AgencyDetailPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {agency.documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  style={{
-                    padding: '1rem',
-                    background: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
-                    fontSize: '0.875rem',
-                  }}
-                >
+              {agency.documents.map((doc) => {
+                const docUrl = getDocumentUrl(doc.filePath);
+                const isImg = isImageDocument(doc);
+                const isPdf = isPdfDocument(doc);
+                const formattedSize = formatFileSize(doc.fileSize);
+
+                return (
                   <div
+                    key={doc.id}
                     style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '0.5rem',
+                      padding: '1rem',
+                      background: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
+                      fontSize: '0.875rem',
+                      transition: 'border-color 0.15s ease',
                     }}
                   >
-                    <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>
-                      {doc.documentType?.toUpperCase()}
-                    </strong>
-                    <StatusBadge status={doc.status} label={t('status.' + doc.status, doc.status)} />
-                  </div>
-
-                  <div style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
-                    File: {doc.originalName || doc.filePath}
-                  </div>
-
-                  {doc.verificationNote && (
                     <div
                       style={{
-                        color: '#DC2626',
-                        fontSize: '0.8rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         marginBottom: '0.5rem',
-                        background: '#FEE2E2',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
                       }}
                     >
-                      Admin Note: {doc.verificationNote}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {isImg ? (
+                          <FiImage style={{ color: '#0C4E28', fontSize: '1.1rem' }} />
+                        ) : isPdf ? (
+                          <FiFileText style={{ color: '#DC2626', fontSize: '1.1rem' }} />
+                        ) : (
+                          <FiFile style={{ color: '#64748B', fontSize: '1.1rem' }} />
+                        )}
+                        <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>
+                          {doc.documentType?.replace('_', ' ').toUpperCase()}
+                        </strong>
+                      </div>
+                      <StatusBadge status={doc.status} label={t('status.' + doc.status, doc.status)} />
                     </div>
-                  )}
 
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                    {doc.status !== 'approved' && (
+                    {/* Thumbnail & File Details */}
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', margin: '0.75rem 0' }}>
+                      {isImg && docUrl && (
+                        <div
+                          onClick={() => {
+                            setZoomLevel(1);
+                            setViewDocModal(doc);
+                          }}
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            border: '1px solid #CBD5E1',
+                            background: '#FFFFFF',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            position: 'relative',
+                          }}
+                          title="Click to preview"
+                        >
+                          <img
+                            src={docUrl}
+                            alt={doc.originalName || doc.documentType}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <div style={{ flex: 1, minWidth: 0, fontSize: '0.8rem', color: '#64748B' }}>
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            color: '#334155',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                          title={doc.originalName || doc.filePath}
+                        >
+                          {doc.originalName || doc.filePath}
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2px', flexWrap: 'wrap' }}>
+                          {formattedSize && <span>{formattedSize}</span>}
+                          {doc.mimeType && <span>{doc.mimeType}</span>}
+                          {doc.verifiedBy && (
+                            <span style={{ color: '#16A34A' }}>
+                              ✓ {t('admin.agencyDetail.verifiedByAdmin', { name: doc.verifier?.name || `Admin #${doc.verifiedBy}` }, `Verified by ${doc.verifier?.name || 'Admin'}`)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {doc.verificationNote && (
+                      <div
+                        style={{
+                          color: '#DC2626',
+                          fontSize: '0.8rem',
+                          marginBottom: '0.75rem',
+                          background: '#FEE2E2',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #FECACA',
+                        }}
+                      >
+                        <strong>Admin Note:</strong> {doc.verificationNote}
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', marginTop: '0.5rem' }}>
                       <button
                         type="button"
-                        className="admin-btn admin-btn-primary admin-btn-sm"
-                        onClick={() => handleVerifyDocument(doc.id)}
-                        disabled={actionLoading}
+                        className="admin-btn admin-btn-outline admin-btn-sm"
+                        onClick={() => {
+                          setZoomLevel(1);
+                          setViewDocModal(doc);
+                        }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
-                        <FiCheck size={12} /> {t('admin.agencyDetail.verifyDocument', 'Verify Document')}
+                        <FiEye size={13} /> {t('admin.agencyDetail.viewDocument', 'View Document')}
                       </button>
-                    )}
-                    {doc.status !== 'rejected' && (
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn-danger admin-btn-sm"
-                        onClick={() => setRejectDocModal({ doc, note: '' })}
-                        disabled={actionLoading}
-                      >
-                        <FiX size={12} /> {t('admin.agencyDetail.rejectDocument', 'Reject Document')}
-                      </button>
-                    )}
+
+                      {docUrl && (
+                        <a
+                          href={docUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="admin-btn admin-btn-outline admin-btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+                          title={t('admin.agencyDetail.openInNewTab', 'Open in New Tab')}
+                        >
+                          <FiExternalLink size={13} />
+                        </a>
+                      )}
+
+                      {doc.status !== 'approved' && (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-primary admin-btn-sm"
+                          onClick={() => handleVerifyDocument(doc.id)}
+                          disabled={actionLoading}
+                        >
+                          <FiCheck size={12} /> {t('admin.agencyDetail.verifyDocument', 'Verify Document')}
+                        </button>
+                      )}
+                      {doc.status !== 'rejected' && (
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-danger admin-btn-sm"
+                          onClick={() => setRejectDocModal({ doc, note: '' })}
+                          disabled={actionLoading}
+                        >
+                          <FiX size={12} /> {t('admin.agencyDetail.rejectDocument', 'Reject Document')}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -911,6 +1058,283 @@ export function AgencyDetailPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 4: View Compliance Document Modal */}
+      {viewDocModal && (
+        <div className="admin-modal-backdrop" onClick={() => setViewDocModal(null)}>
+          <div
+            className="admin-modal-card"
+            style={{ maxWidth: '860px', width: '92vw', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-modal-header" style={{ padding: '1rem 1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <h2 className="admin-modal-title" style={{ fontSize: '1.1rem', margin: 0 }}>
+                  <FiFileText style={{ color: '#0C4E28' }} />
+                  {viewDocModal.documentType?.replace('_', ' ').toUpperCase()}
+                </h2>
+                <StatusBadge
+                  status={viewDocModal.status}
+                  label={t('status.' + viewDocModal.status, viewDocModal.status)}
+                />
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close-btn"
+                onClick={() => setViewDocModal(null)}
+                aria-label="Close document viewer"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div
+              className="admin-modal-body"
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '1rem 1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                background: '#F8FAFC',
+              }}
+            >
+              {/* Document Preview Area */}
+              <div
+                style={{
+                  minHeight: '380px',
+                  maxHeight: '520px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#0F172A',
+                  borderRadius: '10px',
+                  overflow: 'auto',
+                  position: 'relative',
+                  border: '1px solid #E2E8F0',
+                }}
+              >
+                {isImageDocument(viewDocModal) ? (
+                  <div
+                    style={{
+                      transform: `scale(${zoomLevel})`,
+                      transition: 'transform 0.15s ease',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '1rem',
+                    }}
+                  >
+                    <img
+                      src={getDocumentUrl(viewDocModal.filePath)}
+                      alt={viewDocModal.originalName || viewDocModal.documentType}
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '480px',
+                        objectFit: 'contain',
+                        borderRadius: '4px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                      }}
+                    />
+                  </div>
+                ) : isPdfDocument(viewDocModal) ? (
+                  <iframe
+                    src={getDocumentUrl(viewDocModal.filePath)}
+                    title={viewDocModal.originalName || 'PDF Viewer'}
+                    style={{
+                      width: '100%',
+                      height: '480px',
+                      border: 'none',
+                      borderRadius: '8px',
+                      background: '#FFFFFF',
+                    }}
+                  />
+                ) : (
+                  <div style={{ textAlign: 'center', color: '#94A3B8', padding: '2rem' }}>
+                    <FiFileText size={48} style={{ marginBottom: '1rem' }} />
+                    <p style={{ margin: '0 0 0.5rem', color: '#FFFFFF', fontSize: '1rem' }}>
+                      {viewDocModal.originalName || viewDocModal.filePath}
+                    </p>
+                    <p style={{ margin: 0, fontSize: '0.85rem' }}>
+                      {viewDocModal.mimeType || 'Document'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Zoom controls for images */}
+                {isImageDocument(viewDocModal) && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '12px',
+                      right: '12px',
+                      display: 'flex',
+                      gap: '4px',
+                      background: 'rgba(15, 23, 42, 0.75)',
+                      backdropFilter: 'blur(4px)',
+                      padding: '4px 6px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                      title={t('admin.agencyDetail.zoomIn', 'Zoom In')}
+                    >
+                      <FiZoomIn size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.5))}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                      title={t('admin.agencyDetail.zoomOut', 'Zoom Out')}
+                    >
+                      <FiZoomOut size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setZoomLevel(1)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                        padding: '4px 6px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                      }}
+                      title={t('admin.agencyDetail.resetZoom', 'Reset Zoom')}
+                    >
+                      100%
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Document metadata & notes */}
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 600, color: '#0F172A' }}>
+                    {viewDocModal.originalName || viewDocModal.filePath}
+                  </div>
+                  <div style={{ color: '#64748B', fontSize: '0.78rem', marginTop: '2px' }}>
+                    {viewDocModal.fileSize && <span>{formatFileSize(viewDocModal.fileSize)} • </span>}
+                    <span>{viewDocModal.mimeType || 'Document'}</span>
+                  </div>
+                </div>
+
+                {viewDocModal.verificationNote && (
+                  <div
+                    style={{
+                      background: '#FEE2E2',
+                      border: '1px solid #FECACA',
+                      color: '#DC2626',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Note: {viewDocModal.verificationNote}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="admin-modal-footer" style={{ padding: '0.75rem 1.25rem', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <a
+                  href={getDocumentUrl(viewDocModal.filePath)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="admin-btn admin-btn-outline"
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <FiExternalLink size={14} /> {t('admin.agencyDetail.openInNewTab', 'Open in New Tab')}
+                </a>
+                <a
+                  href={getDocumentUrl(viewDocModal.filePath)}
+                  download={viewDocModal.originalName || 'document'}
+                  className="admin-btn admin-btn-outline"
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <FiDownload size={14} /> {t('admin.agencyDetail.downloadDoc', 'Download')}
+                </a>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {viewDocModal.status !== 'approved' && (
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-primary"
+                    onClick={async () => {
+                      await handleVerifyDocument(viewDocModal.id);
+                      setViewDocModal(null);
+                    }}
+                    disabled={actionLoading}
+                  >
+                    <FiCheck size={14} /> {t('admin.agencyDetail.verifyDocument', 'Verify Document')}
+                  </button>
+                )}
+                {viewDocModal.status !== 'rejected' && (
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-danger"
+                    onClick={() => {
+                      const doc = viewDocModal;
+                      setViewDocModal(null);
+                      setRejectDocModal({ doc, note: '' });
+                    }}
+                    disabled={actionLoading}
+                  >
+                    <FiX size={14} /> {t('admin.agencyDetail.rejectDocument', 'Reject Document')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-outline"
+                  onClick={() => setViewDocModal(null)}
+                >
+                  {t('admin.common.cancel', 'Close')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

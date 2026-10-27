@@ -15,12 +15,13 @@
 import { Router } from 'express';
 import * as controller from './auth.controller.js';
 import { authenticate } from '../../middleware/authenticate.js';
-import { createAuthRateLimiter } from '../../middleware/rateLimiter.js';
+import { createAuthRateLimiter, createPasswordResetRateLimiter } from '../../middleware/rateLimiter.js';
 
 const router = Router();
 
 // Stricter limits on credential and token endpoints (configurable).
 const sensitiveLimiter = createAuthRateLimiter();
+const passwordResetLimiter = createPasswordResetRateLimiter();
 
 router.post('/register/traveller', controller.registerTraveller);
 router.post('/register/agency', controller.registerAgency);
@@ -30,5 +31,14 @@ router.post('/refresh', sensitiveLimiter, controller.refresh);
 router.post('/logout', controller.logout);
 router.post('/logout-all', authenticate, controller.logoutAll);
 router.get('/me', authenticate, controller.me);
+router.post('/change-password', authenticate, sensitiveLimiter, controller.changePassword);
+router.patch('/profile', authenticate, controller.updateProfile);
+router.put('/profile', authenticate, controller.updateProfile);
+
+// Password recovery flow (email OTP)
+router.post('/forgot-password', passwordResetLimiter, controller.forgotPassword);
+router.post('/verify-reset-otp', passwordResetLimiter, controller.verifyResetOtp);
+router.post('/reset-password', passwordResetLimiter, controller.resetPassword);
 
 export default router;
+

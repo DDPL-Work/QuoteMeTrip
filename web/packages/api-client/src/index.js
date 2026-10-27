@@ -170,7 +170,7 @@ export function createAuthApi(client) {
   async function unwrap(promise) {
     try {
       const response = await promise;
-      return response.data?.data;
+      return response.data?.data !== undefined ? response.data.data : response.data;
     } catch (error) {
       throw toApiError(error);
     }
@@ -185,6 +185,11 @@ export function createAuthApi(client) {
     logout: () => unwrap(http.post('/api/v1/auth/logout', {})),
     logoutAll: () => unwrap(http.post('/api/v1/auth/logout-all', {})),
     me: () => unwrap(http.get('/api/v1/auth/me')),
+    changePassword: (input) => unwrap(http.post('/api/v1/auth/change-password', input)),
+    updateProfile: (input) => unwrap(http.patch('/api/v1/auth/profile', input)),
+    forgotPassword: (input) => unwrap(http.post('/api/v1/auth/forgot-password', input)),
+    verifyResetOtp: (input) => unwrap(http.post('/api/v1/auth/verify-reset-otp', input)),
+    resetPassword: (input) => unwrap(http.post('/api/v1/auth/reset-password', input)),
   };
 }
 
@@ -530,6 +535,10 @@ export function createAdminApi(client) {
     withdrawAnnouncement: (id) => unwrap(http.post(`/api/v1/admin/announcements/${id}/withdraw`, {})),
     deleteAnnouncement: (id) => unwrap(http.delete(`/api/v1/admin/announcements/${id}`)),
     getAnnouncementStats: (id) => unwrap(http.get(`/api/v1/admin/announcements/${id}/stats`)),
+
+    // Profile & Password
+    changePassword: (input) => unwrap(http.post('/api/v1/auth/change-password', input)),
+    updateProfile: (input) => unwrap(http.patch('/api/v1/auth/profile', input)),
   };
 }
 

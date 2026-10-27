@@ -5,10 +5,11 @@
 
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FormField, PasswordInput, LoadingButton, AuthError } from '@troublefree/ui';
+import { FormField, PasswordInput, LoadingButton, AuthError, ForgotPasswordModal } from '@troublefree/ui';
 import { useI18n } from '@troublefree/i18n';
 import { useAuth } from './auth-context.js';
 import { friendlyAuthMessage } from './friendly-message.js';
+import { authApi } from '../../lib/api.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -20,6 +21,7 @@ export function LoginForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -46,37 +48,65 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <FormField id="email" label={t('admin.auth.emailLabel')} error={fieldErrors.email}>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder={t('admin.auth.emailPlaceholder')}
-          required
-          disabled={submitting}
-        />
-      </FormField>
-      <FormField id="password" label={t('admin.auth.passwordLabel')} error={fieldErrors.password}>
-        <PasswordInput id="password" name="password" disabled={submitting} />
-      </FormField>
-      <AuthError error={error} />
-      <LoadingButton loading={submitting}>{t('admin.auth.signInButton')}</LoadingButton>
-
-      <div className="auth-security-notice">
-        <svg className="auth-security-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+    <>
+      <form onSubmit={handleSubmit} noValidate>
+        <FormField id="email" label={t('admin.auth.emailLabel')} error={fieldErrors.email}>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder={t('admin.auth.emailPlaceholder')}
+            required
+            disabled={submitting}
           />
-        </svg>
-        <span>
-          {t('admin.auth.securityNotice')}
-        </span>
-      </div>
-    </form>
+        </FormField>
+        <FormField id="password" label={t('admin.auth.passwordLabel')} error={fieldErrors.password}>
+          <PasswordInput id="password" name="password" disabled={submitting} />
+        </FormField>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+          <button
+            type="button"
+            onClick={() => setForgotOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#2563eb',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              padding: 0,
+              textDecoration: 'underline',
+            }}
+          >
+            {t('auth.forgotPassword', 'Forgot password?')}
+          </button>
+        </div>
+
+        <AuthError error={error} />
+        <LoadingButton loading={submitting}>{t('admin.auth.signInButton')}</LoadingButton>
+
+        <div className="auth-security-notice">
+          <svg className="auth-security-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+          <span>
+            {t('admin.auth.securityNotice')}
+          </span>
+        </div>
+      </form>
+
+      <ForgotPasswordModal
+        isOpen={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+        authApi={authApi}
+      />
+    </>
   );
 }

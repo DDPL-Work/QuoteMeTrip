@@ -16,6 +16,9 @@ import {
   FiCheckCircle,
   FiChevronLeft,
   FiChevronRight,
+  FiGlobe,
+  FiKey,
+  FiLock,
 } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n, SUPPORTED_LOCALES } from '@troublefree/i18n';
@@ -23,6 +26,7 @@ import * as apiModule from '../lib/api.js';
 const notificationApi = apiModule?.notificationApi;
 const messagingApi = apiModule?.messagingApi;
 import { NotificationPanel } from '../components/NotificationPanel.jsx';
+import { ChangePasswordModal } from '../components/ChangePasswordModal.jsx';
 import {
   requestNotificationPermissionAndRegister,
   initForegroundNotificationListener,
@@ -47,6 +51,7 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
 
   const toggleSidebarCollapsed = () => {
     setSidebarCollapsed((prev) => {
@@ -241,7 +246,7 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
     <div className="agency-shell">
       {/* Header */}
       <header className="agency-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="agency-header-left">
           <button
             type="button"
             className="agency-header-btn agency-mobile-toggle-btn"
@@ -255,7 +260,6 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
               src="/images/tfh_logo.png"
               alt="QuoteMeTrip Agency"
               className="agency-brand-logo"
-              style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
@@ -287,6 +291,7 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
 
           {/* Language Switcher */}
           <div className="tf-lang-switcher" style={{ background: 'rgba(255,255,255,0.12)' }}>
+            <FiGlobe className="tf-lang-globe-icon" size={13} />
             {SUPPORTED_LOCALES.map((loc) => (
               <button
                 key={loc}
@@ -309,19 +314,10 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
               aria-haspopup="true"
             >
               <div className="agency-avatar-circle">{agencyName.charAt(0).toUpperCase()}</div>
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  maxWidth: '120px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <span className="agency-profile-name">
                 {agencyName}
               </span>
-              <FiChevronDown style={{ fontSize: '0.9rem', opacity: 0.7 }} />
+              <FiChevronDown className="agency-profile-chevron" style={{ fontSize: '0.9rem', opacity: 0.7 }} />
             </button>
 
             <AnimatePresence>
@@ -346,6 +342,17 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
                   >
                     <FiUser /> {t('header.profile', 'Agency Profile')}
                   </Link>
+                  <button
+                    type="button"
+                    className="agency-dropdown-item"
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      setChangePasswordModalOpen(true);
+                    }}
+                    role="menuitem"
+                  >
+                    <FiKey /> {t('auth.changePassword', 'Change Password')}
+                  </button>
                   <button
                     type="button"
                     className="agency-dropdown-item danger"
@@ -581,6 +588,11 @@ export function AgencyAppLayout({ children, activeItem = null, unreadRequestsCou
           </motion.div>
         </main>
       </div>
+
+      <ChangePasswordModal
+        isOpen={changePasswordModalOpen}
+        onClose={() => setChangePasswordModalOpen(false)}
+      />
     </div>
   );
 }

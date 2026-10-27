@@ -140,3 +140,52 @@ export async function findIdentityForUser(
     transaction,
   });
 }
+
+export async function createPasswordReset(
+  attributes,
+  { transaction = null, registry = null } = {},
+) {
+  return db(registry).PasswordReset.create(attributes, { transaction });
+}
+
+export async function findLatestActivePasswordReset(
+  userId,
+  { transaction = null, registry = null } = {},
+) {
+  return db(registry).PasswordReset.findOne({
+    where: { userId, consumedAt: null },
+    order: [['id', 'DESC']],
+    transaction,
+  });
+}
+
+export async function findPasswordResetByResetTokenHash(
+  resetTokenHash,
+  { transaction = null, registry = null } = {},
+) {
+  return db(registry).PasswordReset.findOne({
+    where: { resetTokenHash, consumedAt: null },
+    transaction,
+  });
+}
+
+export async function invalidateUserPasswordResets(
+  userId,
+  { transaction = null, registry = null } = {},
+) {
+  const now = new Date();
+  await db(registry).PasswordReset.update(
+    { consumedAt: now },
+    { where: { userId, consumedAt: null }, transaction },
+  );
+  return now;
+}
+
+export async function updatePasswordReset(
+  passwordReset,
+  updates,
+  { transaction = null } = {},
+) {
+  return passwordReset.update(updates, { transaction });
+}
+

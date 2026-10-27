@@ -33,6 +33,8 @@ import {
   normalizeEmail,
   validateEmail,
   validatePassword,
+  validateChangePasswordInput,
+  validateUpdateProfileInput,
 } from '../../src/modules/auth/auth.validation.js';
 import { AUTH_ROLES } from '../../src/modules/auth/auth.constants.js';
 import { authorize } from '../../src/middleware/authorize.js';
@@ -453,3 +455,45 @@ describe('optionalAuthenticate middleware', () => {
     assert.strictEqual(req.user, null);
   });
 });
+
+describe('change password and profile validation', () => {
+  test('validateChangePasswordInput succeeds with valid inputs', () => {
+    const res = validateChangePasswordInput({
+      currentPassword: 'oldPassword123',
+      newPassword: 'newPassword123',
+      confirmPassword: 'newPassword123',
+    });
+    assert.strictEqual(res.currentPassword, 'oldPassword123');
+    assert.strictEqual(res.newPassword, 'newPassword123');
+  });
+
+  test('validateChangePasswordInput rejects missing current password or mismatched confirmation', () => {
+    assert.throws(() => {
+      validateChangePasswordInput({ newPassword: 'newPassword123' });
+    }, /Current password is required/);
+
+    assert.throws(() => {
+      validateChangePasswordInput({
+        currentPassword: 'oldPassword123',
+        newPassword: 'newPassword123',
+        confirmPassword: 'wrongPassword123',
+      });
+    }, /confirmation do not match/);
+  });
+
+  test('validateUpdateProfileInput cleans and validates name and email', () => {
+    const res = validateUpdateProfileInput({
+      name: '  Updated Admin  ',
+      email: ' ADMIN@EXAMPLE.COM ',
+    });
+    assert.strictEqual(res.name, 'Updated Admin');
+    assert.strictEqual(res.email, 'admin@example.com');
+  });
+
+  test('validateUpdateProfileInput throws when empty', () => {
+    assert.throws(() => {
+      validateUpdateProfileInput({});
+    }, /At least one profile field/);
+  });
+});
+

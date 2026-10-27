@@ -70,6 +70,7 @@ import { AgencyCapability } from './AgencyCapability.js';
 import { Rating } from './Rating.js';
 import { TranslationCache } from './TranslationCache.js';
 import { Announcement } from './Announcement.js';
+import { PasswordReset } from './PasswordReset.js';
 
 let registry = null;
 
@@ -109,6 +110,7 @@ export function initModels(sequelize = getSequelize()) {
   AgencyCapability.initModel(sequelize);
   TranslationCache.initModel(sequelize);
   Announcement.initModel(sequelize);
+  PasswordReset.initModel(sequelize);
 
   // User 1:1 TravellerProfile
   User.hasOne(TravellerProfile, {
@@ -127,6 +129,15 @@ export function initModels(sequelize = getSequelize()) {
     onUpdate: 'CASCADE',
   });
   AgencyProfile.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+  // User 1:N PasswordReset
+  User.hasMany(PasswordReset, {
+    foreignKey: 'userId',
+    as: 'passwordResets',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  });
+  PasswordReset.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
   // AgencyProfile 1:N AgencyDocument
   AgencyProfile.hasMany(AgencyDocument, {
@@ -579,6 +590,7 @@ export function initModels(sequelize = getSequelize()) {
     AgencyCapability,
     TranslationCache,
     Announcement,
+    PasswordReset,
   };
 
   return registry;
@@ -616,4 +628,5 @@ export {
   AgencyCapability,
   TranslationCache,
   Announcement,
+  PasswordReset,
 };

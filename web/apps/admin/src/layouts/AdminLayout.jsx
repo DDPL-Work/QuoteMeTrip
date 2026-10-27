@@ -18,6 +18,9 @@ import {
   FiShield,
   FiSidebar,
   FiRadio,
+  FiUser,
+  FiKey,
+  FiGlobe,
 } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n, SUPPORTED_LOCALES } from '@troublefree/i18n';
@@ -121,6 +124,12 @@ export function AdminLayout({ children }) {
         { key: 'audit-logs', label: t('admin.nav.auditLogs', 'Audit Logs'), path: '/audit-logs', icon: FiActivity },
       ],
     },
+    {
+      title: t('admin.nav.account', 'ACCOUNT & PROFILE'),
+      items: [
+        { key: 'profile', label: t('admin.nav.profile', 'Profile & Security'), path: '/profile', icon: FiUser },
+      ],
+    },
   ];
 
   const currentPath = location.pathname;
@@ -140,7 +149,7 @@ export function AdminLayout({ children }) {
     <div className={`admin-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Header */}
       <header className="admin-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="admin-header-left">
           {/* Mobile hamburger toggle */}
           <button
             type="button"
@@ -171,9 +180,9 @@ export function AdminLayout({ children }) {
                 e.target.style.display = 'none';
               }}
             />
-            <span className="admin-brand-title">
+            {/* <span className="admin-brand-title">
               Quote<span style={{ color: '#FC7C00' }}>MyTrip</span>
-            </span>
+            </span> */}
             <span className="admin-brand-badge">ADMIN</span>
           </Link>
         </div>
@@ -191,13 +200,15 @@ export function AdminLayout({ children }) {
           </button>
 
           {/* Language Switcher */}
-          <div className="tf-lang-switcher" style={{ background: 'rgba(255,255,255,0.12)' }}>
+          <div className="tf-lang-switcher" aria-label="Language selector">
+            <FiGlobe className="tf-lang-globe-icon" size={13} />
             {SUPPORTED_LOCALES.map((loc) => (
               <button
                 key={loc}
                 type="button"
                 className={`tf-lang-btn ${locale === loc ? 'active' : ''}`}
                 onClick={() => setLocale(loc)}
+                aria-pressed={locale === loc}
               >
                 {loc.toUpperCase()}
               </button>
@@ -214,19 +225,10 @@ export function AdminLayout({ children }) {
               aria-haspopup="true"
             >
               <div className="admin-avatar-circle">{adminName.charAt(0).toUpperCase()}</div>
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  maxWidth: '120px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <span className="admin-profile-name">
                 {adminName}
               </span>
-              <FiChevronDown style={{ fontSize: '0.9rem', opacity: 0.7 }} />
+              <FiChevronDown className="admin-profile-chevron" style={{ fontSize: '0.9rem', opacity: 0.7 }} />
             </button>
 
             <AnimatePresence>
@@ -240,16 +242,45 @@ export function AdminLayout({ children }) {
                   role="menu"
                 >
                   <div className="admin-dropdown-header">
-                    <div className="admin-dropdown-name">QuoteMeTrip Admin</div>
+                    <div className="admin-dropdown-name">{adminName}</div>
                     <div className="admin-dropdown-email">{user?.email}</div>
                   </div>
+                  <button
+                    type="button"
+                    className="admin-dropdown-item"
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      navigate('/profile');
+                    }}
+                    role="menuitem"
+                  >
+                    <FiUser /> {t('admin.profile.tabGeneral', 'Account Profile')}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-dropdown-item"
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      navigate('/profile?tab=password');
+                    }}
+                    role="menuitem"
+                  >
+                    <FiKey /> {t('admin.profile.tabSecurity', 'Change Password')}
+                  </button>
+                  <div
+                    style={{
+                      height: '1px',
+                      background: 'var(--admin-border-subtle, #E2E8F0)',
+                      margin: '6px 0',
+                    }}
+                  />
                   <button
                     type="button"
                     className="admin-dropdown-item danger"
                     onClick={handleSignOut}
                     role="menuitem"
                   >
-                    <FiLogOut /> {t('admin.common.signOut')}
+                    <FiLogOut /> {t('admin.common.signOut', 'Sign Out')}
                   </button>
                 </motion.div>
               )}

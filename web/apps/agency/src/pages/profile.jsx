@@ -14,6 +14,8 @@ import {
   FiClock,
   FiFileText,
   FiCheck,
+  FiKey,
+  FiLock,
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AgencyAppLayout } from '../layouts/AgencyAppLayout.jsx';
@@ -23,6 +25,7 @@ import { toast } from '@troublefree/ui';
 import { agencyProfileApi } from '../lib/api.js';
 import { AGENCY_SERVICE_TYPES, AGENCY_SERVICE_LABELS } from '@troublefree/types';
 import AgencyOnboardingWizard from '../components/AgencyOnboardingWizard.jsx';
+import { ChangePasswordModal } from '../components/ChangePasswordModal.jsx';
 
 const POPULAR_DESTINATIONS = [
   'Istanbul',
@@ -47,6 +50,7 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const [profileData, setProfileData] = useState(null);
   const [selectedLocations, setSelectedLocations] = useState([]);
@@ -830,8 +834,44 @@ export function ProfilePage() {
               </div>
             )}
           </div>
+
+          {/* Account Security Card */}
+          <div className="agency-section-card" style={{ marginTop: '1.5rem', marginBottom: 0 }}>
+            <h3 className="agency-section-title" style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <FiShield style={{ color: 'var(--agency-primary)' }} /> {t('profile.securityTitle', 'Account Security')}
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--agency-text-muted)', marginBottom: '1rem', lineHeight: 1.5 }}>
+              {t('profile.securityDesc', 'Keep your account secure by updating your password regularly with strong alphanumeric characters.')}
+            </p>
+            <button
+              type="button"
+              className="agency-btn-secondary"
+              onClick={() => setChangePasswordOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.88rem',
+                padding: '0.6rem 1rem',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                background: '#F0FDF4',
+                color: '#166534',
+                border: '1px solid #BBF7D0',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <FiKey size={15} /> {t('auth.changePassword', 'Change Password')}
+            </button>
+          </div>
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
     </AgencyAppLayout>
   );
 }

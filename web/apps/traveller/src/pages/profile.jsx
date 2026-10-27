@@ -17,13 +17,14 @@ import {
   ErrorState,
   ConfirmDialog,
 } from '@troublefree/ui';
-import { FiCamera, FiImage, FiTrash2, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { FiCamera, FiImage, FiTrash2, FiCheckCircle, FiAlertCircle, FiKey, FiLock } from 'react-icons/fi';
 import { useI18n } from '@troublefree/i18n';
 import { travellerApi, getMediaUrl } from '../lib/api.js';
 import { useAuth } from '../features/auth/auth-context.js';
 import { TravellerDetails } from '../components/TravellerDetails.jsx';
 import { Icons } from '../components/icons.jsx';
 import { MotionPage } from '../components/motion/MotionPage.jsx';
+import { ChangePasswordModal } from '../components/ChangePasswordModal.jsx';
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Select gender' },
@@ -59,6 +60,7 @@ export function ProfilePage() {
 
   const [showLogoutAllModal, setShowLogoutAllModal] = useState(false);
   const [loggingOutAll, setLoggingOutAll] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   const [form, setForm] = useState({
     firstName: '',
@@ -819,29 +821,64 @@ export function ProfilePage() {
 
             {/* Account Security Card */}
             <Card title="Account Security">
-              <p
-                style={{
-                  color: 'var(--tf-portal-text-muted)',
-                  fontSize: '0.9rem',
-                  marginBottom: '16px',
-                }}
-              >
-                If you lost a device or suspect unauthorized access, you can sign out from all
-                active sessions across all devices.
-              </p>
-              <Button
-                variant="outline"
-                style={{
-                  color: 'var(--tf-portal-warn, #D32F2F)',
-                  borderColor: 'var(--tf-portal-warn, #D32F2F)',
-                }}
-                onClick={() => setShowLogoutAllModal(true)}
-              >
-                Sign out from all devices
-              </Button>
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '0.95rem', fontWeight: 600, color: 'var(--tf-portal-text-main, #1F2937)' }}>
+                  Password & Authentication
+                </h4>
+                <p
+                  style={{
+                    color: 'var(--tf-portal-text-muted)',
+                    fontSize: '0.85rem',
+                    marginBottom: '12px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Manage your account password. Ensure your password is at least 8 characters and kept confidential.
+                </p>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowChangePasswordModal(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <FiKey size={14} /> Change Password
+                </Button>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--tf-portal-border, #E5E7EB)', paddingTop: '16px' }}>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '0.95rem', fontWeight: 600, color: 'var(--tf-portal-text-main, #1F2937)' }}>
+                  Active Sessions
+                </h4>
+                <p
+                  style={{
+                    color: 'var(--tf-portal-text-muted)',
+                    fontSize: '0.85rem',
+                    marginBottom: '12px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  If you lost a device or suspect unauthorized access, you can sign out from all
+                  active sessions across all devices.
+                </p>
+                <Button
+                  variant="outline"
+                  style={{
+                    color: 'var(--tf-portal-warn, #D32F2F)',
+                    borderColor: 'var(--tf-portal-warn, #D32F2F)',
+                  }}
+                  onClick={() => setShowLogoutAllModal(true)}
+                >
+                  Sign out from all devices
+                </Button>
+              </div>
             </Card>
           </div>
         </div>
+
+        {/* Change Password Modal */}
+        <ChangePasswordModal
+          isOpen={showChangePasswordModal}
+          onClose={() => setShowChangePasswordModal(false)}
+        />
 
         {/* Confirmation Dialog for Logout-All */}
         <ConfirmDialog

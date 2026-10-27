@@ -114,3 +114,58 @@ export function validateGoogleInput(body = {}) {
   }
   return { idToken };
 }
+
+export function validateChangePasswordInput(body = {}) {
+  const currentPassword = String(body.currentPassword || '');
+  if (!currentPassword) {
+    throw invalid('Current password is required.');
+  }
+  const newPassword = validatePassword(body.newPassword);
+  if (body.confirmPassword !== undefined && body.confirmPassword !== newPassword) {
+    throw invalid('New password and confirmation do not match.');
+  }
+  return { currentPassword, newPassword };
+}
+
+export function validateUpdateProfileInput(body = {}) {
+  const updates = {};
+  if (body.name !== undefined) {
+    updates.name = validateName(body.name, 'Name');
+  }
+  if (body.email !== undefined) {
+    updates.email = validateEmail(body.email);
+  }
+  if (Object.keys(updates).length === 0) {
+    throw invalid('At least one profile field (name or email) must be provided.');
+  }
+  return updates;
+}
+
+export function validateForgotPasswordInput(body = {}) {
+  return {
+    email: validateEmail(body.email),
+  };
+}
+
+export function validateVerifyResetOtpInput(body = {}) {
+  const email = validateEmail(body.email);
+  const otp = String(body.otp || '').trim();
+  if (!otp || !/^\d{6}$/.test(otp)) {
+    throw invalid('A valid 6-digit numeric verification code is required.');
+  }
+  return { email, otp };
+}
+
+export function validateResetPasswordInput(body = {}) {
+  const email = validateEmail(body.email);
+  const resetToken = String(body.resetToken || '').trim();
+  if (!resetToken || resetToken.length < 32) {
+    throw invalid('A valid password reset authorization token is required.');
+  }
+  const newPassword = validatePassword(body.newPassword);
+  if (body.confirmPassword !== undefined && body.confirmPassword !== newPassword) {
+    throw invalid('New password and confirmation do not match.');
+  }
+  return { email, resetToken, newPassword };
+}
+

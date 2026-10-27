@@ -10,10 +10,15 @@
  * `AUTH_*` console logs (safe metadata only — never secrets). A
  * persistent audit store can consume these events in a later phase.
  */
+import crypto from 'node:crypto';
 import { withTransaction } from '../../db/transaction.js';
 import { initModels } from '../../db/models/index.js';
 import * as repository from './auth.repository.js';
 import { AuthError } from '../../utils/errors.js';
+import {
+  sendPasswordResetOtpEmail,
+  sendPasswordResetSuccessEmail,
+} from '../../integrations/email/email.service.js';
 import {
   AUTH_ERROR_CODES,
   FREE_EMAIL_DOMAINS,
@@ -373,6 +378,69 @@ export async function getCurrentUser(userId) {
   return publicUserWithProfile(user, { registry });
 }
 
+export async function changePassword(userId, { currentPassword, newPassword }, context = {}) {
+  const registry = initModels();
+  const user = await repository.findUserById(userId, { registry });
+  if (!user) {
+    throw new AuthError('User not found.', {
+      statusCode: 401,
+      code: AUTH_ERROR_CODES.UNAUTHORIZED,
+    });
+  }
+
+  if (user.passwordHash) {
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      authLog('AUTH_PASSWORD_CHANGE_FAILURE', { userId, reason: 'invalid_current_password', ip: context.ip });
+      throw new AuthError('Current password is incorrect.', {
+        statusCode: 400,
+        code: AUTH_ERROR_CODES.INVALID_CREDENTIALS,
+      });
+    }
+  }
+
+  const newHash = await hashPassword(newPassword);
+  await repository.updateUser(user, { passwordHash: newHash });
+
+  authLog('AUTH_PASSWORD_CHANGE_SUCCESS', { userId, ip: context.ip });
+  return { success: true, message: 'Password changed successfully.' };
+}
+
+export async function updateProfile(userId, updates, context = {}) {
+  const registry = initModels();
+  const user = await repository.findUserById(userId, { registry });
+  if (!user) {
+    throw new AuthError('User not found.', {
+      statusCode: 401,
+      code: AUTH_ERROR_CODES.UNAUTHORIZED,
+    });
+  }
+
+  const fieldsToUpdate = {};
+  if (updates.name && updates.name !== user.name) {
+    fieldsToUpdate.name = updates.name;
+  }
+
+  if (updates.email && updates.email !== user.email) {
+    const existing = await repository.findUserByEmail(updates.email, { registry });
+    if (existing && existing.id !== user.id) {
+      throw new AuthError('This email is already in use.', {
+        statusCode: 409,
+        code: AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS,
+      });
+    }
+    fieldsToUpdate.email = updates.email;
+  }
+
+  if (Object.keys(fieldsToUpdate).length > 0) {
+    await repository.updateUser(user, fieldsToUpdate);
+  }
+
+  authLog('AUTH_PROFILE_UPDATED', { userId, updatedFields: Object.keys(fieldsToUpdate), ip: context.ip });
+  return publicUserWithProfile(user, { registry });
+}
+
+
 /* ------------------------------------------------------------------ */
 /* Google identity                                                     */
 /* ------------------------------------------------------------------ */
@@ -535,3 +603,229 @@ export async function createAdminUser({ email, name, password }) {
   authLog('AUTH_ADMIN_CREATED', { userId: user.id });
   return toPublicUser(user);
 }
+
+/* ------------------------------------------------------------------ */
+/* OTP-Based Forgot Password & Recovery                               */
+/* ------------------------------------------------------------------ */
+
+export async function requestPasswordResetOtp(
+  { email },
+  context = {},
+  { emailSender = null } = {},
+) {
+  const registry = initModels();
+  const normalized = normalizeEmail(email);
+  const user = await repository.findUserByEmail(normalized, { registry });
+
+  // Anti-enumeration: if user not found or inactive, return generic success without leaking status
+  if (!user || user.status !== 'active') {
+    authLog('AUTH_PASSWORD_RESET_REQUEST_UNMATCHED', { email: normalized, ip: context.ip });
+    return {
+      success: true,
+      message: 'If that email address is registered, an OTP verification code has been sent.',
+    };
+  }
+
+  // Check resend cooldown on recent active challenges (60 seconds)
+  const existingChallenge = await repository.findLatestActivePasswordReset(user.id, { registry });
+  if (existingChallenge && !existingChallenge.consumedAt) {
+    const elapsed = Date.now() - new Date(existingChallenge.createdAt).getTime();
+    if (elapsed < 60 * 1000) {
+      authLog('AUTH_PASSWORD_RESET_COOLDOWN_REJECTED', { userId: user.id, elapsed, ip: context.ip });
+      throw new AuthError('Please wait a moment before requesting another verification code.', {
+        statusCode: 429,
+        code: AUTH_ERROR_CODES.OTP_COOLDOWN,
+      });
+    }
+  }
+
+  // Invalidate any prior unconsumed challenges
+  await repository.invalidateUserPasswordResets(user.id, { registry });
+
+  // Generate cryptographically secure 6-digit numeric OTP
+  const otp = String(crypto.randomInt(100000, 1000000));
+  const otpHash = sha256Hex(otp);
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+  await repository.createPasswordReset(
+    {
+      userId: user.id,
+      purpose: 'password_reset',
+      otpHash,
+      attempts: 0,
+      maxAttempts: 5,
+      expiresAt,
+      ipAddress: context.ip || null,
+      userAgent: context.userAgent || null,
+    },
+    { registry },
+  );
+
+  authLog('AUTH_PASSWORD_RESET_OTP_ISSUED', { userId: user.id, ip: context.ip });
+
+  const sender = emailSender || sendPasswordResetOtpEmail;
+  await sender({
+    to: user.email,
+    name: user.name,
+    otp,
+    expiresInMinutes: 10,
+  });
+
+  return {
+    success: true,
+    message: 'If that email address is registered, an OTP verification code has been sent.',
+  };
+}
+
+export async function verifyPasswordResetOtp({ email, otp }, context = {}) {
+  const registry = initModels();
+  const normalized = normalizeEmail(email);
+  const user = await repository.findUserByEmail(normalized, { registry });
+
+  if (!user || user.status !== 'active') {
+    authLog('AUTH_PASSWORD_RESET_VERIFY_UNMATCHED', { email: normalized, ip: context.ip });
+    throw new AuthError('Invalid or expired verification code.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.OTP_INVALID,
+    });
+  }
+
+  const challenge = await repository.findLatestActivePasswordReset(user.id, { registry });
+  if (!challenge || challenge.consumedAt) {
+    authLog('AUTH_PASSWORD_RESET_VERIFY_NO_CHALLENGE', { userId: user.id, ip: context.ip });
+    throw new AuthError('Invalid or expired verification code.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.OTP_INVALID,
+    });
+  }
+
+  const now = new Date();
+  if (new Date(challenge.expiresAt) < now) {
+    authLog('AUTH_PASSWORD_RESET_OTP_EXPIRED', { userId: user.id, ip: context.ip });
+    await repository.updatePasswordReset(challenge, { consumedAt: now });
+    throw new AuthError('Verification code has expired. Please request a new code.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.OTP_EXPIRED,
+    });
+  }
+
+  if (challenge.attempts >= challenge.maxAttempts) {
+    authLog('AUTH_PASSWORD_RESET_OTP_MAX_ATTEMPTS', { userId: user.id, ip: context.ip });
+    await repository.updatePasswordReset(challenge, { consumedAt: now });
+    throw new AuthError('Too many incorrect attempts. Please request a new code.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.OTP_MAX_ATTEMPTS,
+    });
+  }
+
+  const submittedHash = sha256Hex(String(otp).trim());
+  const match = safeEqualHex(submittedHash, challenge.otpHash);
+
+  if (!match) {
+    const nextAttempts = challenge.attempts + 1;
+    const remaining = Math.max(0, challenge.maxAttempts - nextAttempts);
+    authLog('AUTH_PASSWORD_RESET_OTP_MISMATCH', {
+      userId: user.id,
+      attempt: nextAttempts,
+      remaining,
+      ip: context.ip,
+    });
+
+    if (remaining <= 0) {
+      await repository.updatePasswordReset(challenge, { attempts: nextAttempts, consumedAt: now });
+      throw new AuthError('Too many incorrect attempts. Please request a new code.', {
+        statusCode: 400,
+        code: AUTH_ERROR_CODES.OTP_MAX_ATTEMPTS,
+      });
+    }
+
+    await repository.updatePasswordReset(challenge, { attempts: nextAttempts });
+    throw new AuthError(`Invalid verification code. ${remaining} attempt(s) remaining.`, {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.OTP_INVALID,
+    });
+  }
+
+  // OTP verified: generate cryptographically random reset authorization token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenHash = sha256Hex(resetToken);
+  const resetTokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins to reset password
+
+  await repository.updatePasswordReset(challenge, {
+    verifiedAt: now,
+    resetTokenHash,
+    expiresAt: resetTokenExpiresAt,
+  });
+
+  authLog('AUTH_PASSWORD_RESET_OTP_VERIFIED', { userId: user.id, ip: context.ip });
+
+  return {
+    success: true,
+    message: 'Verification code confirmed.',
+    resetToken,
+  };
+}
+
+export async function resetPasswordWithOtp(
+  { email, resetToken, newPassword },
+  context = {},
+  { emailSender = null } = {},
+) {
+  const registry = initModels();
+  const normalized = normalizeEmail(email);
+  const user = await repository.findUserByEmail(normalized, { registry });
+
+  if (!user || user.status !== 'active') {
+    authLog('AUTH_PASSWORD_RESET_COMMIT_UNMATCHED', { email: normalized, ip: context.ip });
+    throw new AuthError('Invalid or expired password reset authorization.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.RESET_TOKEN_INVALID,
+    });
+  }
+
+  const tokenHash = sha256Hex(String(resetToken).trim());
+  const challenge = await repository.findPasswordResetByResetTokenHash(tokenHash, { registry });
+
+  if (
+    !challenge ||
+    challenge.userId !== user.id ||
+    !challenge.verifiedAt ||
+    challenge.consumedAt
+  ) {
+    authLog('AUTH_PASSWORD_RESET_TOKEN_INVALID', { userId: user?.id, ip: context.ip });
+    throw new AuthError('Invalid or expired password reset authorization.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.RESET_TOKEN_INVALID,
+    });
+  }
+
+  const now = new Date();
+  if (new Date(challenge.expiresAt) < now) {
+    authLog('AUTH_PASSWORD_RESET_TOKEN_EXPIRED', { userId: user.id, ip: context.ip });
+    await repository.updatePasswordReset(challenge, { consumedAt: now });
+    throw new AuthError('Password reset authorization has expired. Please request a new code.', {
+      statusCode: 400,
+      code: AUTH_ERROR_CODES.RESET_TOKEN_EXPIRED,
+    });
+  }
+
+  const newHash = await hashPassword(newPassword);
+
+  // Atomically update password, consume challenge, and revoke all sessions
+  await withTransaction(async (t) => {
+    await repository.updateUser(user, { passwordHash: newHash }, { transaction: t });
+    await repository.updatePasswordReset(challenge, { consumedAt: now }, { transaction: t });
+    await repository.revokeAllUserSessions(user.id, { transaction: t });
+  });
+
+  authLog('AUTH_PASSWORD_RESET_SUCCESS', { userId: user.id, ip: context.ip });
+
+  const sender = emailSender || sendPasswordResetSuccessEmail;
+  await sender({ to: user.email, name: user.name });
+
+  return {
+    success: true,
+    message: 'Password has been reset successfully. You may now sign in with your new password.',
+  };
+}
+
