@@ -431,13 +431,7 @@ export function AgencyDetailPage() {
       )}
 
       {/* Two Column Grid: Profile Overview & Document Verification */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
+      <div className="admin-two-col-grid">
         {/* Profile Overview Card */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
           <div className="admin-card-header">
@@ -446,49 +440,45 @@ export function AgencyDetailPage() {
             </h2>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '150px 1fr',
-              rowGap: '1rem',
-              columnGap: '0.75rem',
-              fontSize: '0.875rem',
-            }}
-          >
+          <div className="admin-profile-detail-grid">
             <span style={{ color: '#64748B', fontWeight: 600 }}>
               {t('admin.agencyDetail.contactPerson', 'Contact Person')}:
             </span>
-            <span style={{ color: '#0F172A', fontWeight: 600 }}>{agency.contactPerson || '—'}</span>
+            <span style={{ color: '#0F172A', fontWeight: 600, overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+              {agency.contactPerson || '—'}
+            </span>
 
             <span style={{ color: '#64748B', fontWeight: 600 }}>
               {t('admin.agencyDetail.email', 'Business Email')}:
             </span>
-            <span style={{ color: '#0F172A' }}>
+            <span style={{ color: '#0F172A', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
               {agency.businessEmail || agency.user?.email || '—'}
             </span>
 
             <span style={{ color: '#64748B', fontWeight: 600 }}>
               {t('admin.agencyDetail.phone', 'Phone')}:
             </span>
-            <span style={{ color: '#0F172A' }}>{agency.phone || '—'}</span>
+            <span style={{ color: '#0F172A', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+              {agency.phone || '—'}
+            </span>
 
             <span style={{ color: '#64748B', fontWeight: 600 }}>
               {t('admin.agencies.colLocation', 'Location')}:
             </span>
-            <span style={{ color: '#0F172A' }}>
+            <span style={{ color: '#0F172A', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
               {[agency.address, agency.city, agency.country].filter(Boolean).join(', ') || '—'}
             </span>
 
             <span style={{ color: '#64748B', fontWeight: 600 }}>
               {t('admin.agencyDetail.website', 'Website')}:
             </span>
-            <span>
+            <span style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
               {agency.website ? (
                 <a
                   href={agency.website}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ color: '#0C4E28', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  style={{ color: '#0C4E28', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', wordBreak: 'break-all' }}
                 >
                   {agency.website} <FiExternalLink size={12} />
                 </a>
@@ -500,7 +490,9 @@ export function AgencyDetailPage() {
             <span style={{ color: '#64748B', fontWeight: 600 }}>
               {t('admin.agencyDetail.bio', 'Description')}:
             </span>
-            <span style={{ color: '#334155', lineHeight: 1.5 }}>{agency.description || '—'}</span>
+            <span style={{ color: '#334155', lineHeight: 1.5, overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+              {agency.description || '—'}
+            </span>
 
             <span style={{ color: '#64748B', fontWeight: 600 }}>Agreement:</span>
             <span>
@@ -551,6 +543,9 @@ export function AgencyDetailPage() {
                         fontSize: '0.78rem',
                         fontWeight: 700,
                         color: '#0369A1',
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-word',
+                        maxWidth: '100%',
                       }}
                     >
                       📍 {c.locationName}
@@ -579,6 +574,9 @@ export function AgencyDetailPage() {
                         fontSize: '0.78rem',
                         fontWeight: 700,
                         color: '#0C4E28',
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-word',
+                        maxWidth: '100%',
                       }}
                     >
                       ✓ {cap.serviceType.replace('_', ' ')}
@@ -1277,7 +1275,7 @@ export function AgencyDetailPage() {
               </div>
             </div>
 
-            <div className="admin-modal-footer" style={{ padding: '0.75rem 1.25rem', justifyContent: 'space-between' }}>
+            <div className="admin-modal-footer admin-doc-modal-footer">
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <a
                   href={getDocumentUrl(viewDocModal.filePath)}

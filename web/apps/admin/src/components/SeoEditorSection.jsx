@@ -240,6 +240,8 @@ export function SeoEditorSection({
               borderRadius: '8px',
               fontFamily: 'arial, sans-serif',
               maxWidth: '600px',
+              width: '100%',
+              boxSizing: 'border-box',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
@@ -259,9 +261,9 @@ export function SeoEditorSection({
               >
                 Q
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                 <span style={{ fontSize: '14px', color: '#202124', lineHeight: 1.2 }}>QuoteMeTrip</span>
-                <span style={{ fontSize: '12px', color: '#4D5156', lineHeight: 1.2 }}>
+                <span style={{ fontSize: '12px', color: '#4D5156', lineHeight: 1.2, wordBreak: 'break-all' }}>
                   {canonicalUrl || publicUrl}
                 </span>
               </div>
@@ -290,6 +292,8 @@ export function SeoEditorSection({
           <div
             style={{
               maxWidth: '520px',
+              width: '100%',
+              boxSizing: 'border-box',
               border: '1px solid #E2E8F0',
               borderRadius: '12px',
               overflow: 'hidden',

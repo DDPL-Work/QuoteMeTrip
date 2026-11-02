@@ -267,13 +267,7 @@ export function MembershipPlansPage() {
           </p>
         </div>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '1.25rem',
-          }}
-        >
+        <div className="admin-membership-plans-grid">
           {plans.map((p) => {
             const isActive = p.status === 'active' || p.isActive === true;
             return (

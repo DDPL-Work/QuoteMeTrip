@@ -50,18 +50,12 @@ export function AdminJobsPage() {
         </p>
       </div>
 
-      <div
-        style={{
-          background: '#FFFFFF',
-          padding: '1rem',
-          borderRadius: '8px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
+      <div className="admin-toolbar-card">
         <select
           value={status}
           onChange={(e) => setSearchParams({ status: e.target.value, page: '1' })}
-          style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
+          className="admin-form-select"
+          style={{ width: 'auto', minWidth: '180px' }}
         >
           <option value="">{t('admin.jobs.allStatuses')}</option>
           <option value="accepted">{t('status.accepted', 'Accepted')}</option>
@@ -88,22 +82,8 @@ export function AdminJobsPage() {
           {t('admin.jobs.noJobs')}
         </div>
       ) : (
-        <div
-          style={{
-            background: '#FFFFFF',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          }}
-        >
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              textAlign: 'left',
-              fontSize: '0.875rem',
-            }}
-          >
+        <div className="admin-table-container">
+          <table className="admin-table">
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
                 <th style={{ padding: '0.75rem 1rem' }}>{t('admin.jobs.colJobId')}</th>

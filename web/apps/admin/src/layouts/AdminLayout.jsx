@@ -194,9 +194,9 @@ export function AdminLayout({ children }) {
                 e.target.style.display = 'none';
               }}
             />
-            <span className="admin-brand-title">
+            {/* <span className="admin-brand-title">
               Quote<span style={{ color: '#FC7C00' }}>MyTrip</span>
-            </span>
+            </span> */}
             <span className="admin-brand-badge">ADMIN</span>
           </Link>
         </div>

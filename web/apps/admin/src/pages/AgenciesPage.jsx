@@ -244,7 +244,7 @@ export function AgenciesPage() {
       {/* Filter Bar */}
       <div className="admin-toolbar-card">
         <div className="admin-toolbar-left">
-          <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
             <FiSearch
               size={15}
               style={{

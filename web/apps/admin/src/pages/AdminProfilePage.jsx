@@ -238,14 +238,7 @@ export function AdminProfilePage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '0.5rem',
-          borderBottom: '2px solid #E2E8F0',
-          marginBottom: '1.5rem',
-        }}
-      >
+      <div className="admin-tabs-nav-bar" style={{ marginBottom: '1.5rem' }}>
         <button
           type="button"
           onClick={() => handleTabChange('profile')}
@@ -293,7 +286,7 @@ export function AdminProfilePage() {
 
       {/* Tab 1: Account Profile */}
       {currentTab === 'profile' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem' }}>
+        <div className="admin-profile-grid">
           <div className="admin-card">
             <div className="admin-card-header">
               <h2 className="admin-card-title">
@@ -463,7 +456,7 @@ export function AdminProfilePage() {
 
       {/* Tab 2: Change Password */}
       {currentTab === 'password' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1.2fr)', gap: '1.5rem' }}>
+        <div className="admin-profile-grid">
           <div className="admin-card">
             <div className="admin-card-header">
               <h2 className="admin-card-title">
