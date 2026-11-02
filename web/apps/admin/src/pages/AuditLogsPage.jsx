@@ -48,40 +48,30 @@ export function AuditLogsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '1rem',
-          background: '#FFFFFF',
-          padding: '1rem',
-          borderRadius: '8px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
-        <input
-          type="text"
-          placeholder={t('admin.auditLogs.filterAction')}
-          value={action}
-          onChange={(e) => setSearchParams({ action: e.target.value, entityType, page: '1' })}
-          style={{
-            flex: 1,
-            padding: '0.5rem 0.75rem',
-            borderRadius: '4px',
-            border: '1px solid #CBD5E0',
-          }}
-        />
-        <select
-          value={entityType}
-          onChange={(e) => setSearchParams({ action, entityType: e.target.value, page: '1' })}
-          style={{ padding: '0.5rem 0.75rem', borderRadius: '4px', border: '1px solid #CBD5E0' }}
-        >
-          <option value="">{t('admin.auditLogs.allEntities')}</option>
-          <option value="agency">{t('admin.auditLogs.entityAgency')}</option>
-          <option value="document">{t('admin.auditLogs.entityDocument')}</option>
-          <option value="membership">{t('admin.auditLogs.entityMembership')}</option>
-          <option value="commission">{t('admin.auditLogs.entityCommission')}</option>
-          <option value="membership_plan">{t('admin.auditLogs.entityMembershipPlan')}</option>
-        </select>
+      <div className="admin-toolbar-card">
+        <div className="admin-toolbar-left">
+          <input
+            type="text"
+            placeholder={t('admin.auditLogs.filterAction')}
+            value={action}
+            onChange={(e) => setSearchParams({ action: e.target.value, entityType, page: '1' })}
+            className="admin-form-input"
+            style={{ flex: 1, minWidth: '180px' }}
+          />
+          <select
+            value={entityType}
+            onChange={(e) => setSearchParams({ action, entityType: e.target.value, page: '1' })}
+            className="admin-form-select"
+            style={{ width: 'auto', minWidth: '160px' }}
+          >
+            <option value="">{t('admin.auditLogs.allEntities')}</option>
+            <option value="agency">{t('admin.auditLogs.entityAgency')}</option>
+            <option value="document">{t('admin.auditLogs.entityDocument')}</option>
+            <option value="membership">{t('admin.auditLogs.entityMembership')}</option>
+            <option value="commission">{t('admin.auditLogs.entityCommission')}</option>
+            <option value="membership_plan">{t('admin.auditLogs.entityMembershipPlan')}</option>
+          </select>
+        </div>
       </div>
 
       {/* Table */}
@@ -102,22 +92,8 @@ export function AuditLogsPage() {
           {t('admin.auditLogs.noLogs')}
         </div>
       ) : (
-        <div
-          style={{
-            background: '#FFFFFF',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          }}
-        >
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              textAlign: 'left',
-              fontSize: '0.875rem',
-            }}
-          >
+        <div className="admin-table-container">
+          <table className="admin-table">
             <thead>
               <tr style={{ background: '#EDF2F7', borderBottom: '1px solid #E2E8F0' }}>
                 <th style={{ padding: '0.75rem 1rem' }}>{t('admin.auditLogs.colTimestamp')}</th>

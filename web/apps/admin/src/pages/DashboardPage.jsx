@@ -52,13 +52,7 @@ export function DashboardPage() {
           />
           <div className="admin-skeleton" style={{ height: '16px', width: '380px' }} />
         </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '1.25rem',
-          }}
-        >
+        <div className="admin-dashboard-stats-grid">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="admin-stat-card">
               <div
@@ -122,13 +116,7 @@ export function DashboardPage() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1.25rem',
-        }}
-      >
+      <div className="admin-dashboard-stats-grid">
         {/* Agencies Card */}
         <div className="admin-stat-card">
           <div className="admin-stat-icon">

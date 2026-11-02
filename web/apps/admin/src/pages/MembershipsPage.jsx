@@ -297,6 +297,8 @@ export function MembershipsPage() {
       {/* Payment Confirmation Modal */}
       {paymentModal && (
         <div
+          className="admin-modal-backdrop"
+          onClick={() => setPaymentModal(null)}
           style={{
             position: 'fixed',
             inset: 0,
@@ -308,7 +310,9 @@ export function MembershipsPage() {
           }}
         >
           <form
+            className="admin-modal-card"
             onSubmit={handleConfirmPayment}
+            onClick={(e) => e.stopPropagation()}
             style={{
               background: '#FFF',
               padding: '2rem',
@@ -364,6 +368,7 @@ export function MembershipsPage() {
               />
             </div>
             <div
+              className="admin-modal-footer"
               style={{
                 display: 'flex',
                 justifyContent: 'flex-end',

@@ -281,66 +281,49 @@ export function RatingOverviewPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div
-        className="admin-card"
-        style={{
-          display: 'flex',
-          gap: '1rem',
-          padding: '0.875rem 1.25rem',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-          <FiSearch
-            style={{
-              position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#A0AEC0',
-            }}
-          />
-          <input
-            type="text"
-            placeholder={t('admin.ratings.searchPlaceholder', 'Search by agency, traveller name, or Job ID...')}
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              handlePageChange(1);
-            }}
-            style={{
-              width: '100%',
-              padding: '0.5rem 0.75rem 0.5rem 2.25rem',
-              borderRadius: '6px',
-              border: '1px solid #CBD5E0',
-              fontSize: '0.9rem',
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FiFilter style={{ color: '#718096' }} />
-          <select
-            value={scoreFilter}
-            onChange={(e) => {
-              setScoreFilter(e.target.value);
-              handlePageChange(1);
-            }}
-            style={{
-              padding: '0.5rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid #CBD5E0',
-              fontSize: '0.9rem',
-              background: '#FFF',
-            }}
-          >
-            <option value="">{t('admin.ratings.allScores', 'All Star Ratings')}</option>
-            <option value="5">5 Stars</option>
-            <option value="4">4 Stars</option>
-            <option value="3">3 Stars</option>
-            <option value="2">2 Stars</option>
-            <option value="1">1 Star</option>
-          </select>
+      <div className="admin-card admin-toolbar-card">
+        <div className="admin-toolbar-left">
+          <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+            <FiSearch
+              style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#A0AEC0',
+              }}
+            />
+            <input
+              type="text"
+              placeholder={t('admin.ratings.searchPlaceholder', 'Search by agency, traveller name, or Job ID...')}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                handlePageChange(1);
+              }}
+              className="admin-form-input"
+              style={{ paddingLeft: '2.25rem' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiFilter style={{ color: '#718096' }} />
+            <select
+              value={scoreFilter}
+              onChange={(e) => {
+                setScoreFilter(e.target.value);
+                handlePageChange(1);
+              }}
+              className="admin-form-select"
+              style={{ width: 'auto', minWidth: '150px' }}
+            >
+              <option value="">{t('admin.ratings.allScores', 'All Star Ratings')}</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -364,8 +347,8 @@ export function RatingOverviewPage() {
             </p>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="admin-table-container">
+            <table className="admin-table">
               <thead>
                 <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569' }}>
                   <th style={{ padding: '0.875rem 1rem' }}>ID</th>

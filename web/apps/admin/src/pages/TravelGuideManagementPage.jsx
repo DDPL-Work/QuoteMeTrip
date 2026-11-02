@@ -473,14 +473,7 @@ export function TravelGuideManagementPage() {
       )}
 
       {/* Tabs Navigation */}
-      <div
-        style={{
-          display: 'flex',
-          borderBottom: '2px solid #E2E8F0',
-          gap: '2rem',
-          marginTop: '0.25rem',
-        }}
-      >
+      <div className="admin-tabs-nav-bar">
         <button
           type="button"
           onClick={() => setActiveTab('regions')}
@@ -497,6 +490,8 @@ export function TravelGuideManagementPage() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           <FiGlobe /> {t('admin.travelGuide.tabRegions', 'Regions')} ({regions.length})
@@ -517,6 +512,8 @@ export function TravelGuideManagementPage() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           <FiMapPin /> {t('admin.travelGuide.tabDestinations', 'Destinations')} ({destinations.length})
@@ -537,6 +534,8 @@ export function TravelGuideManagementPage() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           <FiFileText /> {t('admin.travelGuide.tabArticles', 'Articles & SEO')} ({articles.length})
@@ -544,54 +543,47 @@ export function TravelGuideManagementPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div
-        className="admin-card"
-        style={{
-          display: 'flex',
-          gap: '1rem',
-          padding: '0.875rem 1.25rem',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-          <FiSearch
-            style={{
-              position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: '#A0AEC0',
-            }}
-          />
-          <input
-            type="text"
-            placeholder={
-              activeTab === 'regions'
-                ? t('admin.travelGuide.searchRegions', 'Search regions by name or slug...')
-                : activeTab === 'destinations'
-                ? t('admin.travelGuide.searchDestinations', 'Search destinations by name, slug, country...')
-                : t('admin.travelGuide.searchArticles', 'Search articles by title or slug...')
-            }
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="admin-form-input"
-            style={{ paddingLeft: '2.25rem' }}
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FiFilter style={{ color: '#718096' }} />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="admin-form-select"
-            style={{ width: 'auto', minWidth: '150px' }}
-          >
-            <option value="">{t('admin.common.allStatuses', 'All Statuses')}</option>
-            <option value="published">{t('admin.common.published', 'Published')}</option>
-            <option value="draft">{t('admin.common.draft', 'Draft')}</option>
-            <option value="archived">{t('admin.common.archived', 'Archived')}</option>
-          </select>
+      <div className="admin-card admin-toolbar-card">
+        <div className="admin-toolbar-left">
+          <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+            <FiSearch
+              style={{
+                position: 'absolute',
+                left: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#A0AEC0',
+              }}
+            />
+            <input
+              type="text"
+              placeholder={
+                activeTab === 'regions'
+                  ? t('admin.travelGuide.searchRegions', 'Search regions by name or slug...')
+                  : activeTab === 'destinations'
+                  ? t('admin.travelGuide.searchDestinations', 'Search destinations by name, slug, country...')
+                  : t('admin.travelGuide.searchArticles', 'Search articles by title or slug...')
+              }
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="admin-form-input"
+              style={{ paddingLeft: '2.25rem' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiFilter style={{ color: '#718096' }} />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="admin-form-select"
+              style={{ width: 'auto', minWidth: '150px' }}
+            >
+              <option value="">{t('admin.common.allStatuses', 'All Statuses')}</option>
+              <option value="published">{t('admin.common.published', 'Published')}</option>
+              <option value="draft">{t('admin.common.draft', 'Draft')}</option>
+              <option value="archived">{t('admin.common.archived', 'Archived')}</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -625,8 +617,8 @@ export function TravelGuideManagementPage() {
               )}
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+            <div className="admin-table-container">
+              <table className="admin-table">
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569' }}>
                     <th style={{ padding: '0.875rem 1rem' }}>ID</th>
@@ -723,8 +715,8 @@ export function TravelGuideManagementPage() {
               )}
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+            <div className="admin-table-container">
+              <table className="admin-table">
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569' }}>
                     <th style={{ padding: '0.875rem 1rem' }}>ID</th>
@@ -822,8 +814,8 @@ export function TravelGuideManagementPage() {
               )}
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+            <div className="admin-table-container">
+              <table className="admin-table">
                 <thead>
                   <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569' }}>
                     <th style={{ padding: '0.875rem 1rem' }}>ID</th>
@@ -1255,8 +1247,10 @@ export function TravelGuideManagementPage() {
                 display: 'flex',
                 background: '#F8FAFC',
                 borderBottom: '1px solid #E2E8F0',
-                padding: '0 1.5rem',
+                padding: '0 1rem',
                 gap: '1rem',
+                overflowX: 'auto',
+                whiteSpace: 'nowrap',
               }}
             >
               <button

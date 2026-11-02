@@ -154,6 +154,7 @@ export function ConfirmModal({
 
             {/* Footer Actions */}
             <div
+              className="admin-modal-footer"
               style={{
                 padding: '1rem 1.5rem',
                 background: '#F8FAFC',
