@@ -11,6 +11,11 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@tiptap/extension-image": "^3.32.1",
+    "@tiptap/extension-link": "^3.32.1",
+    "@tiptap/extension-underline": "^3.32.1",
+    "@tiptap/react": "^3.32.1",
+    "@tiptap/starter-kit": "^3.32.1",
     "@troublefree/api-client": "*",
     "@troublefree/config": "*",
     "@troublefree/i18n": "*",

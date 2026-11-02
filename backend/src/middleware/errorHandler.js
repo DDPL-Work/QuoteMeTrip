@@ -36,6 +36,27 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
+  // Handle Sequelize Unique Constraint and Validation Errors as client-facing 409 / 400
+  if (err?.name === 'SequelizeUniqueConstraintError') {
+    const field = err.errors?.[0]?.path || 'field';
+    const val = err.errors?.[0]?.value || '';
+    return errorResponse(res, {
+      statusCode: 409,
+      code: 'DUPLICATE_ENTRY',
+      message: `An entry with this ${field} ("${val}") already exists. Please choose a different ${field}.`,
+      details: err.errors?.map((e) => ({ field: e.path, message: e.message })),
+    });
+  }
+
+  if (err?.name === 'SequelizeValidationError') {
+    return errorResponse(res, {
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+      message: err.errors?.[0]?.message || 'Validation error',
+      details: err.errors?.map((e) => ({ field: e.path, message: e.message })),
+    });
+  }
+
   // Preserve explicit client error status if attached directly to an Error (e.g. err.status = 409)
   const clientStatus = err.statusCode || err.status;
   if (clientStatus && Number.isInteger(clientStatus) && clientStatus >= 400 && clientStatus < 500) {

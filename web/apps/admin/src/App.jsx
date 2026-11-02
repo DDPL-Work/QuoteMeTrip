@@ -14,6 +14,8 @@ import { AdminTravelRequestsPage } from './pages/AdminTravelRequestsPage.jsx';
 import { AdminJobsPage } from './pages/AdminJobsPage.jsx';
 import { AuditLogsPage } from './pages/AuditLogsPage.jsx';
 import { AnnouncementsPage } from './pages/AnnouncementsPage.jsx';
+import { TravelGuideManagementPage } from './pages/TravelGuideManagementPage.jsx';
+import { RatingOverviewPage } from './pages/RatingOverviewPage.jsx';
 import { AdminProfilePage } from './pages/AdminProfilePage.jsx';
 
 function App() {
@@ -49,6 +51,8 @@ function App() {
               <Route path="commissions" element={<CommissionsPage />} />
               <Route path="travel-requests" element={<AdminTravelRequestsPage />} />
               <Route path="jobs" element={<AdminJobsPage />} />
+              <Route path="ratings" element={<RatingOverviewPage />} />
+              <Route path="travel-guide" element={<TravelGuideManagementPage />} />
               <Route path="announcements" element={<AnnouncementsPage />} />
               <Route path="audit-logs" element={<AuditLogsPage />} />
               <Route path="profile" element={<AdminProfilePage />} />

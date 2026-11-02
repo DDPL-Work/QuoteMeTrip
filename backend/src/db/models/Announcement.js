@@ -109,11 +109,6 @@ export class Announcement extends Model {
         tableName: 'announcements',
         modelName: 'Announcement',
         underscored: true,
-        indexes: [
-          { fields: ['status'] },
-          { fields: ['target_audience'] },
-          { fields: ['published_at'] },
-        ],
       },
     );
 

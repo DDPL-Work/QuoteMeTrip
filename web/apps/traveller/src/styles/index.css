@@ -250,6 +250,51 @@ body {
   border-top: 1px solid #e2dcd1;
 }
 
+/* Auth Social & Google Login Responsive Handling */
+.auth-social {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.auth-social [data-testid="google-login-button"],
+.google-btn-container {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.auth-social [data-testid="google-login-button"] > div,
+.auth-social [data-testid="google-login-button"] iframe,
+.google-btn-container iframe {
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 480px) {
+  .auth-shell {
+    padding: 1.25rem 0.75rem;
+  }
+
+  .auth-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 1rem;
+    max-width: 100%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  }
+
+  .auth-card h1 {
+    font-size: 1.5rem;
+  }
+}
+
 /* Motion & Micro-Animation System */
 @keyframes tfFadeInUp {
   from {

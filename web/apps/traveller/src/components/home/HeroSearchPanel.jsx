@@ -1,34 +1,28 @@
 import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { FiArrowRight } from 'react-icons/fi';
 import { useI18n } from '@troublefree/i18n';
+import { FiCheck, FiSliders, FiHelpCircle, FiCalendar } from 'react-icons/fi';
 import { TravelScopeTabs } from './TravelScopeTabs.jsx';
-import { HeroDestinationField } from './HeroDestinationField.jsx';
-import { HeroDateField } from './HeroDateField.jsx';
-import { HeroDurationField } from './HeroDurationField.jsx';
-import { HeroTravellersField } from './HeroTravellersField.jsx';
 
 /**
  * HeroSearchPanel Component
- * Floating search panel with 3D depth, tab selection, form field composition, and animated CTA.
+ * Floating service-selection bar with 3D depth, custom checkboxes with React Icons,
+ * and service tabs that trigger dedicated service modals.
  */
 export function HeroSearchPanel({
   trip,
   setTrip,
   scope,
   setScope,
-  onSubmit,
-  isSubmitting = false,
 }) {
   const { t } = useI18n();
   const shouldReduceMotion = useReducedMotion();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <motion.form
-      className="g-search"
-      aria-label="Create a travel request"
-      onSubmit={onSubmit}
+    <motion.div
+      className="g-search g-search-modal-only"
+      aria-label="Select a travel service"
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
@@ -45,67 +39,119 @@ export function HeroSearchPanel({
     >
       <TravelScopeTabs activeScope={scope} onSelectScope={setScope} />
 
-      <div className="g-fields">
-        <HeroDestinationField
-          value={trip.country}
-          onChange={(country) => setTrip({ ...trip, country })}
-        />
-
-        <HeroDateField
-          value={trip.days[0]?.date || ''}
-          onChange={(date) => setTrip({ ...trip, days: [{ date }] })}
-        />
-
-        <HeroDurationField
-          value={trip.daysCount ?? 7}
-          onChange={(daysCount) => setTrip({ ...trip, daysCount })}
-        />
-
-        <HeroTravellersField
-          value={trip.travellers}
-          onChange={(travellers) => setTrip({ ...trip, travellers })}
-        />
-
-        <motion.button
-          className="g-go"
-          type="submit"
-          disabled={isSubmitting}
-          whileHover={shouldReduceMotion ? {} : { y: -2 }}
-          whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
-        >
-          <span>{isSubmitting ? t('common.loading', 'Searching...') : t('home.search.getQuotes', 'Get free quotes')}</span>
-          <motion.span
-            style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 6 }}
-            animate={isHovered && !shouldReduceMotion ? { x: 4 } : { x: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      <div
+        className="g-sub"
+        style={{
+          borderTop: 'none',
+          padding: '12px 14px 6px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* Custom Checkbox: Flexible Dates */}
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={Boolean(trip.flexible)}
+            onClick={() => setTrip({ ...trip, flexible: !trip.flexible })}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: trip.flexible ? '#147D33' : '#4A5568',
+              cursor: 'pointer',
+            }}
           >
-            <FiArrowRight size={18} aria-hidden="true" />
-          </motion.span>
-        </motion.button>
-      </div>
+            <div
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '5px',
+                border: trip.flexible ? '2px solid #147D33' : '2px solid #CBD5E1',
+                backgroundColor: trip.flexible ? '#147D33' : '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFFFFF',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {trip.flexible && <FiCheck size={13} strokeWidth={3} />}
+            </div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <FiCalendar size={14} style={{ color: trip.flexible ? '#147D33' : '#718096' }} />
+              {t('home.search.flexibleDates', 'My dates are flexible')}
+            </span>
+          </button>
 
-      <div className="g-sub">
-        <div className="row" style={{ gap: '18px', flexWrap: 'wrap' }}>
-          <label>
-            <input
-              type="checkbox"
-              checked={trip.flexible}
-              onChange={(e) => setTrip({ ...trip, flexible: e.target.checked })}
-            />
-            {t('home.search.flexibleDates', 'My dates are flexible')}
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={trip.suggest}
-              onChange={(e) => setTrip({ ...trip, suggest: e.target.checked })}
-            />
-            {t('home.search.suggestRoute', 'Let agencies suggest the route')}
-          </label>
+          {/* Custom Checkbox: Suggest Route */}
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={Boolean(trip.suggest)}
+            onClick={() => setTrip({ ...trip, suggest: !trip.suggest })}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: trip.suggest ? '#147D33' : '#4A5568',
+              cursor: 'pointer',
+            }}
+          >
+            <div
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '5px',
+                border: trip.suggest ? '2px solid #147D33' : '2px solid #CBD5E1',
+                backgroundColor: trip.suggest ? '#147D33' : '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#FFFFFF',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {trip.suggest && <FiCheck size={13} strokeWidth={3} />}
+            </div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <FiSliders size={14} style={{ color: trip.suggest ? '#147D33' : '#718096' }} />
+              {t('home.search.suggestRoute', 'Let agencies suggest the route')}
+            </span>
+          </button>
         </div>
-        <a href="#g-how">{t('home.search.howItWorks', 'How does it work?')}</a>
+
+        <a
+          href="#g-how"
+          style={{
+            fontSize: '13px',
+            color: '#147D33',
+            fontWeight: 700,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}
+        >
+          <FiHelpCircle size={15} />
+          {t('home.search.howItWorks', 'How does it work?')}
+        </a>
       </div>
-    </motion.form>
+    </motion.div>
   );
 }
 

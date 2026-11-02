@@ -8,6 +8,7 @@ import { PopularRoutesSection } from '../../components/home/PopularRoutesSection
 import { HowItWorksSection } from '../../components/home/HowItWorksSection.jsx';
 import { TravelGuideSection } from '../../components/home/TravelGuideSection.jsx';
 import { FaqSection } from '../../components/home/FaqSection.jsx';
+import { TripRequestModal } from '../../components/home/TripRequestModal.jsx';
 import './HomePage.css';
 
 /**
@@ -29,12 +30,39 @@ export function PublicHomePage() {
   });
   const [scope, setScope] = useState('Blue Cruise');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+
+  const handleSelectScope = (newScope) => {
+    setScope(newScope);
+    setIsServiceModalOpen(true);
+  };
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsSubmitting(true);
 
     const queryString = serializeSearchToQuery(trip, scope);
+    const targetPath = `/plan-trip${queryString ? '?' + queryString : ''}`;
+
+    if (user) {
+      navigate(targetPath);
+    } else {
+      navigate(`/login?redirect=${encodeURIComponent(targetPath)}`);
+    }
+  };
+
+  const handleModalSubmit = (customizedTrip) => {
+    setIsServiceModalOpen(false);
+    setTrip((prev) => ({
+      ...prev,
+      country: customizedTrip.country || prev.country,
+      days: customizedTrip.days || prev.days,
+      daysCount: customizedTrip.daysCount || prev.daysCount,
+      travellers: customizedTrip.travellers || prev.travellers,
+      flexible: customizedTrip.flexible !== undefined ? customizedTrip.flexible : prev.flexible,
+    }));
+
+    const queryString = serializeSearchToQuery(customizedTrip, customizedTrip.scope || scope);
     const targetPath = `/plan-trip${queryString ? '?' + queryString : ''}`;
 
     if (user) {
@@ -51,9 +79,18 @@ export function PublicHomePage() {
         trip={trip}
         setTrip={setTrip}
         scope={scope}
-        setScope={setScope}
+        setScope={handleSelectScope}
         onSubmit={handleSearchSubmit}
         isSubmitting={isSubmitting}
+      />
+
+      {/* SERVICE-SPECIFIC MODAL POPUP */}
+      <TripRequestModal
+        isOpen={isServiceModalOpen}
+        serviceName={scope}
+        initialData={trip}
+        onClose={() => setIsServiceModalOpen(false)}
+        onSubmit={handleModalSubmit}
       />
 
       {/* 2. TRUST SECTION */}
