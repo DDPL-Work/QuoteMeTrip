@@ -21,6 +21,8 @@ import {
   FiUser,
   FiKey,
   FiGlobe,
+  FiStar,
+  FiBookOpen,
 } from 'react-icons/fi';
 import { useAuth } from '../features/auth/auth-context.js';
 import { useI18n, SUPPORTED_LOCALES } from '@troublefree/i18n';
@@ -105,6 +107,18 @@ export function AdminLayout({ children }) {
       items: [
         { key: 'travel-requests', label: t('admin.nav.travelRequests', 'Travel Requests'), path: '/travel-requests', icon: FiMap },
         { key: 'jobs', label: t('admin.nav.jobs', 'Jobs'), path: '/jobs', icon: FiBriefcase },
+        { key: 'ratings', label: t('admin.nav.ratings', 'Ratings & Reviews'), path: '/ratings', icon: FiStar },
+      ],
+    },
+    {
+      title: t('admin.nav.content', 'CONTENT MANAGEMENT'),
+      items: [
+        {
+          key: 'travel-guide',
+          label: t('admin.nav.travelGuide', 'Travel Guide'),
+          path: '/travel-guide',
+          icon: FiBookOpen,
+        },
       ],
     },
     {
@@ -180,9 +194,9 @@ export function AdminLayout({ children }) {
                 e.target.style.display = 'none';
               }}
             />
-            {/* <span className="admin-brand-title">
+            <span className="admin-brand-title">
               Quote<span style={{ color: '#FC7C00' }}>MyTrip</span>
-            </span> */}
+            </span>
             <span className="admin-brand-badge">ADMIN</span>
           </Link>
         </div>

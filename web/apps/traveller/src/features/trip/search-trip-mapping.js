@@ -135,6 +135,29 @@ export function serializeSearchToQuery(trip = {}, scope = 'Full package') {
     params.set('suggest', 'true');
   }
 
+  // Preserve service-specific parameters
+  if (trip.cruiseDuration) {
+    params.set('cruiseDuration', trip.cruiseDuration);
+  }
+  if (trip.cruiseDays) {
+    params.set('cruiseDays', String(trip.cruiseDays));
+  }
+  if (trip.cruiseNights) {
+    params.set('cruiseNights', String(trip.cruiseNights));
+  }
+  if (trip.cruiseCabinType) {
+    params.set('cruiseCabinType', trip.cruiseCabinType);
+  }
+  if (trip.activityCategory) {
+    params.set('activityCategory', trip.activityCategory);
+  }
+  if (trip.accommodationType) {
+    params.set('accommodationType', trip.accommodationType);
+  }
+  if (trip.specialRequests) {
+    params.set('specialRequests', trip.specialRequests);
+  }
+
   return params.toString();
 }
 
@@ -212,7 +235,15 @@ export function parseSearchParams(searchStringOrParams) {
   }
 
   const cruiseDuration =
-    scope === CANONICAL_SCOPE_MAP.BLUE_CRUISE ? (days >= 6 ? '6d_5n' : '4d_3n') : undefined;
+    params.get('cruiseDuration') ||
+    (scope === CANONICAL_SCOPE_MAP.BLUE_CRUISE ? (days >= 6 ? '6d_5n' : '4d_3n') : undefined);
+  const cruiseDays = params.get('cruiseDays') ? parseInt(params.get('cruiseDays'), 10) : undefined;
+  const cruiseNights = params.get('cruiseNights') ? parseInt(params.get('cruiseNights'), 10) : undefined;
+  const cruiseCabinType = params.get('cruiseCabinType') || undefined;
+  const activityCategory = params.get('activityCategory') || undefined;
+
+  const accommodationType = params.get('accommodationType') || undefined;
+  const specialRequests = params.get('specialRequests') || undefined;
 
   return {
     country,
@@ -227,5 +258,11 @@ export function parseSearchParams(searchStringOrParams) {
     driverRequired,
     guideRequired,
     cruiseDuration,
+    cruiseDays,
+    cruiseNights,
+    cruiseCabinType,
+    activityCategory,
+    accommodationType,
+    specialRequests,
   };
 }

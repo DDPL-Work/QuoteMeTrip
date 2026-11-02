@@ -364,10 +364,16 @@ export function GuideCard({ guide, translatedTitle, translatedSummary }) {
   const displayCategory = formatCategory(guide.category, t);
   const displayReadTime = formatReadTime(guide.readTime, t);
 
+  const coverImageSrc = guide.coverImage
+    ? (guide.coverImage.startsWith('http://') || guide.coverImage.startsWith('https://') || guide.coverImage.startsWith('data:')
+        ? guide.coverImage
+        : `${(typeof window !== 'undefined' && window.__API_URL__) || 'http://localhost:5001'}${guide.coverImage.startsWith('/') ? '' : '/'}${guide.coverImage}`)
+    : '';
+
   return (
     <div className="tf-guide-card">
       <div className="tf-card-image-wrap">
-        <img src={guide.coverImage} alt={displayTitle} loading="lazy" className="tf-card-image" />
+        <img src={coverImageSrc} alt={displayTitle} loading="lazy" className="tf-card-image" />
         <span className="tf-card-badge tf-badge-sec">{displayCategory}</span>
       </div>
       <div className="tf-card-content">

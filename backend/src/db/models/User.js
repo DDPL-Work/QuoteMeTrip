@@ -29,10 +29,12 @@ export class User extends Model {
         passwordHash: {
           type: DataTypes.STRING(255),
           allowNull: true,
+          field: 'password_hash',
         },
         lastLoginAt: {
           type: DataTypes.DATE,
           allowNull: true,
+          field: 'last_login_at',
         },
         role: {
           type: DataTypes.ENUM(...USER_ROLES),

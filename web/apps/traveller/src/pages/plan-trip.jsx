@@ -60,7 +60,7 @@ export function PlanTripPage() {
     chosenDuration: initialSearchState.days,
     numberOfTravellers: initialSearchState.travellers,
     luggageCount: Math.max(1, initialSearchState.travellers),
-    accommodationType: '4_star',
+    accommodationType: initialSearchState.accommodationType || '4_star',
     hotelRequired: initialSearchState.hotelRequired,
     guideRequired: initialSearchState.guideRequired,
     driverRequired: initialSearchState.driverRequired,
@@ -68,7 +68,7 @@ export function PlanTripPage() {
     cruiseDuration: initialSearchState.cruiseDuration,
     isFlexibleDates: initialSearchState.flexible,
     suggestRoute: initialSearchState.suggest,
-    specialRequests: '',
+    specialRequests: initialSearchState.specialRequests || '',
   }));
 
   // Synchronize search params to TripContext once on mount or URL change

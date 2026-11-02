@@ -45,10 +45,72 @@ export class TravelGuideArticle extends Model {
           type: DataTypes.TEXT('long'),
           allowNull: true,
         },
+        contentJson: {
+          type: DataTypes.JSON,
+          allowNull: true,
+          field: 'content_json',
+        },
         coverImage: {
           type: DataTypes.STRING,
           allowNull: true,
           field: 'cover_image',
+        },
+        coverImageAlt: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'cover_image_alt',
+        },
+        metaTitle: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'meta_title',
+        },
+        metaDescription: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'meta_description',
+        },
+        canonicalUrl: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'canonical_url',
+        },
+        metaRobots: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          defaultValue: 'index, follow',
+          field: 'meta_robots',
+        },
+        ogTitle: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'og_title',
+        },
+        ogDescription: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'og_description',
+        },
+        ogImage: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'og_image',
+        },
+        twitterCard: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          defaultValue: 'summary_large_image',
+          field: 'twitter_card',
+        },
+        focusKeyword: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          field: 'focus_keyword',
+        },
+        relatedKeywords: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'related_keywords',
         },
         status: {
           type: DataTypes.ENUM('draft', 'published', 'archived'),

@@ -1,13 +1,80 @@
 import { Router } from 'express';
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { authenticate } from '../../middleware/authenticate.js';
 import { authorize } from '../../middleware/authorize.js';
 import { travelGuideService } from './travel-guide.service.js';
 import { logAudit } from '../audit/audit.service.js';
+import { validateFileMetadata } from '../../middleware/upload.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.resolve(__dirname, '../../../uploads');
 
 export const travelGuideAdminRoutes = Router();
 
 travelGuideAdminRoutes.use(authenticate);
 travelGuideAdminRoutes.use(authorize('admin'));
+
+// Media / Image Upload for Travel Guide
+travelGuideAdminRoutes.post('/upload', async (req, res, next) => {
+  try {
+    const rawData = req.body?.data || req.body?.file || req.body?.image;
+    const originalName = req.body?.name || req.body?.originalName || 'travel-guide-image.jpg';
+    let mimeType = req.body?.mimeType || 'image/jpeg';
+
+    if (!rawData || typeof rawData !== 'string') {
+      return res.status(400).json({ status: 'error', message: 'No image data provided.' });
+    }
+
+    let base64Content = rawData;
+    if (rawData.includes(';base64,')) {
+      const parts = rawData.split(';base64,');
+      if (parts[0].startsWith('data:')) {
+        mimeType = parts[0].replace('data:', '') || mimeType;
+      }
+      base64Content = parts[1] || '';
+    }
+
+    const buffer = Buffer.from(base64Content, 'base64');
+
+    const fileMeta = validateFileMetadata({
+      name: originalName,
+      type: mimeType,
+      size: buffer.length,
+    });
+
+    if (fileMeta.mimeType === 'application/pdf') {
+      return res.status(400).json({ status: 'error', message: 'PDF files are not allowed for travel guide images.' });
+    }
+
+    await fs.mkdir(UPLOADS_DIR, { recursive: true });
+    await fs.writeFile(fileMeta.destinationPath, buffer);
+
+    const relativeUrl = `/uploads/${path.basename(fileMeta.destinationPath)}`;
+
+    await logAudit({
+      actorUserId: req.user.id,
+      action: 'travel_guide.image_uploaded',
+      entityType: 'Media',
+      entityId: 0,
+      afterState: { filename: path.basename(fileMeta.destinationPath), url: relativeUrl, size: buffer.length },
+    });
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        url: relativeUrl,
+        filename: path.basename(fileMeta.destinationPath),
+        originalName: fileMeta.originalName,
+        size: buffer.length,
+        mimeType: fileMeta.mimeType,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Regions
 travelGuideAdminRoutes.get('/regions', async (req, res, next) => {

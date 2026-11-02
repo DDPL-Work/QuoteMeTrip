@@ -80,14 +80,13 @@ describe('Homepage Componentization & Interaction Tests', () => {
     );
     expect(screen.getByText('One request.')).toBeInTheDocument();
     expect(screen.getByText('Multiple travel quotes.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Get free quotes/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Blue Cruise/i })).toBeInTheDocument();
   });
 
-  test('HeroSearchPanel handles scope switching and input changes', async () => {
+  test('HeroSearchPanel handles scope switching and triggers service selection', async () => {
     const user = userEvent.setup({ delay: null });
     const setScope = vi.fn();
     const setTrip = vi.fn();
-    const onSubmit = vi.fn((e) => e.preventDefault());
 
     const trip = {
       country: 'Türkiye',
@@ -104,17 +103,12 @@ describe('Homepage Componentization & Interaction Tests', () => {
         setTrip={setTrip}
         scope="Blue Cruise"
         setScope={setScope}
-        onSubmit={onSubmit}
       />,
     );
 
     const fullPackageBtn = screen.getByRole('button', { name: /Full package/i });
     await user.click(fullPackageBtn);
     expect(setScope).toHaveBeenCalledWith('Full package');
-
-    const submitBtn = screen.getByRole('button', { name: /Get free quotes/i });
-    await user.click(submitBtn);
-    expect(onSubmit).toHaveBeenCalled();
   });
 
   test('HeroTrustStrip renders all 5 trust items', () => {

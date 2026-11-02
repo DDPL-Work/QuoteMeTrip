@@ -48,6 +48,7 @@ vi.mock('../../../lib/api.js', () => ({
     getArticles: vi.fn().mockResolvedValue([]),
     getArticleBySlug: vi.fn().mockRejectedValue(new Error('not found')),
   },
+  resolveMediaUrl: (url) => url,
   setUnauthorizedListener: vi.fn(),
 }));
 

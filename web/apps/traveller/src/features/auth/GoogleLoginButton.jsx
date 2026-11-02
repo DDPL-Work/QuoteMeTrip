@@ -47,6 +47,7 @@ export function GoogleLoginButton({ onError }) {
   const { googleLogin } = useAuth();
   const navigate = useNavigate();
   const buttonRef = useRef(null);
+  const currentWidthRef = useRef(0);
   const [loadError, setLoadError] = useState('');
   const clientId = googleClientId();
 
@@ -55,6 +56,28 @@ export function GoogleLoginButton({ onError }) {
   useEffect(() => {
     if (!clientId) return undefined;
     let cancelled = false;
+
+    const renderButtonAtWidth = () => {
+      if (cancelled || !buttonRef.current || !window.google?.accounts?.id) return;
+      const measured =
+        buttonRef.current.getBoundingClientRect?.().width ||
+        buttonRef.current.offsetWidth ||
+        buttonRef.current.parentElement?.offsetWidth ||
+        0;
+
+      // Google Identity Services renderButton accepts width between 200 and 400 pixels
+      const targetWidth =
+        measured > 0 ? Math.min(400, Math.max(200, Math.floor(measured))) : 300;
+      currentWidthRef.current = targetWidth;
+
+      buttonRef.current.innerHTML = '';
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        theme: 'outline',
+        size: 'large',
+        width: targetWidth,
+      });
+    };
+
     (async () => {
       try {
         await loadGisScript();
@@ -74,11 +97,8 @@ export function GoogleLoginButton({ onError }) {
             }
           },
         });
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          theme: 'outline',
-          size: 'large',
-          width: 320,
-        });
+
+        renderButtonAtWidth();
       } catch (err) {
         if (!cancelled) {
           const message = friendlyAuthMessage(err);
@@ -86,8 +106,38 @@ export function GoogleLoginButton({ onError }) {
         }
       }
     })();
+
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const w = Math.floor(entry.contentRect.width);
+          if (w >= 200 && Math.abs(w - currentWidthRef.current) > 10) {
+            renderButtonAtWidth();
+          }
+        }
+      });
+      if (buttonRef.current) {
+        resizeObserver.observe(buttonRef.current);
+      }
+    }
+
+    const handleWindowResize = () => {
+      if (!buttonRef.current) return;
+      const w =
+        buttonRef.current.getBoundingClientRect?.().width ||
+        buttonRef.current.offsetWidth ||
+        0;
+      if (w >= 200 && Math.abs(w - currentWidthRef.current) > 10) {
+        renderButtonAtWidth();
+      }
+    };
+    window.addEventListener('resize', handleWindowResize);
+
     return () => {
       cancelled = true;
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener('resize', handleWindowResize);
     };
   }, [clientId, googleLogin, navigate, onError]);
 
@@ -98,7 +148,18 @@ export function GoogleLoginButton({ onError }) {
       <div className="auth-divider" aria-hidden="true">
         <span>or</span>
       </div>
-      <div ref={buttonRef} data-testid="google-login-button" />
+      <div
+        ref={buttonRef}
+        data-testid="google-login-button"
+        className="google-btn-container"
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          minHeight: '44px',
+        }}
+      />
       {loadError ? (
         <p className="auth-field-error" role="alert">
           {loadError}

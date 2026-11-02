@@ -539,6 +539,50 @@ export function createAdminApi(client) {
     // Profile & Password
     changePassword: (input) => unwrap(http.post('/api/v1/auth/change-password', input)),
     updateProfile: (input) => unwrap(http.patch('/api/v1/auth/profile', input)),
+
+    // Travel Guide Admin
+    listTravelGuideRegions: (params = {}) =>
+      unwrap(http.get('/api/v1/admin/travel-guide/regions', { params })),
+    createTravelGuideRegion: (input) =>
+      unwrap(http.post('/api/v1/admin/travel-guide/regions', input)),
+    updateTravelGuideRegion: (id, input) =>
+      unwrap(http.patch(`/api/v1/admin/travel-guide/regions/${id}`, input)),
+    deleteTravelGuideRegion: (id) =>
+      unwrap(http.delete(`/api/v1/admin/travel-guide/regions/${id}`)),
+
+    listTravelGuideDestinations: (params = {}) =>
+      unwrap(http.get('/api/v1/admin/travel-guide/destinations', { params })),
+    createTravelGuideDestination: (input) =>
+      unwrap(http.post('/api/v1/admin/travel-guide/destinations', input)),
+    updateTravelGuideDestination: (id, input) =>
+      unwrap(http.patch(`/api/v1/admin/travel-guide/destinations/${id}`, input)),
+    deleteTravelGuideDestination: (id) =>
+      unwrap(http.delete(`/api/v1/admin/travel-guide/destinations/${id}`)),
+
+    listTravelGuideArticles: (params = {}) =>
+      unwrap(http.get('/api/v1/admin/travel-guide/articles', { params })),
+    getTravelGuideArticleById: (id) =>
+      unwrap(http.get(`/api/v1/admin/travel-guide/articles/${id}`)),
+    createTravelGuideArticle: (input) =>
+      unwrap(http.post('/api/v1/admin/travel-guide/articles', input)),
+    updateTravelGuideArticle: (id, input) =>
+      unwrap(http.patch(`/api/v1/admin/travel-guide/articles/${id}`, input)),
+    publishTravelGuideArticle: (id) =>
+      unwrap(http.post(`/api/v1/admin/travel-guide/articles/${id}/publish`, {})),
+    unpublishTravelGuideArticle: (id) =>
+      unwrap(http.post(`/api/v1/admin/travel-guide/articles/${id}/unpublish`, {})),
+    deleteTravelGuideArticle: (id) =>
+      unwrap(http.delete(`/api/v1/admin/travel-guide/articles/${id}`)),
+    uploadTravelGuideImage: (payload) =>
+      unwrap(http.post('/api/v1/admin/travel-guide/upload', payload)),
+    uploadTravelGuideMedia: (payload) =>
+      unwrap(http.post('/api/v1/admin/travel-guide/upload', payload)),
+
+    // Ratings Admin
+    listRatings: (params = {}) =>
+      unwrap(http.get('/api/v1/admin/ratings', { params })),
+    getRatingSummary: (params = {}) =>
+      unwrap(http.get('/api/v1/admin/ratings/summary', { params })),
   };
 }
 

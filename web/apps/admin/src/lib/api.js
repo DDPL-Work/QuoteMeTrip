@@ -37,4 +37,15 @@ export const authApi = createAuthApi(apiClient);
 export const adminApi = createAdminApi(apiClient);
 export const translationApi = createTranslationApi(apiClient);
 
+// Resilient fallback for Travel Guide media upload in case Vite dependency prebundle cache lagged
+if (typeof adminApi.uploadTravelGuideImage !== 'function') {
+  adminApi.uploadTravelGuideImage = (payload) =>
+    apiClient
+      .post('/api/v1/admin/travel-guide/upload', payload)
+      .then((r) => r?.data?.data || r?.data);
+}
+if (typeof adminApi.uploadTravelGuideMedia !== 'function') {
+  adminApi.uploadTravelGuideMedia = adminApi.uploadTravelGuideImage;
+}
+
 export { apiBaseUrl };

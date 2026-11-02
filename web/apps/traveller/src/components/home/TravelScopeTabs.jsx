@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiCompass, FiBriefcase, FiInbox, FiMap, FiMapPin } from 'react-icons/fi';
+import { FiCompass, FiBriefcase, FiHome, FiTruck, FiMapPin } from 'react-icons/fi';
 
 const SCOPE_OPTIONS = [
   { label: 'Blue Cruise', icon: FiCompass },
   { label: 'Full package', icon: FiBriefcase },
-  { label: 'Hotel only', icon: FiInbox },
-  { label: 'Vehicle + driver', icon: FiMap },
+  { label: 'Hotel only', icon: FiHome },
+  { label: 'Vehicle + driver', icon: FiTruck },
   { label: 'Guide & activities', icon: FiMapPin },
 ];
 
